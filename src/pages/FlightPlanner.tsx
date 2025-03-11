@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 // import { Card, CardContent } from '@/components/ui/card';
 // import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
-import { Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
+import { Calendar, Clock, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
 import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
 
@@ -36,6 +36,10 @@ const FlightPlanner = () => {
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
 
+  // Add state for date and time
+  const [departureDate, setDepartureDate] = useState<string>('');
+  const [departureTime, setDepartureTime] = useState<string>('');
+
   const [routeForm, setRouteForm] = useState({
     aircraft: '',
     departure: '',
@@ -43,6 +47,18 @@ const FlightPlanner = () => {
     alternate: '',
     via: ''
   });
+
+  // Initialize date and time with current UTC values
+  useEffect(() => {
+    const now = new Date();
+    const localDate = now.toISOString().split('T')[0];
+    const localTimeHours = String(now.getUTCHours()).padStart(2, '0');
+    const localTimeMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const localTime = `${localTimeHours}:${localTimeMinutes}`;
+
+    setDepartureDate(localDate);
+    setDepartureTime(localTime);
+  }, []);
 
   const currentLocation = { lat: 51.926517, lon: 4.462456 };
   // const currentLocationPoint = turf.point([currentLocation.lon, currentLocation.lat]);
@@ -263,8 +279,8 @@ const FlightPlanner = () => {
       // Add click handler for METAR stations
       mapRef.current?.on('click', 'metar', (e) => {
         if (e.features && e.features.length > 0 && weatherStationRepositoryRef.current) {
-          const stationId = e.features[0].properties?.name;
-          const station = weatherStationRepositoryRef.current.stations.find(s => s.station === stationId);
+          // const stationId = e.features[0].properties?.name;
+          // const station = weatherStationRepositoryRef.current.stations.find(s => s.station === stationId);
 
           // if (station) {
           //   // Check if station is already in the selected list
@@ -294,43 +310,12 @@ const FlightPlanner = () => {
         }
       }
 
-      // mapRef.current?.fitBounds(turf.bbox(flightRoute.getGeoJSON()), {
-      //   padding: 20
-      // });
     });
-
-    // addStatusIndicator(mapRef.current as mapboxgl.Map, 'red', [4.5, 52]);
 
     return () => {
       mapRef.current?.remove()
     }
   }, []);
-
-  // function addStatusIndicator(map: mapboxgl.Map, status: 'green' | 'yellow' | 'purple' | 'red', coordinates: [number, number]) {
-  //   const colorClass = {
-  //     green: 'bg-green-500',
-  //     yellow: 'bg-yellow-500',
-  //     purple: 'bg-purple-500',
-  //     red: 'bg-red-500',
-  //   }[status];
-
-  //   // Create a div element for the indicator
-  //   const el = document.createElement('div');
-  //   el.className = `absolute rounded-full ${colorClass}`;
-  //   el.style.width = '10px';
-  //   el.style.height = '10px';
-
-  //   // Use Mapbox GL JS's `project` method to convert coordinates 
-  //   const mapboxCoords = map.project(coordinates);
-
-  //   // Apply the position using the converted coordinates
-  //   el.style.transform = `translate(-50%, -50%) translate(${mapboxCoords.x}px, ${mapboxCoords.y}px)`;
-
-  //   // Add the indicator to the map
-  //   new mapboxgl.Marker(el)
-  //     .setLngLat(coordinates)
-  //     .addTo(map);
-  // }
 
   const handleCreateRoute = async () => {
     const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
@@ -469,7 +454,7 @@ const FlightPlanner = () => {
             </div>
 
             {/* Departure and Arrival */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Departure
@@ -498,7 +483,7 @@ const FlightPlanner = () => {
             </div>
 
             {/* Date and Time */}
-            {/* <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   <div className="flex items-center space-x-1">
@@ -508,6 +493,8 @@ const FlightPlanner = () => {
                 </label>
                 <input
                   type="date"
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -520,10 +507,12 @@ const FlightPlanner = () => {
                 </label>
                 <input
                   type="time"
+                  value={departureTime}
+                  onChange={(e) => setDepartureTime(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Alternative Airports */}
             <div className="space-y-2">
@@ -602,7 +591,7 @@ const FlightPlanner = () => {
                 </div>
                 <div className="text-sm text-gray-600">
                   <span className="font-medium">ETA: </span>
-                  {routeTrip?.totalDuration ? new Date(new Date().getTime() + routeTrip.totalDuration * 60000).toISOString().substring(11, 16) : '-'}Z
+                  {routeTrip?.totalDuration ? `${new Date(new Date().getTime() + routeTrip.totalDuration * 60000).toISOString().substring(11, 16)}Z` : '-'}
                 </div>
               </div>
 
