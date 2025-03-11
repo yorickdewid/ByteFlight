@@ -94,7 +94,7 @@ const FlightPlanner = () => {
   }
 
   useEffect(() => {
-    mapboxgl.accessToken = 'pk.eyJ1IjoibGFpeGVyIiwiYSI6ImNraThwMWxieDA3eXkycm85OW5hbWM3aTUifQ.Ld_05yoDaHynP5VvMMLvxA'
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
     if (mapContainerRef.current) {
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
