@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 // import { Card, CardContent } from '@/components/ui/card';
 // import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
-import { Calendar, Clock, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
+import { Calendar, Clock, List, Navigation, Plane, Sunrise, Sunset, X } from 'lucide-react';
 
 import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
 
@@ -35,6 +35,7 @@ const FlightPlanner = () => {
   const popupRef = useRef<mapboxgl.Popup | null>(null);
 
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
+  const [showRouteLog, setShowRouteLog] = useState(false);
   const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
 
   // Add state for date and time
@@ -120,7 +121,6 @@ const FlightPlanner = () => {
         style: 'mapbox://styles/mapbox/light-v11'
       });
 
-      // Initialize the popup
       popupRef.current = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false,
@@ -636,16 +636,88 @@ const FlightPlanner = () => {
                 </div>
               </div>
 
+              {/* Divider */}
+              <div className="h-8 w-px bg-gray-200"></div>
+
+              {/* Route Log Button */}
+              <button
+                onClick={() => setShowRouteLog(!showRouteLog)}
+                className="flex items-center space-x-1 text-sm"
+              >
+                <List className="w-5 h-5" />
+                <span>Route Log</span>
+              </button>
+
             </div>
 
           </div>
         </div>
 
         {/* Main Map Area */}
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full relative">
           <div className="h-full">
             <div id='map-container' ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
           </div>
+
+          {/* Route Log Overlay */}
+          {showRouteLog && (
+            <div className="absolute top-4 left-4 w-3/4 max-w-3xl bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-10">
+              <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b border-gray-200">
+                <h3 className="font-medium text-gray-700">Route Log</h3>
+                <button
+                  onClick={() => setShowRouteLog(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="max-h-[500px] overflow-y-auto">
+                {routeTrip && routeTrip.route.length > 0 ? (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heading</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {routeTrip.route.map((leg, index) => (
+                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{leg.start.name}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{leg.end.name}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.trueTrack)}°</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.distance)} NM</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                            0 min
+                            {/* {Math.floor(leg.duration)} min */}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {/* {Math.round(leg.fuelConsumption)} L */}
+                            0 L
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50">
+                      <tr>
+                        <td colSpan={3} className="px-3 py-2 text-sm font-medium text-gray-700 text-right">Total:</td>
+                        <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.round(routeTrip.totalDistance)} NM</td>
+                        <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.floor(routeTrip.totalDuration)} min</td>
+                        <td className="px-3 py-2 text-sm font-medium text-gray-700">0 L</td>
+                        {/* <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.round(routeTrip.totalFuelConsumption)} L</td> */}
+                      </tr>
+                    </tfoot>
+                  </table>
+                ) : (
+                  <div className="p-4 text-center text-gray-500">No route data available</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
