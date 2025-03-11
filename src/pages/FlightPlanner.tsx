@@ -200,17 +200,83 @@ const FlightPlanner = () => {
         type: 'circle',
         source: 'metar',
         paint: {
-          'circle-radius': 8, // Adjust the size of the dots as needed
+          'circle-radius': 8, // Increased from 6 to 8
           'circle-color': [
-            'match', // Use data-driven styling
-            ['get', 'color'], // Assuming your GeoJSON has a 'color' property
-            'red', '#FF0000', // If 'color' is 'red', use red
-            'green', '#00FF00', // If 'color' is 'green', use green
-            'blue', '#0000FF', // If 'color' is 'blue', use blue
-            'purple', '#800080',
-            '#000000' // Default color if no match
+            'match',
+            ['get', 'color'],
+            'red', '#ef4444',
+            'green', '#22c55e',
+            'blue', '#3b82f6',
+            'purple', '#a855f7',
+            '#000000'
           ],
-          'circle-blur': 0.2, // Add a blur effect to the circles
+        }
+      });
+
+      // Add hover effect for METAR stations
+      mapRef.current?.addLayer({
+        id: 'metar-hover',
+        type: 'circle',
+        source: 'metar',
+        paint: {
+          'circle-radius': 10, // Increased from 8 to 10
+          'circle-color': [
+            'match',
+            ['get', 'color'],
+            'red', '#ef4444',
+            'green', '#22c55e',
+            'blue', '#3b82f6',
+            'purple', '#a855f7',
+            '#000000'
+          ],
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+        },
+        filter: ['==', 'station', '']
+      });
+
+      // Change cursor to pointer when hovering over METAR stations
+      mapRef.current?.on('mouseenter', 'metar', () => {
+        if (mapRef.current) {
+          mapRef.current.getCanvas().style.cursor = 'pointer';
+        }
+      });
+
+      mapRef.current?.on('mouseleave', 'metar', () => {
+        if (mapRef.current) {
+          mapRef.current.getCanvas().style.cursor = '';
+        }
+      });
+
+      // Update hover effect when moving mouse over stations
+      mapRef.current?.on('mousemove', 'metar', (e) => {
+        if (e.features && e.features.length > 0) {
+          mapRef.current?.setFilter('metar-hover', ['==', 'name', e.features[0].properties?.name]);
+        }
+      });
+
+      // Reset hover effect when mouse leaves metar layer
+      mapRef.current?.on('mouseleave', 'metar', () => {
+        mapRef.current?.setFilter('metar-hover', ['==', 'name', '']);
+      });
+
+      // Add click handler for METAR stations
+      mapRef.current?.on('click', 'metar', (e) => {
+        if (e.features && e.features.length > 0 && weatherStationRepositoryRef.current) {
+          const stationId = e.features[0].properties?.name;
+          const station = weatherStationRepositoryRef.current.stations.find(s => s.station === stationId);
+
+          // if (station) {
+          //   // Check if station is already in the selected list
+          //   const isStationAlreadySelected = selectedStations.some(
+          //     selectedStation => selectedStation.station === station.station
+          //   );
+
+          //   if (!isStationAlreadySelected) {
+          //     // Add station to selected stations
+          //     setSelectedStations(prev => [...prev, station]);
+          //   }
+          // }
         }
       });
 
@@ -399,7 +465,6 @@ const FlightPlanner = () => {
                     {aircraft.registration} ({aircraft.manufacturer} {aircraft.model})
                   </option>
                 ))}
-                {/* <option value="CUSTOM">Add new aircraft...</option> */}
               </select>
             </div>
 
@@ -503,6 +568,7 @@ const FlightPlanner = () => {
         </div>
       </div>
 
+      {/* Page Area */}
       <div className="flex-1 h-full flex flex-col">
 
         {/* Stats Header */}
@@ -569,7 +635,7 @@ const FlightPlanner = () => {
       </div>
 
       {/* Right Sidebar - Weather Info */}
-      <div className="w-80 h-full p-2 shrink-0 overflow-y-auto">
+      <div className="w-80 h-full p-2 shrink-0 border-l border-gray-200 overflow-y-auto">
         <div className="space-y-2">
 
           {aerodrome.map((aerodrome) => (
