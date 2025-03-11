@@ -32,6 +32,7 @@ const FlightPlanner = () => {
 
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
 
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
@@ -118,6 +119,13 @@ const FlightPlanner = () => {
         zoom: 7,
         style: 'mapbox://styles/mapbox/light-v11'
       });
+
+      // Initialize the popup
+      popupRef.current = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        className: 'metar-popup'
+      });
     }
 
     mapRef.current?.on('moveend', async () => {
@@ -130,7 +138,7 @@ const FlightPlanner = () => {
         const centerPoint = turf.point([center.lng, center.lat]);
 
         if (weatherStationRepositoryRef.current) {
-          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 150);
+          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
         }
 
         const metarSource = mapRef.current.getSource('metar');
@@ -216,7 +224,7 @@ const FlightPlanner = () => {
         type: 'circle',
         source: 'metar',
         paint: {
-          'circle-radius': 8, // Increased from 6 to 8
+          'circle-radius': 10,
           'circle-color': [
             'match',
             ['get', 'color'],
@@ -235,7 +243,7 @@ const FlightPlanner = () => {
         type: 'circle',
         source: 'metar',
         paint: {
-          'circle-radius': 10, // Increased from 8 to 10
+          'circle-radius': 12,
           'circle-color': [
             'match',
             ['get', 'color'],
@@ -245,8 +253,6 @@ const FlightPlanner = () => {
             'purple', '#a855f7',
             '#000000'
           ],
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#ffffff',
         },
         filter: ['==', 'station', '']
       });
@@ -264,16 +270,36 @@ const FlightPlanner = () => {
         }
       });
 
-      // Update hover effect when moving mouse over stations
       mapRef.current?.on('mousemove', 'metar', (e) => {
         if (e.features && e.features.length > 0) {
-          mapRef.current?.setFilter('metar-hover', ['==', 'name', e.features[0].properties?.name]);
+          const feature = e.features[0];
+
+          const geometry = feature.geometry as GeoJSON.Point;
+          const coordinates = geometry.coordinates.slice() as [number, number];
+          const stationName = feature.properties?.name;
+
+          const station = weatherStationRepositoryRef.current?.stations.find(
+            s => s.station === stationName
+          );
+
+          let popupContent = `<strong>${stationName}</strong>`;
+          if (station) {
+            popupContent += `<p>Flight Rules: ${station.metarData.flightRules}</p>`;
+            if (station.metarData.raw) {
+              popupContent += `<p class="text-xs text-gray-600">${station.metarData.raw}</p>`;
+            }
+          }
+
+          if (mapRef.current) {
+            popupRef.current?.setLngLat(coordinates)
+              .setHTML(popupContent)
+              .addTo(mapRef.current);
+          }
         }
       });
 
-      // Reset hover effect when mouse leaves metar layer
       mapRef.current?.on('mouseleave', 'metar', () => {
-        mapRef.current?.setFilter('metar-hover', ['==', 'name', '']);
+        popupRef.current?.remove();
       });
 
       // Add click handler for METAR stations
@@ -301,7 +327,7 @@ const FlightPlanner = () => {
         const centerPoint = turf.point([center.lng, center.lat]);
 
         if (weatherStationRepositoryRef.current) {
-          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 150);
+          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
         }
 
         const metarSource = mapRef.current?.getSource('metar');
