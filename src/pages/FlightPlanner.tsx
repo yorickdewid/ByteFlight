@@ -33,6 +33,7 @@ const FlightPlanner = () => {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [showRouteLog, setShowRouteLog] = useState(false);
@@ -111,6 +112,23 @@ const FlightPlanner = () => {
     }));
   }
 
+  const refreshMetarData = async () => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    const center = mapRef.current?.getCenter();
+    if (center && weatherStationRepositoryRef.current) {
+      const centerPoint = turf.point([center.lng, center.lat]);
+      await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
+
+      const metarSource = mapRef.current.getSource('metar');
+      if (metarSource) {
+        (metarSource as mapboxgl.GeoJSONSource).setData(metarFeatureCollection());
+      }
+    }
+  };
+
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
     if (mapContainerRef.current) {
@@ -128,25 +146,9 @@ const FlightPlanner = () => {
       });
     }
 
-    mapRef.current?.on('moveend', async () => {
-      if (!mapRef.current?.isStyleLoaded()) {
-        return;
-      }
+    refreshTimerRef.current = setInterval(refreshMetarData, 30_000);
 
-      const center = mapRef.current?.getCenter();
-      if (center) {
-        const centerPoint = turf.point([center.lng, center.lat]);
-
-        if (weatherStationRepositoryRef.current) {
-          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
-        }
-
-        const metarSource = mapRef.current.getSource('metar');
-        if (metarSource) {
-          (metarSource as mapboxgl.GeoJSONSource).setData(metarFeatureCollection());
-        }
-      }
-    });
+    mapRef.current?.on('moveend', refreshMetarData);
 
     mapRef.current?.on('load', async () => {
       mapRef.current?.addControl(new mapboxgl.NavigationControl());
@@ -183,9 +185,6 @@ const FlightPlanner = () => {
         layout: {
           'line-join': 'round',
           'line-cap': 'round',
-          // 'line-opacity': 0.75,
-          // 'text-field': ['get', 'name'],
-          // 'text-along-line': true
         },
         paint: {
           'line-color': '#FF00FF',
@@ -311,43 +310,19 @@ const FlightPlanner = () => {
         popupRef.current?.remove();
       });
 
-      // Add click handler for METAR stations
       mapRef.current?.on('click', 'metar', (e) => {
         if (e.features && e.features.length > 0 && weatherStationRepositoryRef.current) {
-          // const stationId = e.features[0].properties?.name;
-          // const station = weatherStationRepositoryRef.current.stations.find(s => s.station === stationId);
-
-          // if (station) {
-          //   // Check if station is already in the selected list
-          //   const isStationAlreadySelected = selectedStations.some(
-          //     selectedStation => selectedStation.station === station.station
-          //   );
-
-          //   if (!isStationAlreadySelected) {
-          //     // Add station to selected stations
-          //     setSelectedStations(prev => [...prev, station]);
-          //   }
-          // }
+          // TODO: Do something with the METAR station
         }
       });
 
-      const center = mapRef.current?.getCenter();
-      if (center) {
-        const centerPoint = turf.point([center.lng, center.lat]);
-
-        if (weatherStationRepositoryRef.current) {
-          await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
-        }
-
-        const metarSource = mapRef.current?.getSource('metar');
-        if (metarSource) {
-          (metarSource as mapboxgl.GeoJSONSource).setData(metarFeatureCollection());
-        }
-      }
-
+      await refreshMetarData();
     });
 
     return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
       mapRef.current?.remove()
     }
   }, []);
@@ -360,8 +335,6 @@ const FlightPlanner = () => {
     const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
 
     if (weatherStationRepositoryRef.current) {
-      // console.log('Create route from form', routeForm);
-
       const waypoints = [
         ...routeWaypointDep,
         ...routeWaypointVia,
