@@ -19,6 +19,16 @@ export const aircraft = [
     fuelConsumption: 20,
   },
   {
+    manufacturer: 'Robin',
+    model: 'DR40',
+    registration: 'PH-SVT',
+    numberOfEngines: 1,
+    engineType: 'piston' as 'piston',
+    maxTakeoffWeight: 980,
+    cruiseSpeed: 105,
+    fuelConsumption: 20,
+  },
+  {
     manufacturer: 'Boeing',
     model: 'B737',
     registration: 'PH-BGI',

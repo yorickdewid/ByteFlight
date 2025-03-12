@@ -384,6 +384,7 @@ const FlightPlanner = () => {
 
       const rp = routePlan(waypoints, routeOptions);
       setRouteTrip(rp);
+      setShowRouteLog(true);
 
       const aerodromes = waypoints.filter((waypoint, index, self) => waypoint instanceof Aerodrome && index === self.findIndex(w => (w as Aerodrome).ICAO === waypoint.ICAO));
       setAerodrome(aerodromes as Aerodrome[]);
@@ -437,7 +438,14 @@ const FlightPlanner = () => {
 
         const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
 
-        mapRef.current?.fitBounds(geobbox, { padding: 100 });
+        mapRef.current?.fitBounds(geobbox, {
+          padding: {
+            left: 500,
+            top: 100,
+            right: 100,
+            bottom: 100
+          }
+        });
       }
     }
   }
