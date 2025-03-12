@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 // import { Card, CardContent } from '@/components/ui/card';
 // import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
-import { Calendar, Clock, List, Navigation, Plane, Sunrise, Sunset, X } from 'lucide-react';
+import { Calendar, Clock, List, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
 import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
 
