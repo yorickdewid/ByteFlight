@@ -15,10 +15,10 @@ import SunCalc from 'suncalc';
 // import SunCard from '@/components/ui/SunCard';
 // import MetarSection from '@/components/ui/Metar';
 import AerodromeCard from '@/components/ui/Aerodrome';
-import { aircraft } from '@/assets/aviationdata';
 
 import * as turf from '@turf/turf';
-import { fetchMetarStation } from '@/services/api';
+import { fetchAircraft, fetchMetarStation } from '@/services/api';
+import { Aircraft } from 'flight-planner/dist/aircraft';
 
 const FlightPlanner = () => {
   const weatherStationRepositoryRef = useRef<WeatherService | null>(null);
@@ -35,6 +35,7 @@ const FlightPlanner = () => {
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [showRouteLog, setShowRouteLog] = useState(false);
   const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
@@ -51,7 +52,6 @@ const FlightPlanner = () => {
     via: ''
   });
 
-  // Initialize date and time with current UTC values
   useEffect(() => {
     const now = new Date();
     const localDate = now.toISOString().split('T')[0];
@@ -61,6 +61,20 @@ const FlightPlanner = () => {
 
     setDepartureDate(localDate);
     setDepartureTime(localTime);
+  }, []);
+
+  useEffect(() => {
+    const fetchAircraftData = async () => {
+      try {
+        const data = await fetchAircraft();
+        setAircraft(data);
+      } catch (error) {
+        console.error('Error fetching aircraft data:', error);
+        setAircraft([]);
+      }
+    };
+
+    fetchAircraftData();
   }, []);
 
   const currentLocation = { lat: 51.926517, lon: 4.462456 };
@@ -265,7 +279,6 @@ const FlightPlanner = () => {
         filter: ['==', 'station', '']
       });
 
-      // Change cursor to pointer when hovering over METAR stations
       mapRef.current?.on('mouseenter', 'metar', () => {
         if (mapRef.current) {
           mapRef.current.getCanvas().style.cursor = 'pointer';

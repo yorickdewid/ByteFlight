@@ -7,34 +7,34 @@ export const reportingPoints = [
   new ReportingPoint('Romeo', turf.point([4.597222, 51.856944]), true),
 ];
 
-export const aircraft = [
-  {
-    manufacturer: 'Robin',
-    model: 'DR40',
-    registration: 'PH-HLR',
-    numberOfEngines: 1,
-    engineType: 'piston' as 'piston',
-    maxTakeoffWeight: 980,
-    cruiseSpeed: 105,
-    fuelConsumption: 20,
-  },
-  {
-    manufacturer: 'Robin',
-    model: 'DR40',
-    registration: 'PH-SVT',
-    numberOfEngines: 1,
-    engineType: 'piston' as 'piston',
-    maxTakeoffWeight: 980,
-    cruiseSpeed: 105,
-    fuelConsumption: 20,
-  },
-  {
-    manufacturer: 'Boeing',
-    model: 'B737',
-    registration: 'PH-BGI',
-    numberOfEngines: 2,
-    engineType: 'turboprop' as 'turboprop',
-    maxTakeoffWeight: 66320,
-    cruiseSpeed: 460,
-  }
-];
+// export const aircraft = [
+//   {
+//     manufacturer: 'Robin',
+//     model: 'DR40',
+//     registration: 'PH-HLR',
+//     numberOfEngines: 1,
+//     engineType: 'piston' as 'piston',
+//     maxTakeoffWeight: 980,
+//     cruiseSpeed: 105,
+//     fuelConsumption: 20,
+//   },
+//   {
+//     manufacturer: 'Robin',
+//     model: 'DR40',
+//     registration: 'PH-SVT',
+//     numberOfEngines: 1,
+//     engineType: 'piston' as 'piston',
+//     maxTakeoffWeight: 980,
+//     cruiseSpeed: 105,
+//     fuelConsumption: 20,
+//   },
+//   {
+//     manufacturer: 'Boeing',
+//     model: 'B737',
+//     registration: 'PH-BGI',
+//     numberOfEngines: 2,
+//     engineType: 'turboprop' as 'turboprop',
+//     maxTakeoffWeight: 66320,
+//     cruiseSpeed: 460,
+//   }
+// ];

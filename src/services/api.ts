@@ -1,5 +1,11 @@
 import { MetarStation, parseMetar, fromIMetar, normalizeICAO } from "flight-planner";
 import * as turf from '@turf/turf';
+import { Aircraft } from "flight-planner/dist/aircraft";
+
+export async function fetchAircraft(): Promise<Aircraft[]> {
+  const response = await fetch('https://byteflight-worker.ydewid.workers.dev/api/aircraft');
+  return await response.json();
+}
 
 export async function fetchMetarStation(search: string | GeoJSON.BBox): Promise<MetarStation[]> {
   let baseUrl: string;
