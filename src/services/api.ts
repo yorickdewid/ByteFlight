@@ -4,10 +4,10 @@ import * as turf from '@turf/turf';
 export async function fetchMetarStation(search: string | GeoJSON.BBox): Promise<MetarStation[]> {
   let baseUrl: string;
   if (typeof search === 'string') {
-    baseUrl = `https://my-first-worker.laixer.workers.dev/api/metar?ids=${search}&format=json&taf=true`;
+    baseUrl = `https://byteflight-worker.ydewid.workers.dev/api/metar?ids=${search}&format=json&taf=true`;
   } else {
     const bboxReversed = [search[1], search[0], search[3], search[2]];
-    baseUrl = `https://my-first-worker.laixer.workers.dev/api/metar?bbox=${bboxReversed.join(',')}&format=json&taf=true`;
+    baseUrl = `https://byteflight-worker.ydewid.workers.dev/api/metar?bbox=${bboxReversed.join(',')}&format=json&taf=true`;
   }
 
   const response = await fetch(baseUrl);

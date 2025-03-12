@@ -15,7 +15,7 @@ export default class AerodromeService implements AerodromeRepository {
       return aerodrome;
     }
 
-    const response = await fetch(`https://my-first-worker.laixer.workers.dev/api/aerodrome?icao=${icao}`);
+    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?icao=${icao}`);
     const data = await response.json();
 
     const newAerodrome = new Aerodrome(
