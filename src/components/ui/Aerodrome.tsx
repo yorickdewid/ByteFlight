@@ -121,7 +121,10 @@ const AerodromeCard: React.FC<{ data: Aerodrome }> = ({ data }) => (
 
             <div className="flex items-center space-x-2">
               <StatusBadge status={data.metarStation?.metarData.flightRules} />
-              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md border-gray-200">
+              <span className={`text-xs px-2 py-1 rounded-md ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000) > 60
+                ? 'bg-red-100 text-red-600 border-red-200'
+                : 'bg-gray-100 text-gray-600 border-gray-200'
+                }`}>
                 {` ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000)} min ago`}
               </span>
             </div>
