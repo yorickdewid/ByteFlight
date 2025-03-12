@@ -385,27 +385,6 @@ const FlightPlanner = () => {
       setAerodrome(aerodromes as Aerodrome[]);
 
       if (mapRef.current?.isStyleLoaded() && waypoints.length > 0) {
-
-        // export function routePlanFeatureCollection(routeTrip: RouteTrip): GeoJSON.FeatureCollection {
-        //   return featureCollection(routeTrip.route.map(leg => {
-        //     return lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
-        //       start: leg.start.name,
-        //       end: leg.end.name,
-        //       distance: Math.round(leg.distance),
-        //       trueTrack: Math.round(leg.trueTrack),
-        //       // TODO: Add more properties
-        //     });
-        //   }));
-        // }
-
-        // export function waypointFeatureCollection(waypoints: (Aerodrome | ReportingPoint | Waypoint)[]): GeoJSON.FeatureCollection {
-        //   return featureCollection(waypoints.map(waypoint => {
-        //     return point(waypoint.location.geometry.coordinates, {
-        //       name: waypoint.toString(),
-        //     });
-        //   }));
-        // }
-
         const routeSource = mapRef.current.getSource('route');
         if (routeSource) {
           const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
@@ -681,7 +660,7 @@ const FlightPlanner = () => {
                       <tr>
                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heading</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">True Track</th>
                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                         <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel</th>
