@@ -219,6 +219,26 @@ const FlightPlanner = () => {
         }
       });
 
+      mapRef.current?.addLayer({
+        id: 'route-label',
+        type: 'symbol',
+        source: 'route',
+        layout: {
+          'symbol-placement': 'line-center',
+          'text-field': ['concat', ['to-string', ['round', ['get', 'trueTrack']]], '°'],
+          'text-size': 14,
+          'text-font': ['Open Sans Bold'],
+          'text-anchor': 'center',
+          'text-allow-overlap': true,
+          'symbol-spacing': 500
+        },
+        paint: {
+          'text-color': '#000000',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 3,
+        }
+      });
+
       mapRef.current?.addSource('waypoint', {
         type: 'geojson',
         data: {
