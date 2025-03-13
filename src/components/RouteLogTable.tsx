@@ -9,6 +9,29 @@ interface RouteLogTableProps {
 }
 
 const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => {
+  // Calculate ETD/ETA - assuming current time as departure if not provided
+  const formatTime = (date: Date): string => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getETDAndETA = (): { etd: string; eta: string } => {
+    if (!routeTrip || routeTrip.route.length === 0) {
+      return { etd: '--:--', eta: '--:--' };
+    }
+
+    // Using current time as ETD
+    const now = new Date();
+    const etd = formatTime(now);
+
+    // Calculate ETA by adding total duration in minutes
+    const etaDate = new Date(now.getTime() + routeTrip.totalDuration * 60 * 1000);
+    const eta = formatTime(etaDate);
+
+    return { etd, eta };
+  };
+
+  const { etd, eta } = getETDAndETA();
+
   return (
     <div className="absolute top-2 left-2 w-3/4 max-w-3xl bg-white rounded-md border border-gray-200 overflow-hidden z-10">
       <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b border-gray-200">
@@ -17,6 +40,12 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
             ? `${routeTrip.route[0].start.name} → ${routeTrip.route[routeTrip.route.length - 1].end.name}`
             : "Route Log"}
         </h3>
+        {routeTrip && routeTrip.route.length > 0 && (
+          <div className="flex gap-4 text-sm text-gray-600 mt-1">
+            <span>ETD: <span className="font-medium">{etd}</span></span>
+            <span>ETA: <span className="font-medium">{eta}</span></span>
+          </div>
+        )}
         <button
           onClick={onClose}
           className="text-gray-500 hover:text-gray-700"
