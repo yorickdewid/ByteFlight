@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { RouteTrip } from 'flight-planner';
+import { StatusDot } from './ui/Aerodrome'; // Import the StatusDot component
 
 interface RouteLogTableProps {
   routeTrip: RouteTrip | undefined;
@@ -39,8 +40,22 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
             <tbody className="bg-white divide-y divide-gray-200">
               {routeTrip.route.map((leg, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{leg.start.name}</td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{leg.end.name}</td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                    <div className="flex items-center gap-1.5">
+                      {leg.start.metarStation?.metarData.flightRules && (
+                        <StatusDot status={leg.start.metarStation.metarData.flightRules} />
+                      )}
+                      {leg.start.name}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                    <div className="flex items-center gap-1.5">
+                      {leg.end.metarStation?.metarData.flightRules && (
+                        <StatusDot status={leg.end.metarStation.metarData.flightRules} />
+                      )}
+                      {leg.end.name}
+                    </div>
+                  </td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.trueTrack)}°</td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.distance)} NM</td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
