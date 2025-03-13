@@ -161,7 +161,10 @@ const FlightPlanner = () => {
       });
     }
 
-    refreshTimerRef.current = setInterval(refreshMetarData, 30_000);
+    refreshTimerRef.current = setInterval(async () => {
+      await refreshMetarData();
+      // await refreshAerodomeData();
+    }, 60_000);
 
     mapRef.current?.on('moveend', refreshMetarData);
 
@@ -551,7 +554,7 @@ const FlightPlanner = () => {
               <label className="block text-sm font-medium text-gray-700">
                 <div className="flex items-center space-x-1">
                   <Navigation className="w-4 h-4" />
-                  <span>Via Points</span>
+                  <span>Via Waypoints</span>
                 </div>
               </label>
               <textarea

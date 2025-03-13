@@ -2,7 +2,7 @@ import { MetarSection } from "./Metar";
 import { FlightRules, Aerodrome, Frequency, RunwayWindVector } from "flight-planner";
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon } from "lucide-react";
 
-const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
+export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
   const getColor = (status: FlightRules) => {
     switch (status) {
       case FlightRules.VFR:
