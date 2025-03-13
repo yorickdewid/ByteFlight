@@ -167,6 +167,15 @@ const FlightPlanner = () => {
 
     mapRef.current?.on('load', async () => {
       mapRef.current?.addControl(new mapboxgl.NavigationControl());
+      mapRef.current?.addControl(
+        new mapboxgl.GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showUserHeading: true
+        })
+      );
 
       mapRef.current?.addSource('png-tiles', {
         'type': 'raster',
