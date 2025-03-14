@@ -380,6 +380,17 @@ const FlightPlanner = () => {
     const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
     const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
 
+    const queryParams = new URLSearchParams();
+    if (routeForm.aircraft) queryParams.set('craft', routeForm.aircraft);
+    if (routeForm.departure) queryParams.set('dep', routeForm.departure);
+    if (routeForm.arrival) queryParams.set('arr', routeForm.arrival);
+    if (routeForm.alternate) queryParams.set('alt', routeForm.alternate);
+    if (routeForm.via) queryParams.set('via', routeForm.via);
+    if (departureDate) queryParams.set('date', departureDate);
+    if (departureTime) queryParams.set('time', departureTime);
+
+    window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
+
     if (weatherStationRepositoryRef.current) {
       const waypoints = [
         ...routeWaypointDep,
