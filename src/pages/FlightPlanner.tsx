@@ -78,6 +78,30 @@ const FlightPlanner = () => {
     fetchAircraftData();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const aircraftParam = params.get('aircraft');
+    const departureParam = params.get('departure');
+    const arrivalParam = params.get('arrival');
+    const alternateParam = params.get('alternate');
+    const viaParam = params.get('via');
+    const dateParam = params.get('date');
+    const timeParam = params.get('time');
+
+    const newRouteForm = { ...routeForm };
+    if (aircraftParam) newRouteForm.aircraft = aircraftParam;
+    if (departureParam) newRouteForm.departure = departureParam;
+    if (arrivalParam) newRouteForm.arrival = arrivalParam;
+    if (alternateParam) newRouteForm.alternate = alternateParam;
+    if (viaParam) newRouteForm.via = viaParam;
+
+    setRouteForm(newRouteForm);
+
+    if (dateParam) setDepartureDate(dateParam);
+    if (timeParam) setDepartureTime(timeParam);
+  }, []);
+
   const currentLocation = { lat: 51.926517, lon: 4.462456 };
   // const currentLocationPoint = turf.point([currentLocation.lon, currentLocation.lat]);
   // const buffered = turf.buffer(currentLocationPoint, 100, { units: 'kilometers' });
