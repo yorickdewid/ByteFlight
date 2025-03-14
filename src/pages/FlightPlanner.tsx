@@ -373,6 +373,19 @@ const FlightPlanner = () => {
     }
   }, []);
 
+  const updateUrlWithRouteParams = () => {
+    const queryParams = new URLSearchParams();
+    if (routeForm.aircraft) queryParams.set('aircraft', routeForm.aircraft);
+    if (routeForm.departure) queryParams.set('departure', routeForm.departure);
+    if (routeForm.arrival) queryParams.set('arrival', routeForm.arrival);
+    if (routeForm.alternate) queryParams.set('alternate', routeForm.alternate);
+    if (routeForm.via) queryParams.set('via', routeForm.via);
+    if (departureDate) queryParams.set('date', departureDate);
+    if (departureTime) queryParams.set('time', departureTime);
+
+    window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
+  };
+
   const handleCreateRoute = async () => {
     const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
     const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
@@ -380,16 +393,7 @@ const FlightPlanner = () => {
     const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
     const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
 
-    const queryParams = new URLSearchParams();
-    if (routeForm.aircraft) queryParams.set('craft', routeForm.aircraft);
-    if (routeForm.departure) queryParams.set('dep', routeForm.departure);
-    if (routeForm.arrival) queryParams.set('arr', routeForm.arrival);
-    if (routeForm.alternate) queryParams.set('alt', routeForm.alternate);
-    if (routeForm.via) queryParams.set('via', routeForm.via);
-    if (departureDate) queryParams.set('date', departureDate);
-    if (departureTime) queryParams.set('time', departureTime);
-
-    window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
+    updateUrlWithRouteParams();
 
     if (weatherStationRepositoryRef.current) {
       const waypoints = [
@@ -654,11 +658,11 @@ const FlightPlanner = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Sunrise className="w-5 h-5 text-amber-500" />
-                  <span className="text-sm text-gray-600">{timeData.sunrise.time}</span>
+                  <span className="text-sm text-gray-600">{timeData.sunrise.time} LT</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Sunset className="w-5 h-5 text-amber-500" />
-                  <span className="text-sm text-gray-600">{timeData.sunset.time}</span>
+                  <span className="text-sm text-gray-600">{timeData.sunset.time} LT</span>
                 </div>
               </div>
 
