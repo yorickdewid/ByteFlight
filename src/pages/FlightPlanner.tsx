@@ -673,10 +673,10 @@ const FlightPlanner = () => {
                 <span className="text-sm text-gray-500">Est. Duration</span>
                 <div className="text-lg font-semibold">{routeTrip?.totalDuration ? `${Math.round(routeTrip?.totalDuration)}m` : '-'}</div>
               </div>
-              <div>
+              {/* <div>
                 <span className="text-sm text-gray-500">Fuel Consumption</span>
                 <div className="text-lg font-semibold">{routeTrip?.totalFuelConsumption ? `${Math.round(routeTrip?.totalFuelConsumption)} L` : '-'}</div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center space-x-6">

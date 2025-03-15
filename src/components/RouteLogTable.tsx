@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Clock } from 'lucide-react';
 import { RouteTrip } from 'flight-planner';
 import { StatusDot } from './ui/Aerodrome'; // Import the StatusDot component
 
@@ -40,12 +40,6 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
             ? `${routeTrip.route[0].start.name} → ${routeTrip.route[routeTrip.route.length - 1].end.name}`
             : "Route Log"}
         </h3>
-        {routeTrip && routeTrip.route.length > 0 && (
-          <div className="flex gap-4 text-sm text-gray-600 mt-1">
-            <span>ETD: <span className="font-medium">{etd}</span></span>
-            <span>ETA: <span className="font-medium">{eta}</span></span>
-          </div>
-        )}
         <button
           onClick={onClose}
           className="text-gray-500 hover:text-gray-700"
@@ -63,7 +57,7 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">True Track</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel</th>
+                {/* <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel</th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -90,18 +84,18 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                     {leg.performance ? `${Math.floor(leg.performance.duration)} min` : '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                  {/* <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                     {leg.performance?.fuelConsumption ? `${Math.round(leg.performance.fuelConsumption)} L` : '-'}
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-gray-50">
-              <tr>
+            <tfoot>
+              <tr className="bg-gray-50 border-t border-gray-200">
                 <td colSpan={3} className="px-3 py-2 text-sm font-medium text-gray-700 text-right">Total:</td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.round(routeTrip.totalDistance)} NM</td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.floor(routeTrip.totalDuration)} min</td>
-                <td className="px-3 py-2 text-sm font-medium text-gray-700">{routeTrip.totalFuelConsumption ? `${Math.round(routeTrip.totalFuelConsumption)} L` : '-'}</td>
+                {/* <td className="px-3 py-2 text-sm font-medium text-gray-700">{routeTrip.totalFuelConsumption ? `${Math.round(routeTrip.totalFuelConsumption)} L` : '-'}</td> */}
               </tr>
             </tfoot>
           </table>
@@ -109,6 +103,24 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
           <div className="p-4 text-center text-gray-500">No route data available</div>
         )}
       </div>
+
+      {routeTrip && routeTrip.route.length > 0 && (
+        <div className="bg-blue-50 border-t border-blue-200 p-3 flex items-center justify-center gap-8">
+          <div className="flex items-center">
+            <Clock className="w-4 h-4 text-blue-600 mr-2" />
+            <span className="text-sm text-gray-700">ETD: <span className="font-medium text-blue-700">{etd}</span></span>
+          </div>
+          <div className="flex items-center">
+            <Clock className="w-4 h-4 text-blue-600 mr-2" />
+            <span className="text-sm text-gray-700">ETA: <span className="font-medium text-blue-700">{eta}</span></span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-sm text-gray-700">Fuel consumption: <span className="font-medium text-blue-700">
+              {routeTrip.totalFuelConsumption ? `${Math.round(routeTrip.totalFuelConsumption)} Liters` : '-'}
+            </span></span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
