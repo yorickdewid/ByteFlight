@@ -12,7 +12,12 @@ export async function fetchMetarStation(search: string | GeoJSON.BBox): Promise<
   if (typeof search === 'string') {
     baseUrl = `https://byteflight-worker.ydewid.workers.dev/api/metar?ids=${search}&format=json&taf=true`;
   } else {
-    const bboxReversed = [search[1], search[0], search[3], search[2]];
+    const bboxReversed = [
+      parseFloat(search[1].toFixed(2)),
+      parseFloat(search[0].toFixed(2)),
+      parseFloat(search[3].toFixed(2)),
+      parseFloat(search[2].toFixed(2))
+    ];
     baseUrl = `https://byteflight-worker.ydewid.workers.dev/api/metar?bbox=${bboxReversed.join(',')}&format=json&taf=true`;
   }
 
