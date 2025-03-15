@@ -54,6 +54,11 @@ const FlightPlanner = () => {
     via: ''
   });
 
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+  const rightClickCoordsRef = useRef<{ lng: number; lat: number } | null>(null);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState({ left: 0, top: 0 });
+
   useEffect(() => {
     const now = new Date();
     const localDate = now.toISOString().split('T')[0];
@@ -184,6 +189,30 @@ const FlightPlanner = () => {
         closeOnClick: false,
         className: 'metar-popup'
       });
+
+      // Add context menu event listener
+      mapRef.current.on('contextmenu', (e) => {
+        e.preventDefault();
+
+        // Save right-click coordinates
+        rightClickCoordsRef.current = {
+          lng: e.lngLat.lng,
+          lat: e.lngLat.lat
+        };
+
+        // Position and show context menu
+        setContextMenuPos({
+          left: e.point.x,
+          top: e.point.y
+        });
+        setShowContextMenu(true);
+      });
+
+      // Hide context menu when clicking elsewhere
+      mapRef.current.on('click', () => {
+        setShowContextMenu(false);
+      });
+
     }
 
     refreshTimerRef.current = setInterval(async () => {
@@ -390,13 +419,36 @@ const FlightPlanner = () => {
       await refreshMetarData();
     });
 
+    // Add document click handler to close context menu
+    const handleDocumentClick = () => {
+      setShowContextMenu(false);
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+
     return () => {
       if (refreshTimerRef.current) {
         clearInterval(refreshTimerRef.current);
       }
       mapRef.current?.remove()
+      document.removeEventListener('click', handleDocumentClick);
     }
   }, []);
+
+  const addWaypointToRoute = () => {
+    if (rightClickCoordsRef.current) {
+      const { lng, lat } = rightClickCoordsRef.current;
+
+      const formattedLng = lng.toFixed(6);
+      const formattedLat = lat.toFixed(6);
+
+      const waypointStr = `WP(${formattedLng},${formattedLat})`;
+      const newVia = routeForm.via ? `${routeForm.via};${waypointStr}` : waypointStr;
+
+      setRouteForm({ ...routeForm, via: newVia });
+      setShowContextMenu(false);
+    }
+  };
 
   const updateUrlWithRouteParams = () => {
     const queryParams = new URLSearchParams();
@@ -405,8 +457,8 @@ const FlightPlanner = () => {
     if (routeForm.arrival) queryParams.set('arrival', routeForm.arrival);
     if (routeForm.alternate) queryParams.set('alternate', routeForm.alternate);
     if (routeForm.via) queryParams.set('via', routeForm.via);
-    if (departureDate) queryParams.set('date', departureDate);
-    if (departureTime) queryParams.set('time', departureTime);
+    // if (departureDate) queryParams.set('date', departureDate);
+    // if (departureTime) queryParams.set('time', departureTime);
 
     window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
   };
@@ -729,6 +781,27 @@ const FlightPlanner = () => {
         <div className="flex-1 h-full relative">
           <div className="h-full">
             <div id='map-container' ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
+
+            {/* Context Menu */}
+            {showContextMenu && (
+              <div
+                ref={contextMenuRef}
+                className="absolute bg-white shadow-md rounded py-1 z-10 border border-gray-200"
+                style={{
+                  left: contextMenuPos.left,
+                  top: contextMenuPos.top
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center"
+                  onClick={addWaypointToRoute}
+                >
+                  <Navigation className="w-4 h-4 mr-2" />
+                  Add to Route
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Route Log Overlay */}

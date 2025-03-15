@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Clock } from 'lucide-react';
 import { RouteTrip } from 'flight-planner';
-import { StatusDot } from './ui/Aerodrome'; // Import the StatusDot component
+import { StatusDot } from './ui/Aerodrome';
 
 interface RouteLogTableProps {
   routeTrip: RouteTrip | undefined;
