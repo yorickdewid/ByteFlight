@@ -49,6 +49,9 @@ export default class AerodromeService implements AerodromeRepository {
             case 10:
               type = 'Radio'
               break;
+            case 16:
+              type = 'Radio'
+              break;
             case 9:
               type = 'Ground'
               break;
