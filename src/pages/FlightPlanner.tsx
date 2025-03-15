@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 // import { Card, CardContent } from '@/components/ui/card';
 // import { Button } from '@/components/ui/button';
 // import { Input } from '@/components/ui/input';
-import { Calendar, Clock, List, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
+import { Calendar, Clock, List, Loader, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
 import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
 
@@ -44,6 +44,7 @@ const FlightPlanner = () => {
   // Add state for date and time
   const [departureDate, setDepartureDate] = useState<string>('');
   const [departureTime, setDepartureTime] = useState<string>('');
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
 
   const [routeForm, setRouteForm] = useState({
     aircraft: '',
@@ -411,88 +412,96 @@ const FlightPlanner = () => {
   };
 
   const handleCreateRoute = async () => {
-    const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
-    const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
-    const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
-    const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
-    const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
+    setIsRouteLoading(true);
 
-    updateUrlWithRouteParams();
+    try {
+      const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
+      const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
+      const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
+      const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
+      const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
 
-    if (weatherStationRepositoryRef.current) {
-      const waypoints = [
-        ...routeWaypointDep,
-        ...routeWaypointVia,
-        ...routeWaypointArr,
-        ...routeWaypointAlt
-      ]; //, weatherStationRepositoryRef.current, airplane
+      updateUrlWithRouteParams();
 
-      for (const waypoint of waypoints) {
-        if (waypoint instanceof Aerodrome) {
-          const metarStation = await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO);
-          if (metarStation) {
-            waypoint.metarStation = metarStation;
-          } else {
-            const nearestStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
-            if (nearestStation) {
-              waypoint.metarStation = nearestStation;
+      if (weatherStationRepositoryRef.current) {
+        const waypoints = [
+          ...routeWaypointDep,
+          ...routeWaypointVia,
+          ...routeWaypointArr,
+          ...routeWaypointAlt
+        ]; //, weatherStationRepositoryRef.current, airplane
+
+        for (const waypoint of waypoints) {
+          if (waypoint instanceof Aerodrome) {
+            const metarStation = await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO);
+            if (metarStation) {
+              waypoint.metarStation = metarStation;
+            } else {
+              const nearestStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
+              if (nearestStation) {
+                waypoint.metarStation = nearestStation;
+              }
             }
           }
-        }
-        // TODO: If it's a reporting point, find the nearest METAR station
-        // TODO: If it's a waypoint, find the nearest METAR station
-      };
+          // TODO: If it's a reporting point, find the nearest METAR station
+          // TODO: If it's a waypoint, find the nearest METAR station
+        };
 
-      const routeOptions = {
-        altitude: 1500,
-        departureTime: new Date(),
-        aircraft: airplane,
-      };
+        const routeOptions = {
+          altitude: 1500,
+          departureTime: new Date(),
+          aircraft: airplane,
+        };
 
-      const rp = routePlan(waypoints, routeOptions);
-      setRouteTrip(rp);
-      setShowRouteLog(true);
+        const rp = routePlan(waypoints, routeOptions);
+        setRouteTrip(rp);
+        setShowRouteLog(true);
 
-      const aerodromes = waypoints.filter((waypoint, index, self) => waypoint instanceof Aerodrome && index === self.findIndex(w => (w as Aerodrome).ICAO === waypoint.ICAO));
-      setAerodrome(aerodromes as Aerodrome[]);
+        const aerodromes = waypoints.filter((waypoint, index, self) => waypoint instanceof Aerodrome && index === self.findIndex(w => (w as Aerodrome).ICAO === waypoint.ICAO));
+        setAerodrome(aerodromes as Aerodrome[]);
 
-      if (mapRef.current?.isStyleLoaded() && waypoints.length > 0) {
-        const routeSource = mapRef.current.getSource('route');
-        if (routeSource) {
-          const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
-            return turf.lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
-              start: leg.start.name,
-              end: leg.end.name,
-              distance: Math.round(leg.distance),
-              trueTrack: Math.round(leg.trueTrack),
-              // TODO: Add more properties
+        if (mapRef.current?.isStyleLoaded() && waypoints.length > 0) {
+          const routeSource = mapRef.current.getSource('route');
+          if (routeSource) {
+            const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
+              return turf.lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
+                start: leg.start.name,
+                end: leg.end.name,
+                distance: Math.round(leg.distance),
+                trueTrack: Math.round(leg.trueTrack),
+                // TODO: Add more properties
+              });
+            }));
+            (routeSource as mapboxgl.GeoJSONSource).setData(routePlanGeoJSON);
+          }
+
+          const routeWaypointGeoJSON = turf.featureCollection(waypoints.map(waypoint => {
+            return turf.point(waypoint.location.geometry.coordinates, {
+              name: waypoint.toString(),
             });
           }));
-          (routeSource as mapboxgl.GeoJSONSource).setData(routePlanGeoJSON);
-        }
 
-        const routeWaypointGeoJSON = turf.featureCollection(waypoints.map(waypoint => {
-          return turf.point(waypoint.location.geometry.coordinates, {
-            name: waypoint.toString(),
-          });
-        }));
-
-        const waypointSource = mapRef.current.getSource('waypoint');
-        if (waypointSource) {
-          (waypointSource as mapboxgl.GeoJSONSource).setData(routeWaypointGeoJSON);
-        }
-
-        const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
-
-        mapRef.current?.fitBounds(geobbox, {
-          padding: {
-            left: 500,
-            top: 100,
-            right: 100,
-            bottom: 100
+          const waypointSource = mapRef.current.getSource('waypoint');
+          if (waypointSource) {
+            (waypointSource as mapboxgl.GeoJSONSource).setData(routeWaypointGeoJSON);
           }
-        });
+
+          const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
+
+          mapRef.current?.fitBounds(geobbox, {
+            padding: {
+              left: 500,
+              top: 100,
+              right: 100,
+              bottom: 100
+            }
+          });
+        }
       }
+    } catch (error) {
+      console.error("Error creating route:", error);
+    } finally {
+      setIsRouteLoading(false);
     }
   }
 
@@ -629,10 +638,20 @@ const FlightPlanner = () => {
             <button
               onClick={handleCreateRoute}
               type="submit"
-              className={`w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${routeForm.departure && routeForm.arrival ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-              disabled={!routeForm.departure || !routeForm.arrival}
+              className={`w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center ${routeForm.departure && routeForm.arrival && !isRouteLoading
+                ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              disabled={!routeForm.departure || !routeForm.arrival || isRouteLoading}
             >
-              {routeTrip ? "Update Route" : "Calculate Route"}
+              {isRouteLoading ? (
+                <>
+                  <Loader className="w-5 h-5 mr-2 animate-spin" />
+                  <span>Calculating...</span>
+                </>
+              ) : (
+                routeTrip ? "Update Route" : "Calculate Route"
+              )}
             </button>
           </div>
         </div>
