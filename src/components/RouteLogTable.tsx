@@ -9,9 +9,13 @@ interface RouteLogTableProps {
 }
 
 const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => {
-  // Calculate ETD/ETA - assuming current time as departure if not provided
   const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(date.getTime()).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'UTC',
+      hour12: false
+    });
   };
 
   const getETDAndETA = (): { etd: string; eta: string } => {
@@ -19,11 +23,9 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
       return { etd: '--:--', eta: '--:--' };
     }
 
-    // Using current time as ETD
     const now = new Date();
     const etd = formatTime(now);
 
-    // Calculate ETA by adding total duration in minutes
     const etaDate = new Date(now.getTime() + routeTrip.totalDuration * 60 * 1000);
     const eta = formatTime(etaDate);
 
@@ -57,7 +59,6 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">True Track</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                {/* <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fuel</th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -84,9 +85,6 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                     {leg.performance ? `${Math.floor(leg.performance.duration)} min` : '-'}
                   </td>
-                  {/* <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                    {leg.performance?.fuelConsumption ? `${Math.round(leg.performance.fuelConsumption)} L` : '-'}
-                  </td> */}
                 </tr>
               ))}
             </tbody>
@@ -95,7 +93,6 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                 <td colSpan={3} className="px-3 py-2 text-sm font-medium text-gray-700 text-right">Total:</td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.round(routeTrip.totalDistance)} NM</td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.floor(routeTrip.totalDuration)} min</td>
-                {/* <td className="px-3 py-2 text-sm font-medium text-gray-700">{routeTrip.totalFuelConsumption ? `${Math.round(routeTrip.totalFuelConsumption)} L` : '-'}</td> */}
               </tr>
             </tfoot>
           </table>
@@ -108,11 +105,11 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
         <div className="bg-blue-50 border-t border-blue-200 p-3 flex items-center justify-center gap-8">
           <div className="flex items-center">
             <Clock className="w-4 h-4 text-blue-600 mr-2" />
-            <span className="text-sm text-gray-700">ETD: <span className="font-medium text-blue-700">{etd}</span></span>
+            <span className="text-sm text-gray-700">ETD: <span className="font-medium text-blue-700">{etd}</span> UTC</span>
           </div>
           <div className="flex items-center">
             <Clock className="w-4 h-4 text-blue-600 mr-2" />
-            <span className="text-sm text-gray-700">ETA: <span className="font-medium text-blue-700">{eta}</span></span>
+            <span className="text-sm text-gray-700">ETA: <span className="font-medium text-blue-700">{eta}</span> UTC</span>
           </div>
           <div className="flex items-center">
             <span className="text-sm text-gray-700">Fuel consumption: <span className="font-medium text-blue-700">
