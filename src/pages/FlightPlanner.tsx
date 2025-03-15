@@ -543,7 +543,7 @@ const FlightPlanner = () => {
             </div>
 
             {/* Departure and Arrival */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Departure
@@ -552,7 +552,7 @@ const FlightPlanner = () => {
                   type="text"
                   value={routeForm.departure}
                   onChange={(e) => setRouteForm({ ...routeForm, departure: e.target.value })}
-                  placeholder="ICAO or airport name"
+                  placeholder="ICAO"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -565,7 +565,20 @@ const FlightPlanner = () => {
                   type="text"
                   value={routeForm.arrival}
                   onChange={(e) => setRouteForm({ ...routeForm, arrival: e.target.value })}
-                  placeholder="ICAO or airport name"
+                  placeholder="ICAO"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Alternate
+                </label>
+                <input
+                  type="text"
+                  value={routeForm.alternate}
+                  onChange={(e) => setRouteForm({ ...routeForm, alternate: e.target.value })}
+                  placeholder="ICAO"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -601,20 +614,6 @@ const FlightPlanner = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-            </div>
-
-            {/* Alternative Airports */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Alternate
-              </label>
-              <input
-                type="text"
-                value={routeForm.alternate}
-                onChange={(e) => setRouteForm({ ...routeForm, alternate: e.target.value })}
-                placeholder="ICAO"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
             </div>
 
             {/* Route */}
