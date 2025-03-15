@@ -63,6 +63,7 @@ export const MetarSection: React.FC<{ data: MetarData }> = ({ data }) => (
       icon={Wind}
       label="Wind"
       value={formatWind(data)}
+      className="col-span-2"
     />
     <MetarDataRow
       icon={Thermometer}
@@ -83,7 +84,6 @@ export const MetarSection: React.FC<{ data: MetarData }> = ({ data }) => (
       icon={Cloud}
       label="Ceiling"
       value={formatCeiling(data)}
-      className="col-span-2"
     />
   </div>
 );
