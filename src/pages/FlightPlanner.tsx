@@ -39,7 +39,7 @@ const FlightPlanner = () => {
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [showRouteLog, setShowRouteLog] = useState(false);
-  const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
+  // const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
 
   const [departureDate, setDepartureDate] = useState<string>('');
   const [departureTime, setDepartureTime] = useState<string>('');
@@ -461,6 +461,16 @@ const FlightPlanner = () => {
     window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
   };
 
+  const aerodromeFromRoute = (routeTrip: RouteTrip | undefined) => {
+    if (!routeTrip) return [];
+
+    return routeTrip.route.flatMap(leg => [leg.start, leg.end])
+      .filter(waypoint => waypoint instanceof Aerodrome)
+      .filter((aerodrome, index, self) =>
+        index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
+      );
+  }
+
   const handleCreateRoute = async () => {
     setIsRouteLoading(true);
 
@@ -507,14 +517,13 @@ const FlightPlanner = () => {
 
         setShowRouteLog(true);
 
-        // Extract unique aerodromes from the route legs
-        const routeAerodromes = rp.route.flatMap(leg => [leg.start, leg.end])
-          .filter(waypoint => waypoint instanceof Aerodrome)
-          .filter((aerodrome, index, self) =>
-            index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
-          );
+        // const routeAerodromes = rp.route.flatMap(leg => [leg.start, leg.end])
+        //   .filter(waypoint => waypoint instanceof Aerodrome)
+        //   .filter((aerodrome, index, self) =>
+        //     index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
+        //   );
 
-        setAerodrome(routeAerodromes as Aerodrome[]);
+        // setAerodrome(routeAerodromes as Aerodrome[]);
 
         //
         // Update the map with the route and waypoints
@@ -820,7 +829,7 @@ const FlightPlanner = () => {
       <div className="w-80 h-full p-2 shrink-0 border-l border-gray-200 overflow-y-auto">
         <div className="space-y-2">
 
-          {aerodrome.map((aerodrome) => (
+          {aerodromeFromRoute(routeTrip).map((aerodrome) => (
             <AerodromeCard key={aerodrome.ICAO} data={aerodrome} />
           ))}
 
