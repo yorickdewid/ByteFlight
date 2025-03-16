@@ -9,9 +9,9 @@ const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
       case FlightRules.MVFR:
         return 'bg-blue-500';
       case FlightRules.IFR:
-        return 'bg-purple-500';
-      case FlightRules.LIFR:
         return 'bg-red-500';
+      case FlightRules.LIFR:
+        return 'bg-purple-500';
       default:
         return 'bg-gray-500';
     }

@@ -39,7 +39,6 @@ const FlightPlanner = () => {
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [showRouteLog, setShowRouteLog] = useState(false);
-  // const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
 
   const [departureDate, setDepartureDate] = useState<string>('');
   const [departureTime, setDepartureTime] = useState<string>('');
@@ -464,6 +463,7 @@ const FlightPlanner = () => {
   const aerodromeFromRoute = (routeTrip: RouteTrip | undefined) => {
     if (!routeTrip) return [];
 
+    // TODO: This should be a function in the planner
     return routeTrip.route.flatMap(leg => [leg.start, leg.end])
       .filter(waypoint => waypoint instanceof Aerodrome)
       .filter((aerodrome, index, self) =>
@@ -517,20 +517,11 @@ const FlightPlanner = () => {
 
         setShowRouteLog(true);
 
-        // const routeAerodromes = rp.route.flatMap(leg => [leg.start, leg.end])
-        //   .filter(waypoint => waypoint instanceof Aerodrome)
-        //   .filter((aerodrome, index, self) =>
-        //     index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
-        //   );
-
-        // setAerodrome(routeAerodromes as Aerodrome[]);
-
         //
         // Update the map with the route and waypoints
         //
 
-        // TODO: waypoints.length > 1 should be a check for the route being valid, move this to the planner
-        if (mapRef.current?.isStyleLoaded() && waypoints.length > 1) {
+        if (mapRef.current?.isStyleLoaded() && routeWaypointDep.length > 0 && routeWaypointArr.length > 0) {
           const routeSource = mapRef.current.getSource('route');
           if (routeSource) {
             const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
@@ -828,14 +819,9 @@ const FlightPlanner = () => {
       {/* Right Sidebar - Weather Info */}
       <div className="w-80 h-full p-2 shrink-0 border-l border-gray-200 overflow-y-auto">
         <div className="space-y-2">
-
           {aerodromeFromRoute(routeTrip).map((aerodrome) => (
             <AerodromeCard key={aerodrome.ICAO} data={aerodrome} />
           ))}
-
-          {/* {metarData.map((station) => (
-            <StandaloneMetarCard key={station.station} data={station} />
-          ))} */}
         </div>
       </div>
     </div>
