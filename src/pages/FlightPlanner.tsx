@@ -41,7 +41,6 @@ const FlightPlanner = () => {
   const [showRouteLog, setShowRouteLog] = useState(false);
   const [aerodrome, setAerodrome] = useState<Aerodrome[]>([]);
 
-  // Add state for date and time
   const [departureDate, setDepartureDate] = useState<string>('');
   const [departureTime, setDepartureTime] = useState<string>('');
   const [isRouteLoading, setIsRouteLoading] = useState(false);
@@ -190,17 +189,14 @@ const FlightPlanner = () => {
         className: 'metar-popup'
       });
 
-      // Add context menu event listener
       mapRef.current.on('contextmenu', (e) => {
         e.preventDefault();
 
-        // Save right-click coordinates
         rightClickCoordsRef.current = {
           lng: e.lngLat.lng,
           lat: e.lngLat.lat
         };
 
-        // Position and show context menu
         setContextMenuPos({
           left: e.point.x,
           top: e.point.y
@@ -208,7 +204,6 @@ const FlightPlanner = () => {
         setShowContextMenu(true);
       });
 
-      // Hide context menu when clicking elsewhere
       mapRef.current.on('click', () => {
         setShowContextMenu(false);
       });
@@ -279,7 +274,11 @@ const FlightPlanner = () => {
         source: 'route',
         layout: {
           'symbol-placement': 'line-center',
-          'text-field': ['concat', ['to-string', ['round', ['get', 'trueTrack']]], '°'],
+          'text-field': [
+            'concat',
+            ['to-string', ['coalesce', ['get', 'heading'], ['get', 'trueTrack']]],
+            '°'
+          ],
           'text-size': 14,
           'text-font': ['Open Sans Bold'],
           'text-anchor': 'center',
@@ -419,7 +418,6 @@ const FlightPlanner = () => {
       await refreshMetarData();
     });
 
-    // Add document click handler to close context menu
     const handleDocumentClick = () => {
       setShowContextMenu(false);
     };
@@ -481,8 +479,9 @@ const FlightPlanner = () => {
           ...routeWaypointVia,
           ...routeWaypointArr,
           ...routeWaypointAlt
-        ]; //, weatherStationRepositoryRef.current, airplane
+        ];
 
+        // TODO: Turn this into a function
         for (const waypoint of waypoints) {
           if (waypoint instanceof Aerodrome) {
             const metarStation = await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO);
@@ -495,8 +494,6 @@ const FlightPlanner = () => {
               }
             }
           }
-          // TODO: If it's a reporting point, find the nearest METAR station
-          // TODO: If it's a waypoint, find the nearest METAR station
         };
 
         const routeOptions = {
@@ -509,10 +506,16 @@ const FlightPlanner = () => {
         setRouteTrip(rp);
         setShowRouteLog(true);
 
+        // TODO: Make this reactive
         const aerodromes = waypoints.filter((waypoint, index, self) => waypoint instanceof Aerodrome && index === self.findIndex(w => (w as Aerodrome).ICAO === waypoint.ICAO));
         setAerodrome(aerodromes as Aerodrome[]);
 
-        if (mapRef.current?.isStyleLoaded() && waypoints.length > 0) {
+        //
+        // Update the map with the route and waypoints
+        //
+
+        // TODO: waypoints.length > 1 should be a check for the route being valid, move this to the planner
+        if (mapRef.current?.isStyleLoaded() && waypoints.length > 1) {
           const routeSource = mapRef.current.getSource('route');
           if (routeSource) {
             const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
@@ -521,7 +524,8 @@ const FlightPlanner = () => {
                 end: leg.end.name,
                 distance: Math.round(leg.distance),
                 trueTrack: Math.round(leg.trueTrack),
-                // TODO: Add more properties
+                heading: leg.performance ? Math.round(leg.performance.heading || 0) : null,
+                duration: leg.performance ? Math.floor(leg.performance.duration) : 0,
               });
             }));
             (routeSource as mapboxgl.GeoJSONSource).setData(routePlanGeoJSON);
@@ -723,12 +727,8 @@ const FlightPlanner = () => {
               </div>
               <div>
                 <span className="text-sm text-gray-500">Est. Duration</span>
-                <div className="text-lg font-semibold">{routeTrip?.totalDuration ? `${Math.round(routeTrip?.totalDuration)}m` : '-'}</div>
+                <div className="text-lg font-semibold">{routeTrip?.totalDuration ? `${Math.round(routeTrip?.totalDuration)} min` : '-'}</div>
               </div>
-              {/* <div>
-                <span className="text-sm text-gray-500">Fuel Consumption</span>
-                <div className="text-lg font-semibold">{routeTrip?.totalFuelConsumption ? `${Math.round(routeTrip?.totalFuelConsumption)} L` : '-'}</div>
-              </div> */}
             </div>
 
             <div className="flex items-center space-x-6">
