@@ -34,32 +34,74 @@ export default class AerodromeService implements AerodromeRepository {
           // TODO: Use enum
           let type = 'Unknown';
           switch (frequency.type) {
-            case 15:
-              type = 'ATIS'
-              break;
-            case 14:
-              type = 'Tower'
-              break;
-            case 5:
-              type = 'Delivery'
-              break;
             case 0:
               type = 'Approach'
               break;
-            case 10:
-              type = 'Radio'
-              break;
-            case 16:
-              type = 'Radio'
-              break;
-            case 9:
-              type = 'Ground'
+            case 1:
+              type = 'APRON'
               break;
             case 2:
               type = 'Arrival'
               break;
+            case 3:
+              type = 'Center'
+              break;
+            case 4:
+              type = 'CTAF'
+              break;
+            case 5:
+              type = 'Delivery'
+              break;
+            case 6:
+              type = 'Departure'
+              break;
+            case 7:
+              type = 'FIS'
+              break;
+            case 8:
+              type = 'Gliding'
+              break;
+            case 9:
+              type = 'Ground'
+              break;
+            case 10:
+              type = 'Information'
+              break;
+            case 11:
+              type = 'Multicom'
+              break;
+            case 12:
+              type = 'Unicom'
+              break;
+            case 13:
+              type = 'Radar'
+              break;
+            case 14:
+              type = 'Tower'
+              break;
+            case 15:
+              type = 'ATIS'
+              break;
+            case 16:
+              type = 'Radio'
+              break;
             case 17:
               type = 'Other'
+              break;
+            case 18:
+              type = 'AIRMET'
+              break;
+            case 19:
+              type = 'AWOS'
+              break;
+            case 20:
+              type = 'Lights'
+              break;
+            case 21:
+              type = 'VOLMET'
+              break;
+            case 22:
+              type = 'AFIS'
               break;
             default:
               break;
