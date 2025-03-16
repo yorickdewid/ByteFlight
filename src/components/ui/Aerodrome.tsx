@@ -62,13 +62,13 @@ const CardHeader: React.FC<{
 
 const RunwaySection: React.FC<{ runways: RunwayWindVector[] }> = ({ runways }) => (
   <div className="space-y-1">
-    {runways.map((runway, i) => (
-      <div key={runway.runway.designator} className={`flex items-center justify-between p-1.5 rounded ${i == 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
+    {runways.map((runway, index) => (
+      <div key={index} className={`flex items-center justify-between p-1.5 rounded ${index == 0 ? 'bg-green-50' : 'bg-gray-50'}`}>
         <div className="flex items-center gap-1.5">
-          <span className={`text-xs font-medium ${i == 0 ? 'text-green-700' : 'text-gray-700'}`}>
+          <span className={`text-xs font-medium ${index == 0 ? 'text-green-700' : 'text-gray-700'}`}>
             {runway.runway.designator}
           </span>
-          {i == 0 && (
+          {index == 0 && (
             <span className="text-[10px] bg-green-100 text-green-800 px-1 rounded">
               Active
             </span>
@@ -84,12 +84,9 @@ const RunwaySection: React.FC<{ runways: RunwayWindVector[] }> = ({ runways }) =
 
 const FrequencySection: React.FC<{ frequencies: Frequency[] }> = ({ frequencies }) => (
   <div className="space-y-1">
-    {frequencies.map((freq) => (
-      <div key={freq.name} className="flex items-center justify-between p-1.5 py-0 rounded">
-        {/* <div className=""> */}
+    {frequencies.map((freq, index) => (
+      <div key={index} className="flex items-center justify-between p-1.5 py-0 rounded">
         <span className="text-xs font-medium text-gray-700">{freq.type}</span>
-        {/* <span className="text-[10px] text-gray-500">{freq.name}</span> */}
-        {/* </div> */}
         <span className="font-mono text-xs text-gray-600">{freq.value}</span>
       </div>
     ))}
