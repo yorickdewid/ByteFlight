@@ -504,11 +504,17 @@ const FlightPlanner = () => {
 
         const rp = routePlan(waypoints, routeOptions);
         setRouteTrip(rp);
+
         setShowRouteLog(true);
 
-        // TODO: Make this reactive
-        const aerodromes = waypoints.filter((waypoint, index, self) => waypoint instanceof Aerodrome && index === self.findIndex(w => (w as Aerodrome).ICAO === waypoint.ICAO));
-        setAerodrome(aerodromes as Aerodrome[]);
+        // Extract unique aerodromes from the route legs
+        const routeAerodromes = rp.route.flatMap(leg => [leg.start, leg.end])
+          .filter(waypoint => waypoint instanceof Aerodrome)
+          .filter((aerodrome, index, self) =>
+            index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
+          );
+
+        setAerodrome(routeAerodromes as Aerodrome[]);
 
         //
         // Update the map with the route and waypoints
