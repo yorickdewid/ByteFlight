@@ -483,18 +483,18 @@ const FlightPlanner = () => {
 
         // TODO: Turn this into a function
         for (const waypoint of waypoints) {
-          if (waypoint instanceof Aerodrome) {
-            const metarStation = await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO);
-            if (metarStation) {
-              waypoint.metarStation = metarStation;
-            } else {
-              const nearestStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
-              if (nearestStation) {
-                waypoint.metarStation = nearestStation;
-              }
-            }
+          let metarStation = waypoint instanceof Aerodrome
+            ? await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO)
+            : null;
+
+          if (!metarStation) {
+            metarStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
           }
-        };
+
+          if (metarStation) {
+            waypoint.metarStation = metarStation;
+          }
+        }
 
         const routeOptions = {
           altitude: 1500,
@@ -543,10 +543,8 @@ const FlightPlanner = () => {
             });
           }));
 
-          const waypointSource = mapRef.current.getSource('waypoint');
-          if (waypointSource) {
-            (waypointSource as mapboxgl.GeoJSONSource).setData(routeWaypointGeoJSON);
-          }
+          const waypointSource = mapRef.current.getSource('waypoint') as mapboxgl.GeoJSONSource | undefined;
+          if (waypointSource) waypointSource.setData(routeWaypointGeoJSON);
 
           const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
 
