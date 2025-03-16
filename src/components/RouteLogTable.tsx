@@ -58,7 +58,9 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">True Track</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wind</th>
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heading</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -83,7 +85,13 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.trueTrack)}°</td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{Math.round(leg.distance)} NM</td>
                   <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                    {leg.windSpeed && leg.windDirection ? `${Math.round(leg.windDirection)}° ${Math.round(leg.windSpeed)} kt` : '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
                     {leg.performance ? `${Math.floor(leg.performance.duration)} min` : '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                    {leg.performance ? `${Math.round(leg.performance.heading)}°` : '-'}
                   </td>
                 </tr>
               ))}
@@ -92,7 +100,9 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
               <tr className="bg-gray-50 border-t border-gray-200">
                 <td colSpan={3} className="px-3 py-2 text-sm font-medium text-gray-700 text-right">Total:</td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.round(routeTrip.totalDistance)} NM</td>
+                <td className="px-3 py-2 text-sm font-medium text-gray-700"></td>
                 <td className="px-3 py-2 text-sm font-medium text-gray-700">{Math.floor(routeTrip.totalDuration)} min</td>
+                <td className="px-3 py-2 text-sm font-medium text-gray-700"></td>
               </tr>
             </tfoot>
           </table>
