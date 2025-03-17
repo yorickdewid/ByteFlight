@@ -2,6 +2,14 @@ import { MetarStation, parseMetar, fromIMetar, normalizeICAO } from "flight-plan
 import * as turf from '@turf/turf';
 import { Aircraft } from "flight-planner/dist/aircraft";
 
+/**
+ * Fetches a list of aircraft from the ByteFlight API.
+ * 
+ * @async
+ * @function fetchAircraft
+ * @returns {Promise<Aircraft[]>} A promise that resolves to an array of Aircraft objects
+ * @throws {Error} If the network response is not ok
+ */
 export async function fetchAircraft(): Promise<Aircraft[]> {
   const response = await fetch('https://byteflight-worker.ydewid.workers.dev/api/aircraft');
   return await response.json();
@@ -12,6 +20,7 @@ export async function fetchMetarStation(search: string | GeoJSON.BBox): Promise<
   if (typeof search === 'string') {
     baseUrl = `https://byteflight-worker.ydewid.workers.dev/api/metar?ids=${search}&format=json&taf=true`;
   } else {
+    // TODO: Make this into a function
     const bboxReversed = [
       parseFloat(search[1].toFixed(2)),
       parseFloat(search[0].toFixed(2)),

@@ -9,27 +9,23 @@ export default class AerodromeService implements AerodromeRepository {
     this.aerodromes = new Map(aerodromes.map(aerodrome => [aerodrome.ICAO, aerodrome]));
   }
 
-  async findByICAO(icao: string): Promise<Aerodrome | undefined> {
-    const aerodrome = this.aerodromes.get(icao);
-    if (aerodrome) {
-      return aerodrome;
-    }
+  get aerodromesList(): Aerodrome[] {
+    return Array.from(this.aerodromes.values());
+  }
 
-    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?icao=${icao}`);
-    const data = await response.json();
-
-    const newAerodrome = new Aerodrome(
+  mapToAerodrome(data: any): Aerodrome {
+    return new Aerodrome(
       data.name.toLowerCase().split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
       data.icaoCode, // TODO: Normalize ICAO
       turf.point(data.geometry.coordinates),
-      data.runways.map((runway: any) => {
+      data.runways?.map((runway: any) => {
         return {
           designator: runway.designator,
           heading: runway.trueHeading,
         };
-      }),
+      }) || [],
       {
-        frequencies: data.frequencies.map((frequency: any) => {
+        frequencies: data.frequencies?.map((frequency: any) => {
 
           // TODO: Use enum
           let type = 'Unknown';
@@ -114,8 +110,37 @@ export default class AerodromeService implements AerodromeRepository {
           };
         }),
       });
+  }
 
+  async refreshByRadius(location: GeoJSON.Position, distance: number = 50) {
+    const distanceInKm = distance * 1_000;
+    const lat = parseFloat(location[1].toFixed(2));
+    const lon = parseFloat(location[0].toFixed(2));
+    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?pos=${lat},${lon}&dist=${distanceInKm}&limit=200`);
+    const data = await response.json();
 
+    const aerodromes = data.items.map((item: any) => this.mapToAerodrome(item)) as Aerodrome[];
+    aerodromes.forEach(aerodrome => {
+      if (aerodrome.ICAO) {
+        this.aerodromes.set(aerodrome.ICAO, aerodrome);
+      }
+    });
+  }
+
+  async findByICAO(icao: string): Promise<Aerodrome | undefined> {
+    const aerodrome = this.aerodromes.get(icao);
+    if (aerodrome) {
+      return aerodrome;
+    }
+
+    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?search=${icao}&limit=1`);
+    const data = await response.json();
+
+    if (data.items.length === 0) {
+      return undefined;
+    }
+
+    const newAerodrome = this.mapToAerodrome(data.items[0]);
     this.aerodromes.set(newAerodrome.ICAO, newAerodrome);
 
     return newAerodrome;

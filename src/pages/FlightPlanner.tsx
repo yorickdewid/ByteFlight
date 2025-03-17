@@ -155,20 +155,25 @@ const FlightPlanner = () => {
     }));
   }
 
+  const aerodromeFeatureCollection = () => {
+    return turf.featureCollection(airportRepository.aerodromesList.map(aerodrome => {
+      return turf.point(aerodrome.location.geometry.coordinates, {
+        icao: aerodrome.ICAO,
+        name: aerodrome.name,
+      });
+    }));
+  }
+
   const refreshMetarData = async () => {
-    if (!mapRef.current) {
-      return;
-    }
+    if (!mapRef.current) return;
 
     const center = mapRef.current?.getCenter();
     if (center && weatherStationRepositoryRef.current) {
       const centerPoint = turf.point([center.lng, center.lat]);
       await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
 
-      const metarSource = mapRef.current.getSource('metar');
-      if (metarSource) {
-        (metarSource as mapboxgl.GeoJSONSource).setData(metarFeatureCollection());
-      }
+      const metarSource = mapRef.current.getSource('metar') as mapboxgl.GeoJSONSource | undefined;
+      if (metarSource) metarSource.setData(metarFeatureCollection());
     }
   };
 
@@ -214,7 +219,20 @@ const FlightPlanner = () => {
       // await refreshAerodomeData();
     }, 60_000);
 
-    mapRef.current?.on('moveend', refreshMetarData);
+    mapRef.current?.on('moveend', async () => {
+      await refreshMetarData();
+
+      const center = mapRef.current?.getCenter();
+      if (!center) return;
+
+      const centerPoint = turf.point([center.lng, center.lat]);
+      await airportRepository.refreshByRadius(centerPoint.geometry.coordinates, 80);
+
+      if (!mapRef.current) return;
+
+      const aerodromeSource = mapRef.current.getSource('aerodrome') as mapboxgl.GeoJSONSource | undefined;
+      if (aerodromeSource) aerodromeSource.setData(aerodromeFeatureCollection());
+    });
 
     mapRef.current?.on('load', async () => {
       mapRef.current?.addControl(new mapboxgl.NavigationControl());
@@ -228,22 +246,22 @@ const FlightPlanner = () => {
         })
       );
 
-      mapRef.current?.addSource('png-tiles', {
-        'type': 'raster',
-        'tiles': [
-          'https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=2413/aero/latest'
-        ],
-        'tileSize': 256
-      });
+      // mapRef.current?.addSource('png-tiles', {
+      //   'type': 'raster',
+      //   'tiles': [
+      //     'https://nwy-tiles-api.prod.newaydata.com/tiles/{z}/{x}/{y}.png?path=2413/aero/latest'
+      //   ],
+      //   'tileSize': 256
+      // });
 
-      mapRef.current?.addLayer({
-        'id': 'png-tile-layer',
-        'type': 'raster',
-        'source': 'png-tiles',
-        'paint': {
-          'raster-opacity': 1.0
-        }
-      });
+      // mapRef.current?.addLayer({
+      //   'id': 'png-tile-layer',
+      //   'type': 'raster',
+      //   'source': 'png-tiles',
+      //   'paint': {
+      //     'raster-opacity': 1.0
+      //   }
+      // });
 
       mapRef.current?.addSource('route', {
         type: 'geojson',
@@ -337,6 +355,67 @@ const FlightPlanner = () => {
           'circle-translate': [1, 1],
           'circle-translate-anchor': 'viewport',
           'circle-blur': 0.2
+        }
+      });
+
+      mapRef.current?.addSource('aerodrome', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
+
+      mapRef.current?.addLayer({
+        id: 'aerodrome',
+        type: 'symbol',
+        source: 'aerodrome',
+        layout: {
+          'icon-image': 'airport',
+          'icon-size': 1.5,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
+      });
+
+      // Load a custom airport icon that's more visible
+      // mapRef.current?.loadImage(
+      //   'https://raw.githubusercontent.com/mapbox/maki/master/icons/airport-15.svg',
+      //   (error, image) => {
+      //     if (error) throw error;
+      //     if (image && mapRef.current?.hasImage('airport') === false) {
+      //       mapRef.current?.addImage('airport', image);
+      //     }
+      //   }
+      // );
+
+      mapRef.current?.addLayer({
+        id: 'aerodrome-label',
+        type: 'symbol',
+        source: 'aerodrome',
+        layout: {
+          'text-field': ['get', 'icao'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': 12,
+          'text-offset': [0, 1.5],
+          'text-anchor': 'top'
+        },
+        paint: {
+          'text-color': '#000000',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 2
+        }
+      });
+
+      mapRef.current?.on('mouseenter', 'aerodrome', () => {
+        if (mapRef.current) {
+          mapRef.current.getCanvas().style.cursor = 'pointer';
+        }
+      });
+
+      mapRef.current?.on('mouseleave', 'aerodrome', () => {
+        if (mapRef.current) {
+          mapRef.current.getCanvas().style.cursor = '';
         }
       });
 
