@@ -122,8 +122,8 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
             <span className="text-sm text-gray-700">ETA: <span className="font-medium text-blue-700">{eta}</span> UTC</span>
           </div>
           <div className="flex items-center">
-            <span className="text-sm text-gray-700">Fuel consumption: <span className="font-medium text-blue-700">
-              {routeTrip.totalFuelConsumption ? `${Math.round(routeTrip.totalFuelConsumption)} Liters` : '-'}
+            <span className="text-sm text-gray-700">Fuel required: <span className="font-medium text-blue-700">
+              {routeTrip.totalFuelRequired ? `${Math.round(routeTrip.totalFuelRequired)} Liters` : '-'}
             </span></span>
           </div>
         </div>
