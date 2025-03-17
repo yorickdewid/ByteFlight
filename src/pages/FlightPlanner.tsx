@@ -177,6 +177,19 @@ const FlightPlanner = () => {
     }
   };
 
+  const refreshAerodomeData = async () => {
+    if (!mapRef.current) return;
+
+    const center = mapRef.current?.getCenter();
+    if (center) {
+      const centerPoint = turf.point([center.lng, center.lat]);
+      await airportRepository.refreshByRadius(centerPoint.geometry.coordinates, 80);
+
+      const aerodromeSource = mapRef.current.getSource('aerodrome') as mapboxgl.GeoJSONSource | undefined;
+      if (aerodromeSource) aerodromeSource.setData(aerodromeFeatureCollection());
+    }
+  };
+
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
     if (mapContainerRef.current) {
@@ -221,17 +234,7 @@ const FlightPlanner = () => {
 
     mapRef.current?.on('moveend', async () => {
       await refreshMetarData();
-
-      const center = mapRef.current?.getCenter();
-      if (!center) return;
-
-      const centerPoint = turf.point([center.lng, center.lat]);
-      await airportRepository.refreshByRadius(centerPoint.geometry.coordinates, 80);
-
-      if (!mapRef.current) return;
-
-      const aerodromeSource = mapRef.current.getSource('aerodrome') as mapboxgl.GeoJSONSource | undefined;
-      if (aerodromeSource) aerodromeSource.setData(aerodromeFeatureCollection());
+      await refreshAerodomeData();
     });
 
     mapRef.current?.on('load', async () => {
@@ -378,17 +381,6 @@ const FlightPlanner = () => {
         }
       });
 
-      // Load a custom airport icon that's more visible
-      // mapRef.current?.loadImage(
-      //   'https://raw.githubusercontent.com/mapbox/maki/master/icons/airport-15.svg',
-      //   (error, image) => {
-      //     if (error) throw error;
-      //     if (image && mapRef.current?.hasImage('airport') === false) {
-      //       mapRef.current?.addImage('airport', image);
-      //     }
-      //   }
-      // );
-
       mapRef.current?.addLayer({
         id: 'aerodrome-label',
         type: 'symbol',
@@ -494,6 +486,7 @@ const FlightPlanner = () => {
       });
 
       await refreshMetarData();
+      await refreshAerodomeData();
     });
 
     const handleDocumentClick = () => {

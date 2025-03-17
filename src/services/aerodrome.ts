@@ -116,7 +116,7 @@ export default class AerodromeService implements AerodromeRepository {
     const distanceInKm = distance * 1_000;
     const lat = parseFloat(location[1].toFixed(2));
     const lon = parseFloat(location[0].toFixed(2));
-    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?pos=${lat},${lon}&dist=${distanceInKm}&limit=200`);
+    const response = await fetch(`https://byteflight-worker.ydewid.workers.dev/api/aerodrome?pos=${lat},${lon}&dist=${distanceInKm}&type=1&type=2&type=3&type=9&type=5&limit=200`);
     const data = await response.json();
 
     const aerodromes = data.items.map((item: any) => this.mapToAerodrome(item)) as Aerodrome[];
