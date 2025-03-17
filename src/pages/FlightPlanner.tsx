@@ -238,7 +238,7 @@ const FlightPlanner = () => {
     });
 
     mapRef.current?.on('load', async () => {
-      mapRef.current?.addControl(new mapboxgl.NavigationControl());
+      mapRef.current?.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       mapRef.current?.addControl(
         new mapboxgl.GeolocateControl({
           positionOptions: {
@@ -246,8 +246,7 @@ const FlightPlanner = () => {
           },
           trackUserLocation: true,
           showUserHeading: true
-        })
-      );
+        }), 'bottom-right');
 
       // mapRef.current?.addSource('png-tiles', {
       //   'type': 'raster',
