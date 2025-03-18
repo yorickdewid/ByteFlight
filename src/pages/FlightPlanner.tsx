@@ -183,7 +183,7 @@ const FlightPlanner = () => {
     const center = mapRef.current?.getCenter();
     if (center) {
       const centerPoint = turf.point([center.lng, center.lat]);
-      await airportRepository.refreshByRadius(centerPoint.geometry.coordinates, 80);
+      await airportRepository.refreshByRadius(centerPoint.geometry.coordinates, 250);
 
       const aerodromeSource = mapRef.current.getSource('aerodrome') as mapboxgl.GeoJSONSource | undefined;
       if (aerodromeSource) aerodromeSource.setData(aerodromeFeatureCollection());
@@ -238,7 +238,6 @@ const FlightPlanner = () => {
     });
 
     mapRef.current?.on('load', async () => {
-      mapRef.current?.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       mapRef.current?.addControl(
         new mapboxgl.GeolocateControl({
           positionOptions: {
@@ -247,6 +246,7 @@ const FlightPlanner = () => {
           trackUserLocation: true,
           showUserHeading: true
         }), 'bottom-right');
+      mapRef.current?.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
       // mapRef.current?.addSource('png-tiles', {
       //   'type': 'raster',
