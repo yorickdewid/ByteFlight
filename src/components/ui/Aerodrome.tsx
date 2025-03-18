@@ -10,9 +10,9 @@ export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
       case FlightRules.MVFR:
         return 'bg-blue-500';
       case FlightRules.IFR:
-        return 'bg-purple-500';
-      case FlightRules.LIFR:
         return 'bg-red-500';
+      case FlightRules.LIFR:
+        return 'bg-purple-500';
       default:
         return 'bg-gray-500';
     }
@@ -29,9 +29,9 @@ const StatusBadge: React.FC<{ status: FlightRules }> = ({ status }) => {
       case FlightRules.MVFR:
         return 'bg-blue-100 text-blue-800';
       case FlightRules.IFR:
-        return 'bg-purple-100 text-purple-800';
-      case FlightRules.LIFR:
         return 'bg-red-100 text-red-800';
+      case FlightRules.LIFR:
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
