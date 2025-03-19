@@ -106,15 +106,39 @@ const FlightPlanner = () => {
     if (timeParam) setDepartureTime(timeParam);
   }, []);
 
-  const currentLocation = { lat: 51.926517, lon: 4.462456 };
-  // const currentLocationPoint = turf.point([currentLocation.lon, currentLocation.lat]);
-  // const buffered = turf.buffer(currentLocationPoint, 100, { units: 'kilometers' });
-  // if (buffered) {
-  //   const bbox = turf.bbox(buffered);
-  //   const bboxFeature = turf.bboxPolygon(bbox);
-  //   console.log('Buffered bbox feature', JSON.stringify(bboxFeature));
-  //   // console.log('Buffered bbox', bbox);
-  // }
+  // Initialize current location with a default value
+  const [currentLocation, setCurrentLocation] = useState({ lat: 51.926517, lon: 4.462456 });
+
+  // Load location from localStorage when component mounts
+  useEffect(() => {
+    const savedLocation = localStorage.getItem('currentLocation');
+    if (savedLocation) {
+      try {
+        const parsedLocation = JSON.parse(savedLocation);
+        if (parsedLocation &&
+          typeof parsedLocation.lat === 'number' &&
+          typeof parsedLocation.lon === 'number') {
+          setCurrentLocation(parsedLocation);
+        }
+      } catch (error) {
+        console.error('Error parsing saved location:', error);
+      }
+    }
+  }, []);
+
+  // Save location to localStorage when map moves
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.on('moveend', () => {
+        const center = mapRef.current?.getCenter();
+        if (center) {
+          const newLocation = { lat: center.lat, lon: center.lng };
+          setCurrentLocation(newLocation);
+          localStorage.setItem('currentLocation', JSON.stringify(newLocation));
+        }
+      });
+    }
+  }, [mapRef.current]);
 
   const times = SunCalc.getTimes(new Date(), currentLocation.lat, currentLocation.lon);
 
