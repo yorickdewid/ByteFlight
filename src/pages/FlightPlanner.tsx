@@ -503,7 +503,7 @@ const FlightPlanner = () => {
     }
   }, []);
 
-  const addWaypointToRoute = () => {
+  const addWaypointToRoute = async () => {
     if (rightClickCoordsRef.current) {
       const { lng, lat } = rightClickCoordsRef.current;
 
@@ -515,6 +515,8 @@ const FlightPlanner = () => {
 
       setRouteForm({ ...routeForm, via: newVia });
       setShowContextMenu(false);
+
+      await createRoute();
     }
   };
 
@@ -542,92 +544,101 @@ const FlightPlanner = () => {
       );
   }
 
+  const createRoute = async () => {
+    const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
+    const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
+    const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
+    const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
+    const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
+
+    updateUrlWithRouteParams();
+
+    if (weatherStationRepositoryRef.current) {
+      const waypoints = [
+        ...routeWaypointDep,
+        ...routeWaypointVia,
+        ...routeWaypointArr,
+        ...routeWaypointAlt
+      ];
+
+      // TODO: Turn this into a function
+      for (const waypoint of waypoints) {
+        let metarStation = waypoint instanceof Aerodrome
+          ? await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO)
+          : null;
+
+        if (!metarStation) {
+          metarStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
+        }
+
+        if (metarStation) {
+          waypoint.metarStation = metarStation;
+        }
+      }
+
+      const routeOptions = {
+        altitude: 1500,
+        departureTime: new Date(),
+        aircraft: airplane,
+      };
+
+      const rp = routePlan(waypoints, routeOptions);
+      setRouteTrip(rp);
+
+      return rp;
+    }
+  }
+
   const handleCreateRoute = async () => {
     setIsRouteLoading(true);
 
     try {
-      const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
-      const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
-      const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
-      const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
-      const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
+      const rp = await createRoute();
 
-      updateUrlWithRouteParams();
+      setShowRouteLog(true);
 
-      if (weatherStationRepositoryRef.current) {
-        const waypoints = [
-          ...routeWaypointDep,
-          ...routeWaypointVia,
-          ...routeWaypointArr,
-          ...routeWaypointAlt
-        ];
+      //
+      // Update the map with the route and waypoints
+      //
 
-        // TODO: Turn this into a function
-        for (const waypoint of waypoints) {
-          let metarStation = waypoint instanceof Aerodrome
-            ? await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO)
-            : null;
-
-          if (!metarStation) {
-            metarStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
-          }
-
-          if (metarStation) {
-            waypoint.metarStation = metarStation;
-          }
-        }
-
-        const routeOptions = {
-          altitude: 1500,
-          departureTime: new Date(),
-          aircraft: airplane,
-        };
-
-        const rp = routePlan(waypoints, routeOptions);
-        setRouteTrip(rp);
-
-        setShowRouteLog(true);
-
-        //
-        // Update the map with the route and waypoints
-        //
-
-        if (mapRef.current?.isStyleLoaded() && routeWaypointDep.length > 0 && routeWaypointArr.length > 0) {
-          const routeSource = mapRef.current.getSource('route');
-          if (routeSource) {
-            const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
-              return turf.lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
-                start: leg.start.name,
-                end: leg.end.name,
-                distance: Math.round(leg.distance),
-                trueTrack: Math.round(leg.trueTrack),
-                heading: leg.performance ? Math.round(leg.performance.heading || 0) : null,
-                duration: leg.performance ? Math.floor(leg.performance.duration) : 0,
-              });
-            }));
-            (routeSource as mapboxgl.GeoJSONSource).setData(routePlanGeoJSON);
-          }
-
-          const routeWaypointGeoJSON = turf.featureCollection(waypoints.map(waypoint => {
-            return turf.point(waypoint.location.geometry.coordinates, {
-              name: waypoint.toString(),
+      if (mapRef.current?.isStyleLoaded() && rp !== undefined) {
+        const routeSource = mapRef.current.getSource('route') as mapboxgl.GeoJSONSource | undefined;
+        if (routeSource) {
+          const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
+            return turf.lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
+              start: leg.start.name,
+              end: leg.end.name,
+              distance: Math.round(leg.distance),
+              trueTrack: Math.round(leg.trueTrack),
+              heading: leg.performance ? Math.round(leg.performance.heading || 0) : null,
+              duration: leg.performance ? Math.floor(leg.performance.duration) : 0,
             });
           }));
-
-          const waypointSource = mapRef.current.getSource('waypoint') as mapboxgl.GeoJSONSource | undefined;
-          if (waypointSource) waypointSource.setData(routeWaypointGeoJSON);
-
-          const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
-
-          mapRef.current?.fitBounds(geobbox, {
-            padding: {
-              left: 500,
-              top: 100,
-              right: 100,
-              bottom: 100
-            }
-          });
+          routeSource.setData(routePlanGeoJSON);
         }
+
+        const routeWaypointGeoJSON = turf.featureCollection(rp.route.flatMap(leg => [
+          turf.point(leg.start.location.geometry.coordinates, {
+            name: leg.start.toString(),
+          }),
+          turf.point(leg.end.location.geometry.coordinates, {
+            name: leg.end.toString(),
+          })
+        ]));
+
+        const waypointSource = mapRef.current.getSource('waypoint') as mapboxgl.GeoJSONSource | undefined;
+        if (waypointSource) waypointSource.setData(routeWaypointGeoJSON);
+
+        const geobbox = turf.bbox(routeWaypointGeoJSON).slice(0, 4) as [number, number, number, number];
+
+        mapRef.current?.fitBounds(geobbox, {
+          padding: {
+            left: 500,
+            top: 100,
+            right: 100,
+            bottom: 100
+          }
+        });
       }
     } catch (error) {
       console.error("Error creating route:", error);
