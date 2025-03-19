@@ -106,11 +106,8 @@ const FlightPlanner = () => {
     if (timeParam) setDepartureTime(timeParam);
   }, []);
 
-  // Initialize current location with a default value
-  const [currentLocation, setCurrentLocation] = useState({ lat: 51.926517, lon: 4.462456 });
-
-  // Load location from localStorage when component mounts
-  useEffect(() => {
+  // Initialize current location with a value from localStorage or use default
+  const [currentLocation, setCurrentLocation] = useState(() => {
     const savedLocation = localStorage.getItem('currentLocation');
     if (savedLocation) {
       try {
@@ -118,13 +115,15 @@ const FlightPlanner = () => {
         if (parsedLocation &&
           typeof parsedLocation.lat === 'number' &&
           typeof parsedLocation.lon === 'number') {
-          setCurrentLocation(parsedLocation);
+          return parsedLocation;
         }
       } catch (error) {
         console.error('Error parsing saved location:', error);
       }
     }
-  }, []);
+    // Return default value if no valid stored location
+    return { lat: 51.926517, lon: 4.462456 };
+  });
 
   // Save location to localStorage when map moves
   useEffect(() => {
@@ -219,7 +218,7 @@ const FlightPlanner = () => {
     if (mapContainerRef.current) {
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
-        center: [4.5, 52],
+        center: [currentLocation.lon, currentLocation.lat],
         zoom: 7,
         style: 'mapbox://styles/mapbox/light-v11'
       });
