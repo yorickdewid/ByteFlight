@@ -550,6 +550,7 @@ const FlightPlanner = () => {
     const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
     const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
     const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
+    const departureDateObj = new Date(`${departureDate}T${departureTime}Z`);
 
     updateUrlWithRouteParams();
 
@@ -578,7 +579,7 @@ const FlightPlanner = () => {
 
       const routeOptions = {
         altitude: 1500,
-        departureTime: new Date(),
+        departureTime: departureDateObj,
         aircraft: airplane,
       };
 
