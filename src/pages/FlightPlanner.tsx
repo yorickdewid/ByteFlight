@@ -820,18 +820,6 @@ const FlightPlanner = () => {
 
             <div className="flex items-center space-x-6">
 
-              {/* Flight Times */}
-              {/* <div className="flex flex-col justify-center space-y-1">
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">ETD: </span>
-                  {new Date().toISOString().substring(11, 16)}Z
-                </div>
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">ETA: </span>
-                  {routeTrip?.totalDuration ? `${new Date(new Date().getTime() + routeTrip.totalDuration * 60000).toISOString().substring(11, 16)}Z` : '-'}
-                </div>
-              </div> */}
-
               {/* Divider */}
               <div className="h-8 w-px bg-gray-200"></div>
 
