@@ -1,7 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-// import { Card, CardContent } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input';
 import { Calendar, Clock, List, Loader, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
 import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
@@ -9,11 +6,8 @@ import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } fro
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AerodromeService from '@/services/aerodrome';
-// import WeatherService from '@/services/weather';
+import SunCalcService from '@/services/SunCalcService';
 
-import SunCalc from 'suncalc';
-// import SunCard from '@/components/ui/SunCard';
-// import MetarSection from '@/components/ui/Metar';
 import AerodromeCard from '@/components/ui/Aerodrome';
 import RouteLogTable from '@/components/RouteLogTable';
 
@@ -106,7 +100,6 @@ const FlightPlanner = () => {
     if (timeParam) setDepartureTime(timeParam);
   }, []);
 
-  // Initialize current location with a value from localStorage or use default
   const [currentLocation, setCurrentLocation] = useState(() => {
     const savedLocation = localStorage.getItem('currentLocation');
     if (savedLocation) {
@@ -121,11 +114,9 @@ const FlightPlanner = () => {
         console.error('Error parsing saved location:', error);
       }
     }
-    // Return default value if no valid stored location
     return { lat: 51.926517, lon: 4.462456 };
   });
 
-  // Save location to localStorage when map moves
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.on('moveend', () => {
@@ -139,15 +130,7 @@ const FlightPlanner = () => {
     }
   }, [mapRef.current]);
 
-  const times = SunCalc.getTimes(new Date(), currentLocation.lat, currentLocation.lon);
-
-  var sunriseStr = times.sunrise.getHours() + ':' + times.sunrise.getMinutes().toString().padStart(2, '0');
-  var sunsetStr = times.sunset.getHours() + ':' + times.sunset.getMinutes().toString().padStart(2, '0');
-
-  const timeData = {
-    sunrise: { time: sunriseStr, label: 'Local' },
-    sunset: { time: sunsetStr, label: 'Local' }
-  };
+  const sunService = new SunCalcService();
 
   const metarFeatureCollection = () => {
     if (!weatherStationRepositoryRef.current) {
@@ -559,7 +542,7 @@ const FlightPlanner = () => {
   const aerodromeFromRoute = (routeTrip: RouteTrip | undefined) => {
     if (!routeTrip) return [];
 
-    // TODO: This should be a function in the planner
+    // TODO: Call routeTripWaypoints(routeTrip)
     return routeTrip.route.flatMap(leg => [leg.start, leg.end])
       .filter(waypoint => waypoint instanceof Aerodrome)
       .filter((aerodrome, index, self) =>
@@ -606,7 +589,7 @@ const FlightPlanner = () => {
         aircraft: airplane,
       };
 
-      const rp = routePlan(waypoints, routeOptions);
+      const rp = routePlan(waypoints, routeOptions); // TODO: Call planFlightRoute()
       setRouteTrip(rp);
 
       return rp;
@@ -641,6 +624,7 @@ const FlightPlanner = () => {
           routeSource.setData(routePlanGeoJSON);
         }
 
+        // TODO: Call routeTripWaypoints(routeTrip)
         const routeWaypointGeoJSON = turf.featureCollection(rp.route.flatMap(leg => [
           turf.point(leg.start.location.geometry.coordinates, {
             name: leg.start.toString(),
@@ -850,11 +834,11 @@ const FlightPlanner = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Sunrise className="w-5 h-5 text-amber-500" />
-                  <span className="text-sm text-gray-600">{timeData.sunrise.time} LT</span>
+                  <span className="text-sm text-gray-600">{sunService.getSunTimes(currentLocation).sunrise.time} LT</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Sunset className="w-5 h-5 text-amber-500" />
-                  <span className="text-sm text-gray-600">{timeData.sunset.time} LT</span>
+                  <span className="text-sm text-gray-600">{sunService.getSunTimes(currentLocation).sunset.time} LT</span>
                 </div>
               </div>
 
