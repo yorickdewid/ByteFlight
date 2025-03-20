@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Calendar, Clock, List, Loader, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
-import { WeatherService, Aerodrome, parseRouteString, routePlan, RouteTrip } from 'flight-planner';
+import { WeatherService, RouteTrip } from 'flight-planner';
 
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
 import AerodromeService from '@/services/aerodrome';
 import SunCalcService from '@/services/SunCalcService';
+import RouteService, { RouteFormData } from '@/services/RouteService';
 
 import AerodromeCard from '@/components/ui/Aerodrome';
 import RouteLogTable from '@/components/RouteLogTable';
@@ -25,6 +26,8 @@ const FlightPlanner = () => {
 
   const airportRepository = new AerodromeService();
 
+  const routeService = new RouteService(airportRepository, weatherStationRepositoryRef.current);
+
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
@@ -38,7 +41,7 @@ const FlightPlanner = () => {
   const [departureTime, setDepartureTime] = useState<string>('');
   const [isRouteLoading, setIsRouteLoading] = useState(false);
 
-  const [routeForm, setRouteForm] = useState({
+  const [routeForm, setRouteForm] = useState<RouteFormData>({
     aircraft: '',
     departure: '',
     arrival: '',
@@ -63,7 +66,7 @@ const FlightPlanner = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAircraftData = async () => {
+    const loadAircraft = async () => {
       try {
         const data = await fetchAircraft();
         setAircraft(data);
@@ -72,32 +75,12 @@ const FlightPlanner = () => {
         setAircraft([]);
       }
     };
-
-    fetchAircraftData();
+    loadAircraft();
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    const aircraftParam = params.get('aircraft');
-    const departureParam = params.get('departure');
-    const arrivalParam = params.get('arrival');
-    const alternateParam = params.get('alternate');
-    const viaParam = params.get('via');
-    const dateParam = params.get('date');
-    const timeParam = params.get('time');
-
-    const newRouteForm = { ...routeForm };
-    if (aircraftParam) newRouteForm.aircraft = aircraftParam;
-    if (departureParam) newRouteForm.departure = departureParam;
-    if (arrivalParam) newRouteForm.arrival = arrivalParam;
-    if (alternateParam) newRouteForm.alternate = alternateParam;
-    if (viaParam) newRouteForm.via = viaParam;
-
-    setRouteForm(newRouteForm);
-
-    if (dateParam) setDepartureDate(dateParam);
-    if (timeParam) setDepartureTime(timeParam);
+    const initialRouteParams = RouteService.getRouteParamsFromUrl();
+    setRouteForm(initialRouteParams);
   }, []);
 
   const [currentLocation, setCurrentLocation] = useState(() => {
@@ -513,105 +496,38 @@ const FlightPlanner = () => {
     if (rightClickCoordsRef.current) {
       const { lng, lat } = rightClickCoordsRef.current;
 
-      const formattedLng = lng.toFixed(6);
-      const formattedLat = lat.toFixed(6);
+      const newVia = RouteService.addWaypointToVia(routeForm, lng, lat);
+      const updatedForm = { ...routeForm, via: newVia };
 
-      const waypointStr = `WP(${formattedLng},${formattedLat})`;
-      const newVia = routeForm.via ? `${routeForm.via};${waypointStr}` : waypointStr;
-
-      setRouteForm({ ...routeForm, via: newVia });
+      setRouteForm(updatedForm);
       setShowContextMenu(false);
-
-      await createRoute();
     }
   };
-
-  const updateUrlWithRouteParams = () => {
-    const queryParams = new URLSearchParams();
-    if (routeForm.aircraft) queryParams.set('aircraft', routeForm.aircraft);
-    if (routeForm.departure) queryParams.set('departure', routeForm.departure);
-    if (routeForm.arrival) queryParams.set('arrival', routeForm.arrival);
-    if (routeForm.alternate) queryParams.set('alternate', routeForm.alternate);
-    if (routeForm.via) queryParams.set('via', routeForm.via);
-    // if (departureDate) queryParams.set('date', departureDate);
-    // if (departureTime) queryParams.set('time', departureTime);
-
-    window.history.replaceState({}, '', `${window.location.pathname}?${queryParams.toString()}`);
-  };
-
-  const aerodromeFromRoute = (routeTrip: RouteTrip | undefined) => {
-    if (!routeTrip) return [];
-
-    // TODO: Call routeTripWaypoints(routeTrip)
-    return routeTrip.route.flatMap(leg => [leg.start, leg.end])
-      .filter(waypoint => waypoint instanceof Aerodrome)
-      .filter((aerodrome, index, self) =>
-        index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
-      );
-  }
-
-  const createRoute = async () => {
-    const airplane = aircraft.find(aircraft => aircraft.registration === routeForm.aircraft);
-    const routeWaypointDep = await parseRouteString(airportRepository, [], routeForm.departure);
-    const routeWaypointArr = await parseRouteString(airportRepository, [], routeForm.arrival);
-    const routeWaypointAlt = routeForm.alternate !== '' ? await parseRouteString(airportRepository, [], routeForm.alternate) : [];
-    const routeWaypointVia = routeForm.via !== '' ? await parseRouteString(airportRepository, [], routeForm.via) : [];
-    const departureDateObj = new Date(`${departureDate}T${departureTime}Z`);
-
-    updateUrlWithRouteParams();
-
-    if (weatherStationRepositoryRef.current) {
-      const waypoints = [
-        ...routeWaypointDep,
-        ...routeWaypointVia,
-        ...routeWaypointArr,
-        ...routeWaypointAlt
-      ];
-
-      // TODO: Turn this into a function
-      for (const waypoint of waypoints) {
-        let metarStation = waypoint instanceof Aerodrome
-          ? await weatherStationRepositoryRef.current.findByICAO(waypoint.ICAO)
-          : null;
-
-        if (!metarStation) {
-          metarStation = await weatherStationRepositoryRef.current.nearestStation(waypoint.location.geometry);
-        }
-
-        if (metarStation) {
-          waypoint.metarStation = metarStation;
-        }
-      }
-
-      const routeOptions = {
-        altitude: 1500,
-        departureTime: departureDateObj,
-        aircraft: airplane,
-      };
-
-      const rp = routePlan(waypoints, routeOptions); // TODO: Call planFlightRoute()
-      setRouteTrip(rp);
-
-      return rp;
-    }
-  }
 
   const handleCreateRoute = async () => {
     setIsRouteLoading(true);
 
     try {
-      const rp = await createRoute();
+      RouteService.updateUrlWithRouteParams(routeForm);
 
+      const routeTripResult = await routeService.createRoute(
+        routeForm,
+        departureDate,
+        departureTime,
+        aircraft
+      );
+
+      setRouteTrip(routeTripResult);
       setShowRouteLog(true);
 
       //
       // Update the map with the route and waypoints
       //
 
-      if (mapRef.current?.isStyleLoaded() && rp !== undefined) {
+      if (mapRef.current?.isStyleLoaded() && routeTripResult !== undefined) {
         const routeSource = mapRef.current.getSource('route') as mapboxgl.GeoJSONSource | undefined;
         if (routeSource) {
-          const routePlanGeoJSON = turf.featureCollection(rp.route.map(leg => {
+          const routePlanGeoJSON = turf.featureCollection(routeTripResult.route.map(leg => {
             return turf.lineString([leg.start.location.geometry.coordinates, leg.end.location.geometry.coordinates], {
               start: leg.start.name,
               end: leg.end.name,
@@ -625,7 +541,7 @@ const FlightPlanner = () => {
         }
 
         // TODO: Call routeTripWaypoints(routeTrip)
-        const routeWaypointGeoJSON = turf.featureCollection(rp.route.flatMap(leg => [
+        const routeWaypointGeoJSON = turf.featureCollection(routeTripResult.route.flatMap(leg => [
           turf.point(leg.start.location.geometry.coordinates, {
             name: leg.start.toString(),
           }),
@@ -897,7 +813,7 @@ const FlightPlanner = () => {
       {/* Right Sidebar - Weather Info */}
       <div className="w-80 h-full p-2 shrink-0 border-l border-gray-200 overflow-y-auto">
         <div className="space-y-2">
-          {aerodromeFromRoute(routeTrip).map((aerodrome) => (
+          {RouteService.getAerodromesFromRoute(routeTrip).map((aerodrome) => (
             <AerodromeCard key={aerodrome.ICAO} data={aerodrome} />
           ))}
         </div>
