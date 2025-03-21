@@ -24,6 +24,7 @@ const FlightPlanner = () => {
     weatherStationRepositoryRef.current.fetchFunction = fetchMetarStation;
   }
 
+  const sunService = new SunCalcService();
   const airportRepository = new AerodromeService();
 
   const routeService = new RouteService(airportRepository, weatherStationRepositoryRef.current);
@@ -36,11 +37,9 @@ const FlightPlanner = () => {
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [routeTrip, setRouteTrip] = useState<RouteTrip>();
   const [showRouteLog, setShowRouteLog] = useState(false);
-
-  const [departureDate, setDepartureDate] = useState<string>('');
-  const [departureTime, setDepartureTime] = useState<string>('');
+  const [departureDate, setDepartureDate] = useState<string>(''); // TODO: Remove
+  const [departureTime, setDepartureTime] = useState<string>(''); // TODO: Remove
   const [isRouteLoading, setIsRouteLoading] = useState(false);
-
   const [routeForm, setRouteForm] = useState<RouteFormData>({
     aircraft: '',
     departure: '',
@@ -112,8 +111,6 @@ const FlightPlanner = () => {
       });
     }
   }, [mapRef.current]);
-
-  const sunService = new SunCalcService();
 
   const metarFeatureCollection = () => {
     if (!weatherStationRepositoryRef.current) {
