@@ -1,6 +1,7 @@
 import { MetarSection } from "./Metar";
 import { FlightRules, Aerodrome, Frequency, RunwayWindVector } from "flight-planner";
-import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, CloudIcon, RadioIcon, WindIcon } from "lucide-react";
+import { useState } from "react";
 
 export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
   const getColor = (status: FlightRules) => {
@@ -93,44 +94,94 @@ const FrequencySection: React.FC<{ frequencies: Frequency[] }> = ({ frequencies 
   </div>
 );
 
-const AerodromeCard: React.FC<{ data: Aerodrome }> = ({ data }) => (
-  <div className="bg-white rounded-md border border-gray-200">
-    <CardHeader
-      title={data.ICAO}
-      subtitle={data.name}
-      status={data.metarStation?.metarData.flightRules}
-    />
-    <div className="divide-y divide-gray-100">
-      <div className="p-2">
-        <h3 className="text-xs font-medium text-gray-600 mb-1">Runways</h3>
-        <RunwaySection runways={data.runwayWind()} />
-      </div>
-      <div className="p-2">
-        <h3 className="text-xs font-medium text-gray-600 mb-1">Frequencies</h3>
-        <FrequencySection frequencies={data.frequencies} />
-      </div>
-      {data.metarStation && (
-        <div>
-          <div className="px-2 pt-2 pb-1 flex items-center justify-between gap-1.5">
-            <div className="flex items-center space-x-2">
-              <h3 className="text-xs font-medium text-gray-600">{data.metarStation?.station}</h3>
-            </div>
+type TabType = 'metar' | 'runways' | 'frequencies';
 
-            <div className="flex items-center space-x-2">
-              <StatusBadge status={data.metarStation?.metarData.flightRules} />
-              <span className={`text-xs px-2 py-1 rounded-md ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000) > 60
-                ? 'bg-red-100 text-red-600 border-red-200'
-                : 'bg-gray-100 text-gray-600 border-gray-200'
-                }`}>
-                {` ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000)} min ago`}
-              </span>
+const AerodromeCard: React.FC<{ data: Aerodrome }> = ({ data }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('metar');
+
+  return (
+    <div className="bg-white rounded-md border border-gray-200">
+      <CardHeader
+        title={data.ICAO}
+        subtitle={data.name}
+        status={data.metarStation?.metarData.flightRules}
+      />
+
+      <div className="border-b border-gray-200">
+        <nav className="flex -mb-px" aria-label="Tabs">
+          {data.metarStation && (
+            <button
+              onClick={() => setActiveTab('metar')}
+              className={`py-2 px-4 text-xs font-medium border-b-2 flex items-center gap-1.5 ${activeTab === 'metar'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              <CloudIcon className="w-3.5 h-3.5" />
+              Metar
+            </button>
+          )}
+          <button
+            onClick={() => setActiveTab('runways')}
+            className={`py-2 px-4 text-xs font-medium border-b-2 flex items-center gap-1.5 ${activeTab === 'runways'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <WindIcon className="w-3.5 h-3.5" />
+            Runways
+          </button>
+          <button
+            onClick={() => setActiveTab('frequencies')}
+            className={`py-2 px-4 text-xs font-medium border-b-2 flex items-center gap-1.5 ${activeTab === 'frequencies'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            <RadioIcon className="w-3.5 h-3.5" />
+            Frequencies
+          </button>
+        </nav>
+      </div>
+
+      <div className="p-2">
+        {activeTab === 'metar' && data.metarStation && (
+          <div>
+            <div className="pt-0 pb-1 flex items-center justify-between gap-1.5">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-xs font-medium text-gray-600">{data.metarStation?.station}</h3>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <StatusBadge status={data.metarStation?.metarData.flightRules} />
+                <span className={`text-xs px-2 py-1 rounded-md ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000) > 60
+                  ? 'bg-red-100 text-red-600 border-red-200'
+                  : 'bg-gray-100 text-gray-600 border-gray-200'
+                  }`}>
+                  {` ${Math.round((Date.now() - new Date(data.metarStation?.metarData.observationTime).getTime()) / 60000)} min ago`}
+                </span>
+              </div>
             </div>
+            <MetarSection data={data.metarStation?.metarData} />
           </div>
-          <MetarSection data={data.metarStation?.metarData} />
-        </div>
-      )}
+        )}
+
+        {activeTab === 'runways' && (
+          <div>
+            <h3 className="text-xs font-medium text-gray-600 mb-1">Runways</h3>
+            <RunwaySection runways={data.runwayWind()} />
+          </div>
+        )}
+
+        {activeTab === 'frequencies' && (
+          <div>
+            <h3 className="text-xs font-medium text-gray-600 mb-1">Frequencies</h3>
+            <FrequencySection frequencies={data.frequencies} />
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AerodromeCard;
