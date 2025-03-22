@@ -112,6 +112,21 @@ const FlightPlanner = () => {
     }
   }, [mapRef.current]);
 
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Tab is visible, refreshing METAR data...');
+        await refreshMetarData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   const metarFeatureCollection = () => {
     if (!weatherStationRepositoryRef.current) {
       return turf.featureCollection([]);
