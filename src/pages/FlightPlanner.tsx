@@ -444,9 +444,7 @@ const FlightPlanner = () => {
           const coordinates = geometry.coordinates.slice() as [number, number];
           const stationName = feature.properties?.name;
 
-          const station = weatherStationRepositoryRef.current?.stations.find(
-            s => s.station === stationName
-          );
+          const station = weatherStationRepositoryRef.current?.findByICAO(stationName);
 
           let popupContent = `<strong>${stationName}</strong>`;
           if (station) {
