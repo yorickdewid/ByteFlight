@@ -54,18 +54,33 @@ class RouteService {
   }
 
   private async attachMetarDataToWaypoints(waypoints: Waypoint[]): Promise<void> {
-    for (const waypoint of waypoints) {
-      let metarStation = waypoint instanceof Aerodrome
-        ? await this.weatherService.findByICAO(waypoint.ICAO)
-        : null;
+    if (!waypoints.length) return;
 
-      if (!metarStation) {
-        metarStation = await this.weatherService.nearestStation(waypoint.location.geometry);
-      }
+    try {
+      // Convert waypoints to GeoJSON points collection
+      const routeWaypointGeoJSON = turf.featureCollection(waypoints.map(wp =>
+        turf.point(wp.location.geometry.coordinates)
+      ));
 
-      if (metarStation) {
-        waypoint.metarStation = metarStation;
+      // Calculate the bounding box for all waypoints
+      const geobbox = turf.bbox(routeWaypointGeoJSON);
+
+      // Fetch weather data for the route area
+      await this.weatherService.fetchAndUpdateStations(geobbox, 35);
+
+      // Find and attach the nearest weather station to each waypoint
+      for (const waypoint of waypoints) {
+        if (waypoint instanceof Aerodrome) {
+          const metarStation = this.weatherService.findNearestStation(waypoint.location.geometry);
+
+          if (metarStation) {
+            waypoint.metarStation = metarStation;
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error attaching METAR data to waypoints:', error);
+      // Throw or handle error based on application requirements
     }
   }
 
