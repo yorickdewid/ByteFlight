@@ -153,10 +153,18 @@ const FlightPlanner = () => {
   const refreshMetarData = async () => {
     if (!mapRef.current) return;
 
-    const center = mapRef.current?.getCenter();
-    if (center && weatherStationRepositoryRef.current) {
-      const centerPoint = turf.point([center.lng, center.lat]);
-      await weatherStationRepositoryRef.current.fetchStationsByRadius(centerPoint.geometry, 250);
+    if (weatherStationRepositoryRef.current) {
+      const bounds = mapRef.current.getBounds();
+      if (!bounds) return;
+
+      const bbox: GeoJSON.BBox = [
+        bounds.getWest(),
+        bounds.getSouth(),
+        bounds.getEast(),
+        bounds.getNorth()
+      ];
+
+      await weatherStationRepositoryRef.current.fetchAndUpdateStations(bbox);
 
       const metarSource = mapRef.current.getSource('metar') as mapboxgl.GeoJSONSource | undefined;
       if (metarSource) metarSource.setData(metarFeatureCollection());
