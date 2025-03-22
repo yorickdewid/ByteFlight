@@ -58,25 +58,18 @@ class RouteService {
     if (!waypoints.length) return;
 
     try {
-      // Convert waypoints to GeoJSON points collection
       const routeWaypointGeoJSON = turf.featureCollection(waypoints.map(wp =>
         turf.point(wp.location.geometry.coordinates)
       ));
 
-      // Calculate the bounding box for all waypoints
       const geobbox = turf.bbox(routeWaypointGeoJSON);
-
-      // Fetch weather data for the route area
       await this.weatherService.fetchAndUpdateStations(geobbox, 35);
 
-      // Find and attach the nearest weather station to each waypoint
       for (const waypoint of waypoints) {
-        if (waypoint instanceof Aerodrome) {
-          const metarStation = this.weatherService.findNearestStation(waypoint.location.geometry);
+        const metarStation = this.weatherService.findNearestStation(waypoint.location.geometry);
 
-          if (metarStation) {
-            waypoint.metarStation = metarStation;
-          }
+        if (metarStation) {
+          waypoint.metarStation = metarStation;
         }
       }
     } catch (error) {
