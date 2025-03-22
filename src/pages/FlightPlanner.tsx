@@ -220,10 +220,7 @@ const FlightPlanner = () => {
       });
     }
 
-    refreshTimerRef.current = setInterval(async () => {
-      await refreshMetarData();
-      // await refreshAerodomeData();
-    }, 60_000);
+    refreshTimerRef.current = setInterval(refreshMetarData, 1_000 * 60 * 2);
 
     mapRef.current?.on('moveend', async () => {
       await refreshMetarData();
