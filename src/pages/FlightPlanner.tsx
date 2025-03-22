@@ -156,7 +156,7 @@ const FlightPlanner = () => {
     const center = mapRef.current?.getCenter();
     if (center && weatherStationRepositoryRef.current) {
       const centerPoint = turf.point([center.lng, center.lat]);
-      await weatherStationRepositoryRef.current.refreshByRadius(centerPoint.geometry, 250);
+      await weatherStationRepositoryRef.current.fetchStationsByRadius(centerPoint.geometry, 250);
 
       const metarSource = mapRef.current.getSource('metar') as mapboxgl.GeoJSONSource | undefined;
       if (metarSource) metarSource.setData(metarFeatureCollection());
@@ -210,7 +210,6 @@ const FlightPlanner = () => {
       mapRef.current.on('click', () => {
         setShowContextMenu(false);
       });
-
     }
 
     refreshTimerRef.current = setInterval(async () => {

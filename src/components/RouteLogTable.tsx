@@ -25,7 +25,7 @@ const RouteLogTable: React.FC<RouteLogTableProps> = ({ routeTrip, onClose }) => 
 
     const now = new Date();
 
-    const departureDate = routeTrip.departureTime ? new Date(routeTrip.departureTime) : now;
+    const departureDate = routeTrip.departureDate ? new Date(routeTrip.departureDate) : now;
     const etd = formatTime(departureDate);
 
     const etaDate = new Date(departureDate.getTime() + routeTrip.totalDuration * 60 * 1000);

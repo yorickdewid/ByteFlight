@@ -1,6 +1,7 @@
-import { Aerodrome, parseRouteString, routePlan, RouteTrip, Waypoint, WeatherService } from 'flight-planner';
+import { Aerodrome, parseRouteString, planFlightRoute, RouteTrip, Waypoint, WeatherService } from 'flight-planner';
 import { Aircraft } from 'flight-planner/dist/aircraft';
 import AerodromeService from './aerodrome';
+import * as turf from '@turf/turf';
 
 export interface RouteFormData {
   aircraft: string;
@@ -50,7 +51,7 @@ class RouteService {
       aircraft: airplane,
     };
 
-    return routePlan(waypoints, routeOptions);
+    return planFlightRoute(waypoints, routeOptions);
   }
 
   private async attachMetarDataToWaypoints(waypoints: Waypoint[]): Promise<void> {
@@ -80,7 +81,6 @@ class RouteService {
       }
     } catch (error) {
       console.error('Error attaching METAR data to waypoints:', error);
-      // Throw or handle error based on application requirements
     }
   }
 
