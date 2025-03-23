@@ -124,7 +124,6 @@ const FlightPlanner = () => {
   useEffect(() => {
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
-        console.log('Tab is visible, refreshing METAR data...');
         await refreshMetarData();
       }
     };
@@ -231,8 +230,10 @@ const FlightPlanner = () => {
     refreshTimerRef.current = setInterval(refreshMetarData, 1_000 * 60 * 2);
 
     mapRef.current?.on('moveend', async () => {
-      await refreshMetarData();
-      await refreshAerodomeData();
+      await Promise.all([
+        refreshMetarData(),
+        refreshAerodomeData()
+      ]);
     });
 
     mapRef.current?.on('load', async () => {
