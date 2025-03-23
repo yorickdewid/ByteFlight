@@ -481,8 +481,10 @@ const FlightPlanner = () => {
         }
       });
 
-      await refreshMetarData();
-      await refreshAerodomeData();
+      await Promise.all([
+        refreshMetarData(),
+        refreshAerodomeData()
+      ]);
     });
 
     const handleDocumentClick = () => {
@@ -565,10 +567,10 @@ const FlightPlanner = () => {
 
         mapRef.current?.fitBounds(geobbox, {
           padding: {
-            left: 500,
-            top: 100,
-            right: 100,
-            bottom: 100
+            left: 50,
+            top: 50,
+            right: 50,
+            bottom: 50
           }
         });
       }
