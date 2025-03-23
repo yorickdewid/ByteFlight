@@ -71,7 +71,7 @@ const RunwaySection: React.FC<{ runways: RunwayWindVector[] }> = ({ runways }) =
           </span>
           {index == 0 && (
             <span className="text-[10px] bg-green-100 text-green-800 px-1 rounded">
-              Active
+              Favorable
             </span>
           )}
         </div>
