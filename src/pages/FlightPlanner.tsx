@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Calendar, Clock, List, Loader, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
-import { WeatherService, RouteTrip, colorizeFlightRules } from 'flight-planner';
+import { WeatherService, RouteTrip, colorizeFlightRules, routeTripWaypoints } from 'flight-planner';
 
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -550,15 +550,11 @@ const FlightPlanner = () => {
           routeSource.setData(routePlanGeoJSON);
         }
 
-        // TODO: Call routeTripWaypoints(routeTrip)
-        const routeWaypointGeoJSON = turf.featureCollection(routeTripResult.route.flatMap(leg => [
-          turf.point(leg.start.location.geometry.coordinates, {
-            name: leg.start.toString(),
-          }),
-          turf.point(leg.end.location.geometry.coordinates, {
-            name: leg.end.toString(),
-          })
-        ]));
+        const routeWaypointGeoJSON = turf.featureCollection(routeTripWaypoints(routeTripResult).map(waypoint => {
+          return turf.point(waypoint.location.geometry.coordinates, {
+            name: waypoint.toString(),
+          });
+        }));
 
         const waypointSource = mapRef.current.getSource('waypoint') as mapboxgl.GeoJSONSource | undefined;
         if (waypointSource) waypointSource.setData(routeWaypointGeoJSON);
