@@ -90,21 +90,30 @@ const FlightPlanner = () => {
         if (parsedLocation &&
           typeof parsedLocation.lat === 'number' &&
           typeof parsedLocation.lon === 'number') {
-          return parsedLocation;
+          return {
+            lat: parsedLocation.lat,
+            lon: parsedLocation.lon,
+            zoom: parsedLocation.zoom || 7
+          };
         }
       } catch (error) {
         console.error('Error parsing saved location:', error);
       }
     }
-    return { lat: 51.926517, lon: 4.462456 };
+    return { lat: 51.926517, lon: 4.462456, zoom: 7 };
   });
 
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.on('moveend', () => {
         const center = mapRef.current?.getCenter();
-        if (center) {
-          const newLocation = { lat: center.lat, lon: center.lng };
+        const zoom = mapRef.current?.getZoom();
+        if (center && zoom !== undefined) {
+          const newLocation = {
+            lat: center.lat,
+            lon: center.lng,
+            zoom: zoom
+          };
           setCurrentLocation(newLocation);
           localStorage.setItem('currentLocation', JSON.stringify(newLocation));
         }
@@ -189,7 +198,7 @@ const FlightPlanner = () => {
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
         center: [currentLocation.lon, currentLocation.lat],
-        zoom: 7,
+        zoom: currentLocation.zoom,
         style: 'mapbox://styles/mapbox/light-v11'
       });
 
