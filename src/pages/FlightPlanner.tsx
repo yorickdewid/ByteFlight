@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Calendar, Clock, List, Loader, Navigation, Plane, Sunrise, Sunset } from 'lucide-react';
 
-import { WeatherService, RouteTrip } from 'flight-planner';
+import { WeatherService, RouteTrip, colorizeFlightRules } from 'flight-planner';
 
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -133,25 +133,9 @@ const FlightPlanner = () => {
     }
 
     return turf.featureCollection(weatherStationRepositoryRef.current.stations.map(station => {
-      let color = '';
-      switch (station.metarData.flightRules) {
-        case 'VFR':
-          color = 'green';
-          break;
-        case 'MVFR':
-          color = 'blue';
-          break;
-        case 'IFR':
-          color = 'red';
-          break;
-        case 'LIFR':
-        default:
-          color = 'purple';
-      }
-
       return turf.point(station.location.geometry.coordinates, {
         name: station.station,
-        color: color
+        color: colorizeFlightRules(station.metarData.flightRules)
       });
     }));
   }

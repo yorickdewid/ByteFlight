@@ -1,4 +1,4 @@
-import { Aerodrome, parseRouteString, planFlightRoute, RouteTrip, Waypoint, WeatherService } from 'flight-planner';
+import { Aerodrome, parseRouteString, planFlightRoute, RouteTrip, routeTripWaypoints, Waypoint, WeatherService } from 'flight-planner';
 import { Aircraft } from 'flight-planner/dist/aircraft';
 import AerodromeService from './aerodrome';
 import * as turf from '@turf/turf';
@@ -80,8 +80,7 @@ class RouteService {
   static getAerodromesFromRoute(routeTrip: RouteTrip | undefined): Aerodrome[] {
     if (!routeTrip) return [];
 
-    // TODO: Call routeTripWaypoints(routeTrip)
-    return routeTrip.route.flatMap(leg => [leg.start, leg.end])
+    return routeTripWaypoints(routeTrip)
       .filter(waypoint => waypoint instanceof Aerodrome)
       .filter((aerodrome, index, self) =>
         index === self.findIndex(a => (a as Aerodrome).ICAO === (aerodrome as Aerodrome).ICAO)
