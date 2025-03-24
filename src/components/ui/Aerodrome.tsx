@@ -1,22 +1,11 @@
 import { MetarSection } from "./Metar";
-import { FlightRules, Aerodrome, Frequency, RunwayWindVector } from "flight-planner";
+import { FlightRules, Aerodrome, Frequency, RunwayWindVector, colorizeFlightRules } from "flight-planner";
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, CloudIcon, RadioIcon, StarIcon, StarOffIcon, WindIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
   const getColor = (status: FlightRules) => {
-    switch (status) {
-      case FlightRules.VFR:
-        return 'bg-green-500';
-      case FlightRules.MVFR:
-        return 'bg-blue-500';
-      case FlightRules.IFR:
-        return 'bg-red-500';
-      case FlightRules.LIFR:
-        return 'bg-purple-500';
-      default:
-        return 'bg-gray-500';
-    }
+    return `bg-${colorizeFlightRules(status)}-500`;
   };
 
   return <div className={`w-3 h-3 rounded-full ${getColor(status)}`} />;
@@ -24,18 +13,7 @@ export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
 
 const StatusBadge: React.FC<{ status: FlightRules }> = ({ status }) => {
   const getColor = (status: FlightRules) => {
-    switch (status) {
-      case FlightRules.VFR:
-        return 'bg-green-100 text-green-800';
-      case FlightRules.MVFR:
-        return 'bg-blue-100 text-blue-800';
-      case FlightRules.IFR:
-        return 'bg-red-100 text-red-800';
-      case FlightRules.LIFR:
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    return `bg-${colorizeFlightRules(status)}-100 text-${colorizeFlightRules(status)}-800`;
   };
 
   return <span className={`text-xs px-2 py-1 rounded-md ${getColor(status)}`}>{status}</span>;
