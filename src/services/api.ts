@@ -15,6 +15,21 @@ export async function fetchAircraft(): Promise<Aircraft[]> {
   return await response.json();
 }
 
+/**
+ * Fetches METAR station data based on a search string or bounding box.
+ * 
+ * @param search - Either a string containing station ID(s) or a GeoJSON.BBox containing coordinates
+ * @returns A promise that resolves to an array of MetarStation objects
+ * 
+ * @example
+ * // Fetch by station ID
+ * const stations = await fetchMetarStation('KJFK');
+ * 
+ * @example
+ * // Fetch by bounding box
+ * const bbox: GeoJSON.BBox = [-74.2, 40.6, -73.7, 40.9];
+ * const stations = await fetchMetarStation(bbox);
+ */
 export async function fetchMetarStation(search: string | GeoJSON.BBox): Promise<MetarStation[]> {
   let baseUrl: string;
   if (typeof search === 'string') {
