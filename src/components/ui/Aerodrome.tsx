@@ -1,7 +1,7 @@
 import { MetarSection } from "./Metar";
 import { FlightRules, Aerodrome, Frequency, RunwayWindVector } from "flight-planner";
-import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, CloudIcon, RadioIcon, WindIcon } from "lucide-react";
-import { useState } from "react";
+import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, CloudIcon, RadioIcon, StarIcon, StarOffIcon, WindIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const StatusDot: React.FC<{ status: FlightRules }> = ({ status }) => {
   const getColor = (status: FlightRules) => {
@@ -46,18 +46,34 @@ const CardHeader: React.FC<{
   subtitle?: string;
   status?: FlightRules;
   badge?: string;
-}> = ({ title, subtitle, status, badge }) => (
+  isFavorite?: boolean;
+  onFavorite?: () => void;
+}> = ({ title, subtitle, status, badge, isFavorite, onFavorite }) => (
   <div className="px-2 py-1.5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
     <div className="flex items-center gap-2">
       {status && <StatusDot status={status} />}
       <span className="font-medium text-gray-900">{title}</span>
       {subtitle && <span className="text-xs text-gray-500">{subtitle}</span>}
     </div>
-    {badge && (
-      <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-        {badge}
-      </span>
-    )}
+    <div className="flex items-center gap-2">
+      {badge && (
+        <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+          {badge}
+        </span>
+      )}
+      {onFavorite && (
+        <button
+          onClick={onFavorite}
+          className="text-gray-400 hover:text-yellow-500 focus:outline-none transition-colors"
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          {isFavorite ?
+            <StarIcon className="w-4 h-4 fill-yellow-400 text-yellow-400" /> :
+            <StarOffIcon className="w-4 h-4" />
+          }
+        </button>
+      )}
+    </div>
   </div>
 );
 
@@ -98,6 +114,26 @@ type TabType = 'metar' | 'runways' | 'frequencies';
 
 const AerodromeCard: React.FC<{ data: Aerodrome }> = ({ data }) => {
   const [activeTab, setActiveTab] = useState<TabType>('metar');
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem('favoriteAerodromes') || '[]');
+    setIsFavorite(favorites.includes(data.ICAO));
+  }, [data.ICAO]);
+
+  const toggleFavorite = () => {
+    const favorites = JSON.parse(localStorage.getItem('favoriteAerodromes') || '[]');
+
+    if (isFavorite) {
+      const updatedFavorites = favorites.filter((icao: string) => icao !== data.ICAO);
+      localStorage.setItem('favoriteAerodromes', JSON.stringify(updatedFavorites));
+    } else {
+      favorites.push(data.ICAO);
+      localStorage.setItem('favoriteAerodromes', JSON.stringify(favorites));
+    }
+
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <div className="bg-white rounded-md border border-gray-200">
@@ -105,6 +141,8 @@ const AerodromeCard: React.FC<{ data: Aerodrome }> = ({ data }) => {
         title={data.ICAO}
         subtitle={data.name}
         status={data.metarStation?.metarData.flightRules}
+        isFavorite={isFavorite}
+        onFavorite={toggleFavorite}
       />
 
       <div className="border-b border-gray-200">
