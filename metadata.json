@@ -1,0 +1,5 @@
+{
+  "name": "ByteFlight",
+  "description": "A professional-grade pre-flight planner for VFR pilots, featuring vector mapping, weight & balance calculations, and operational navigation logs.",
+  "requestFramePermissions": []
+}
