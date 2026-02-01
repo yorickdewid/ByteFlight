@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Plane, Clock, Search, MapPin, Trash2, PlusCircle, FileText, Scale, Star, 
   Wind, Eye, Cloud, Gauge, Activity, CloudDrizzle, Signal, AlertTriangle, ChevronDown,
-  CloudRain, Waves, RefreshCw, Settings, Loader2, User, LogOut, Key, Sliders
+  CloudRain, Waves, RefreshCw, Loader2, User, LogOut, Key, Sliders, Info, FileWarning
 } from 'lucide-react';
 
 import { mockInitialFlightPlan, mockNavData, APP_VERSION } from './constants';
@@ -72,6 +72,7 @@ export default function App() {
   const [selectedPoint, setSelectedPoint] = useState<NavPoint | null>(null); 
   const [selectedPointMetar, setSelectedPointMetar] = useState<string | null>(null);
   const [selectedPointNotams, setSelectedPointNotams] = useState<Notam[]>([]);
+  const [sidebarTab, setSidebarTab] = useState<'INFO' | 'WX' | 'NOTAM'>('INFO');
   
   // Modals
   const [isNavLogOpen, setIsNavLogOpen] = useState(false);
@@ -93,9 +94,7 @@ export default function App() {
   // System
   const [time, setTime] = useState(new Date());
   const [favorites, setFavorites] = useState(['EHRD']);
-  const [notamsExpanded, setNotamsExpanded] = useState(false);
-  const [commsExpanded, setCommsExpanded] = useState(false);
-
+  
   // Weather Layers
   const [weatherLayers, setWeatherLayers] = useState<WeatherCell[]>([]);
   const [showRadar, setShowRadar] = useState(false);
@@ -192,6 +191,7 @@ export default function App() {
       // Get full detail (e.g. runways/freqs might be lightweight in search results)
       const fullPoint = await ApiService.getNavPointDetail(point.id) || point;
       setSelectedPoint(fullPoint);
+      setSidebarTab('INFO'); // Reset tab on new selection
       setSearchResults([]);
       setSearchQuery('');
       
@@ -393,10 +393,6 @@ export default function App() {
                 <span className="text-slate-200 font-mono font-bold text-sm tracking-tight">{time.toISOString().substring(11,16)} <span className="text-[10px] text-slate-500">UTC</span></span>
             </div>
             
-            <button onClick={() => setIsSettingsOpen(true)} className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-                <Settings size={16} />
-            </button>
-
             {/* Profile Menu Dropdown */}
             <div className="relative" ref={profileMenuRef}>
                 <div 
@@ -453,7 +449,7 @@ export default function App() {
                  <div className="space-y-5">
                     <div>
                         <div className="flex justify-between items-center mb-1.5">
-                             <label className="block text-[11px] font-semibold text-slate-400">Airframe</label>
+                             <label className="block text-[11px] font-semibold text-slate-400">Aircraft</label>
                              <button onClick={() => setIsAircraftManagerOpen(true)} className="text-[10px] text-sky-500 hover:text-sky-400 font-bold uppercase tracking-wider transition-colors">Manage Fleet</button>
                         </div>
                         <select 
@@ -465,7 +461,7 @@ export default function App() {
                             }}
                         >
                             {aircraftProfiles.length === 0 && <option>Loading Fleet...</option>}
-                            {aircraftProfiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {aircraftProfiles.map(p => <option key={p.id} value={p.id}>{p.id} - {p.name}</option>)}
                         </select>
                     </div>
                     <div>
@@ -480,28 +476,6 @@ export default function App() {
                     <div>
                         <Input label="Cruise Altitude (ft)" value={flightPlan.cruiseAltitude} type="number" onChange={e=>setFlightPlan(p=>({...p, cruiseAltitude: parseInt(e.target.value) || 0}))} />
                     </div>
-                    
-                    <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1.5">Fuel Policy</label>
-                        <div className="grid grid-cols-2 gap-2 bg-slate-800/30 p-1.5 rounded-lg border border-slate-700/50">
-                            <button 
-                                onClick={() => setFlightPlan(p => ({...p, reserveType: 'VFR_DAY'}))}
-                                className={`text-[10px] font-bold py-1.5 rounded-md transition-all ${flightPlan.reserveType === 'VFR_DAY' ? 'bg-sky-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'}`}
-                            >
-                                DAY (30m)
-                            </button>
-                            <button 
-                                onClick={() => setFlightPlan(p => ({...p, reserveType: 'VFR_NIGHT'}))}
-                                className={`text-[10px] font-bold py-1.5 rounded-md transition-all ${flightPlan.reserveType === 'VFR_NIGHT' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/30'}`}
-                            >
-                                NIGHT (45m)
-                            </button>
-                        </div>
-                    </div>
-
-                    <button onClick={() => setIsWbOpen(true)} className="w-full h-[36px] bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-xs font-semibold text-slate-300 rounded-lg transition-all flex items-center justify-center gap-2 group hover:text-white">
-                        <Scale size={14} className="text-sky-500 group-hover:scale-110 transition-transform"/> Mass & Balance
-                    </button>
                  </div>
             </PanelBox>
 
@@ -624,11 +598,12 @@ export default function App() {
         </main>
 
         {/* RIGHT PANE: INTELLIGENCE */}
-        <aside className="w-80 bg-slate-900/50 border-l border-slate-800/50 flex flex-col overflow-y-auto z-20 backdrop-blur-sm">
+        <aside className="w-96 bg-slate-900/50 border-l border-slate-800/50 flex flex-col z-20 backdrop-blur-sm">
             {selectedPoint ? (
                 <>
-                    <div className="p-6 border-b border-slate-800/50 bg-slate-800/20">
-                        <div className="flex justify-between items-start mb-2">
+                    {/* Fixed Header */}
+                    <div className="p-5 border-b border-slate-800/50 bg-slate-800/20 shrink-0">
+                        <div className="flex justify-between items-start mb-1">
                             <h1 className="text-3xl font-bold text-white tracking-tight font-sans">{selectedPoint.id}</h1>
                             <div className="flex gap-2">
                                 <button 
@@ -648,102 +623,141 @@ export default function App() {
                         </div>
                         <p className="text-sm text-slate-400 font-medium truncate mb-4">{selectedPoint.name}</p>
                         
-                        <div className="flex justify-between items-center text-[11px] font-medium bg-slate-900/50 p-2 rounded-lg border border-slate-800">
-                            {selectedPoint.elevation !== null && <span className="text-slate-400 flex items-center gap-1.5"><ChevronDown size={12}/> ELEV {selectedPoint.elevation} FT</span>}
-                            {selectedPoint.type === 'AIRPORT' && selectedPoint.sunset && <span className="text-amber-500 flex items-center gap-1.5"><Clock size={12}/> SUNSET {selectedPoint.sunset}Z</span>}
+                        {/* Tab Navigation */}
+                        <div className="grid grid-cols-3 gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-800/50">
+                            {['INFO', 'WX', 'NOTAM'].map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setSidebarTab(tab as any)}
+                                    className={`text-[10px] font-bold py-1.5 rounded-md transition-all uppercase tracking-wide ${
+                                        sidebarTab === tab 
+                                        ? 'bg-slate-700 text-white shadow-sm' 
+                                        : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    <div className="p-5 space-y-8">
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
                         
-                        {/* 1. Runway (Only if Airport) */}
-                        {selectedPoint.type === 'AIRPORT' && (
-                            <div className="space-y-3">
-                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 pl-1"><Activity size={14} className="text-emerald-500"/> Active Runway</h4>
-                                 <ActiveRunway airport={selectedPoint} metar={selectedPointMetar} />
-                            </div>
-                        )}
-
-                        {/* 2. Weather */}
-                        {selectedPointMetar && (
-                            <div className="space-y-3">
-                                 <div className="flex justify-between items-center pl-1">
-                                     <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><CloudDrizzle size={14} className="text-sky-500"/> {selectedPoint.type === 'AIRPORT' ? 'METAR' : `NEAREST (${selectedPoint.nearestMetarStation})`}</h4>
-                                      <span className="text-[10px] text-slate-600 font-mono bg-slate-800 px-1.5 py-0.5 rounded">LIVE</span>
-                                 </div>
-                                 <div className="grid grid-cols-2 gap-3">
-                                     {(() => {
-                                         const m = parseMetar(selectedPointMetar);
-                                         return (
-                                             <>
-                                                <MetarTile label="Wind" value={`${m.wind.dir.toString().padStart(3,'0')}° / ${m.wind.speed}`} subtext="KNOTS" icon={Wind} iconColor="text-teal-400" color="slate" />
-                                                <MetarTile label="Visibility" value={m.vis>=10000?'10+':(m.vis/1000).toFixed(1)} subtext="KM" icon={Eye} color={m.vis<5000?'amber':'slate'} iconColor="text-indigo-400" />
-                                                <MetarTile label="Ceiling" value={m.ceiling.type} subtext={`@ ${m.ceiling.altitude} FT`} icon={Cloud} iconColor="text-sky-400" />
-                                                <MetarTile label="QNH" value={m.qnh} subtext="HPA" icon={Gauge} iconColor="text-amber-400" />
-                                             </>
-                                         )
-                                     })()}
-                                 </div>
-                                 <div className="p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-400 leading-relaxed break-all shadow-inner">
-                                     {selectedPointMetar}
-                                 </div>
-                            </div>
-                        )}
-
-                        {/* 3. Comms / Frequencies */}
-                        {selectedPoint.frequencies && selectedPoint.frequencies.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center pl-1">
-                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><Signal size={14} className="text-violet-500"/> {selectedPoint.type === 'VOR' ? 'NAV FREQ' : 'COMMS'}</h4>
-                                    {selectedPoint.type === 'AIRPORT' && (
-                                        <button onClick={() => setCommsExpanded(!commsExpanded)} className="text-[10px] text-sky-500 hover:text-sky-400 font-bold uppercase transition-colors">
-                                            {commsExpanded ? 'Show Less' : 'Show All'}
-                                        </button>
+                        {/* TAB: INFO */}
+                        {sidebarTab === 'INFO' && (
+                            <>
+                                {/* General Data */}
+                                <div className="flex justify-between items-center text-[11px] font-medium bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                                    {selectedPoint.elevation !== null ? (
+                                        <span className="text-slate-400 flex items-center gap-2"><ChevronDown size={14} className="text-slate-500"/> ELEV <span className="text-white font-mono">{selectedPoint.elevation}</span> FT</span>
+                                    ) : (
+                                        <span className="text-slate-500 italic">Elevation Unknown</span>
+                                    )}
+                                    
+                                    {selectedPoint.type === 'AIRPORT' && selectedPoint.sunset && (
+                                        <span className="text-amber-500 flex items-center gap-2"><Clock size={14}/> SUNSET {selectedPoint.sunset}Z</span>
                                     )}
                                 </div>
-                                {(!commsExpanded && selectedPoint.type === 'AIRPORT') ? (
-                                     <div className="p-3 bg-slate-800/40 border border-slate-700/30 rounded-xl flex justify-between items-center cursor-pointer hover:bg-slate-800/60 transition-colors group" onClick={() => setCommsExpanded(true)}>
-                                         <span className="text-xs text-slate-400 font-medium group-hover:text-slate-300">{selectedPoint.frequencies.length} Frequencies available</span>
-                                         <ChevronDown size={14} className="text-slate-500 group-hover:text-slate-300"/>
-                                     </div>
-                                 ) : (
-                                    <div className="flex flex-col gap-2">
-                                        {selectedPoint.frequencies.map(f => (
-                                            <div key={f.frequency} className="flex justify-between items-center px-4 py-3 bg-slate-800/40 border border-slate-700/30 rounded-xl hover:bg-slate-800/60 transition-colors">
-                                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{f.type}</span>
-                                                <span className="text-sm font-mono text-white font-bold">{f.frequency}</span>
-                                            </div>
-                                        ))}
+
+                                {/* Active Runway */}
+                                {selectedPoint.type === 'AIRPORT' && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 pl-1"><Activity size={14} className="text-emerald-500"/> Active Runway</h4>
+                                        <ActiveRunway airport={selectedPoint} metar={selectedPointMetar} />
                                     </div>
-                                 )}
-                            </div>
+                                )}
+
+                                {/* Comms / Frequencies */}
+                                {selectedPoint.frequencies && selectedPoint.frequencies.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 pl-1"><Signal size={14} className="text-violet-500"/> {selectedPoint.type === 'VOR' ? 'NAV FREQ' : 'COMMS'}</h4>
+                                        <div className="flex flex-col gap-2">
+                                            {selectedPoint.frequencies.map(f => (
+                                                <div key={f.frequency} className="flex justify-between items-center px-4 py-3 bg-slate-800/40 border border-slate-700/30 rounded-xl hover:bg-slate-800/60 transition-colors">
+                                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{f.type}</span>
+                                                    <span className="text-sm font-mono text-white font-bold">{f.frequency}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {selectedPoint.type !== 'AIRPORT' && !selectedPoint.frequencies && (
+                                    <div className="p-8 text-center border border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
+                                        No additional information available for this waypoint.
+                                    </div>
+                                )}
+                            </>
                         )}
-                         
-                        {/* 4. NOTAMs */}
-                        {selectedPoint.type === 'AIRPORT' && (
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center pl-1">
-                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><AlertTriangle size={14} className="text-amber-500"/> Notices</h4>
-                                    <button onClick={() => setNotamsExpanded(!notamsExpanded)} className="text-[10px] text-sky-500 hover:text-sky-400 font-bold uppercase transition-colors">
-                                        {notamsExpanded ? 'Show Less' : 'Show All'}
-                                    </button>
-                                </div>
-                                 {!notamsExpanded ? (
-                                     <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex justify-between items-center cursor-pointer hover:bg-amber-500/10 transition-colors group" onClick={() => setNotamsExpanded(true)}>
-                                         <span className="text-xs text-amber-500/80 font-medium">{selectedPointNotams.length} Active Notices</span>
-                                         <ChevronDown size={14} className="text-amber-500/50 group-hover:text-amber-500"/>
-                                     </div>
-                                 ) : (
-                                     <div className="space-y-2">
-                                         {selectedPointNotams.map(n => (
-                                             <div key={n.id} className="p-3 bg-slate-800/40 border-l-2 border-amber-500/50 text-xs text-slate-400 leading-relaxed rounded-r-xl">
-                                                 <span className="font-bold text-amber-500 block mb-1">{n.id}</span>
-                                                 {n.text}
+
+                        {/* TAB: WX */}
+                        {sidebarTab === 'WX' && (
+                            <>
+                                {selectedPointMetar ? (
+                                    <div className="space-y-4">
+                                         <div className="flex justify-between items-center px-1">
+                                             <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><CloudDrizzle size={14} className="text-sky-500"/> {selectedPoint.type === 'AIRPORT' ? 'METAR' : `NEAREST (${selectedPoint.nearestMetarStation})`}</h4>
+                                              <span className="text-[10px] text-slate-600 font-mono bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">LIVE</span>
+                                         </div>
+                                         <div className="grid grid-cols-2 gap-3">
+                                             {(() => {
+                                                 const m = parseMetar(selectedPointMetar);
+                                                 return (
+                                                     <>
+                                                        <MetarTile label="Wind" value={`${m.wind.dir.toString().padStart(3,'0')}° / ${m.wind.speed}`} subtext="KNOTS" icon={Wind} iconColor="text-teal-400" color="slate" />
+                                                        <MetarTile label="Visibility" value={m.vis>=10000?'10+':(m.vis/1000).toFixed(1)} subtext="KM" icon={Eye} color={m.vis<5000?'amber':'slate'} iconColor="text-indigo-400" />
+                                                        <MetarTile label="Ceiling" value={m.ceiling.type} subtext={`@ ${m.ceiling.altitude} FT`} icon={Cloud} iconColor="text-sky-400" />
+                                                        <MetarTile label="QNH" value={m.qnh} subtext="HPA" icon={Gauge} iconColor="text-amber-400" />
+                                                     </>
+                                                 )
+                                             })()}
+                                         </div>
+                                         <div className="p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all shadow-inner">
+                                             {selectedPointMetar}
+                                         </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                                        <CloudDrizzle size={32} className="mb-3 opacity-20"/>
+                                        <p className="text-xs">No Weather Data Available</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* TAB: NOTAMS */}
+                        {sidebarTab === 'NOTAM' && (
+                            <>
+                                {selectedPoint.type === 'AIRPORT' ? (
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center px-1">
+                                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><AlertTriangle size={14} className="text-amber-500"/> Active Notices</h4>
+                                            <span className="text-[10px] font-bold text-amber-500 bg-amber-900/10 px-2 py-0.5 rounded-full border border-amber-900/30">{selectedPointNotams.length}</span>
+                                        </div>
+                                        {selectedPointNotams.length > 0 ? (
+                                             <div className="space-y-3">
+                                                 {selectedPointNotams.map(n => (
+                                                     <div key={n.id} className="p-3 bg-slate-800/40 border-l-2 border-amber-500/50 text-xs text-slate-400 leading-relaxed rounded-r-xl hover:bg-slate-800/60 transition-colors">
+                                                         <span className="font-bold text-amber-500 block mb-1.5">{n.id}</span>
+                                                         {n.text}
+                                                     </div>
+                                                 ))}
                                              </div>
-                                         ))}
-                                     </div>
-                                 )}
-                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-10 text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                                                <Info size={24} className="mb-2 opacity-30"/>
+                                                <p className="text-xs">No active NOTAMs found.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                     <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                                        <FileWarning size={32} className="mb-3 opacity-20"/>
+                                        <p className="text-xs text-center max-w-[200px]">NOTAMs are typically only available for Aerodromes.</p>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </>
@@ -772,7 +786,7 @@ export default function App() {
       {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} onClose={() => setIsNavLogOpen(false)} />}
       {isWbOpen && <WeightBalanceModal aircraft={flightPlan.aircraft} payload={flightPlan.payload} onClose={() => setIsWbOpen(false)} onUpdatePayload={(pl) => setFlightPlan(p => ({...p, payload: pl}))} />}
       {isAircraftManagerOpen && <AircraftManagerModal isOpen={isAircraftManagerOpen} aircraftList={aircraftProfiles} onClose={() => setIsAircraftManagerOpen(false)} onSave={handleSaveAircraft} onDelete={handleDeleteAircraft} />}
-      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} fuelPolicy={flightPlan.reserveType} onSetFuelPolicy={(type) => setFlightPlan(p => ({...p, reserveType: type}))} />}
       {isPasswordModalOpen && <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />}
     </div>
   );

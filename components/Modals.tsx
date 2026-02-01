@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plane, Edit2, Trash2, PlusCircle, X, Scale, Layers, ChevronRight, Info, Lock, Moon, Sun, Monitor, Ruler, Map, Shield } from 'lucide-react';
+import { Plane, Edit2, Trash2, PlusCircle, X, Scale, Layers, ChevronRight, Info, Lock, Moon, Sun, Monitor, Ruler, Map, Shield, Fuel } from 'lucide-react';
 import { AircraftProfile, FlightPlan, Payload } from '../types';
 import { calculateDistance, calculateBearing } from '../utils';
 import { Button, Input, SystemAlert } from './UI';
@@ -419,7 +419,12 @@ export const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => voi
     );
 };
 
-export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+export const SettingsModal: React.FC<{ 
+    isOpen: boolean; 
+    onClose: () => void;
+    fuelPolicy: 'VFR_DAY' | 'VFR_NIGHT';
+    onSetFuelPolicy: (val: 'VFR_DAY' | 'VFR_NIGHT') => void;
+}> = ({ isOpen, onClose, fuelPolicy, onSetFuelPolicy }) => {
     const [activeTab, setActiveTab] = useState('general');
 
     if (!isOpen) return null;
@@ -471,6 +476,27 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
                                         </div>
                                     </div>
                                     <p className="text-xs text-slate-500 mt-2">Light mode is currently disabled for night-flight preservation.</p>
+                                </div>
+                                
+                                <div className="pt-4 border-t border-slate-800">
+                                    <label className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2"><Fuel size={14} className="text-indigo-400"/> Fuel Policy</label>
+                                    <p className="text-xs text-slate-500 mb-3">Minimum reserve fuel required by regulations.</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => onSetFuelPolicy('VFR_DAY')}
+                                            className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${fuelPolicy === 'VFR_DAY' ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg' : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800'}`}
+                                        >
+                                            <span className="text-sm font-bold">VFR Day</span>
+                                            <span className="text-[10px] font-mono opacity-80 bg-black/20 px-2 py-0.5 rounded">30 MIN</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => onSetFuelPolicy('VFR_NIGHT')}
+                                            className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${fuelPolicy === 'VFR_NIGHT' ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg' : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800'}`}
+                                        >
+                                            <span className="text-sm font-bold">VFR Night</span>
+                                            <span className="text-[10px] font-mono opacity-80 bg-black/20 px-2 py-0.5 rounded">45 MIN</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
