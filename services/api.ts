@@ -35,12 +35,12 @@ export const ApiService = {
 
   // --- Lookup & Data Endpoints ---
   async lookupNavPoint(query: string): Promise<NavPoint[]> {
-    await delay(300); 
+    await delay(300);
     const q = query.toUpperCase();
     if (q.length < 2) return [];
-    
+
     // Simulate simple search
-    return Object.values(mockNavData).filter(a => 
+    return Object.values(mockNavData).filter(a =>
       a.id.includes(q) || a.name.toUpperCase().includes(q)
     );
   },
@@ -56,7 +56,7 @@ export const ApiService = {
     // In reality: GET /api/metar/:icao
     const pt = mockNavData[icao.toUpperCase()];
     if (pt?.metar) return pt.metar;
-    
+
     // Check for "Nearest" logic if typical logic dictates
     return null;
   },
@@ -66,6 +66,6 @@ export const ApiService = {
     await delay(400);
     // In reality: GET /api/notam/:icao
     // For mock, return static list if it matches or just return all for demo
-    return mockNotams; 
+    return mockNotams;
   }
 };

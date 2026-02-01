@@ -2,25 +2,25 @@ import { AircraftProfile, NavPoint, Notam, FlightPlan } from './types';
 
 export const APP_VERSION = "v4.14-BETA-RC3";
 // TODO: Replace with your own Mapbox Access Token
-export const MAPBOX_TOKEN = "pk.eyJ1IjoiZGVtb3VzZXIiLCJhIjoiY2x4b3F4ZmY5MGRwbzJqcXl6bnF6bXF6NyJ9.P1-uV5u2qQ_eWzd-lq6b5w"; 
+export const MAPBOX_TOKEN = "pk.eyJ1IjoiZGVtb3VzZXIiLCJhIjoiY2x4b3F4ZmY5MGRwbzJqcXl6bnF6bXF6NyJ9.P1-uV5u2qQ_eWzd-lq6b5w";
 
 export const defaultAircraftProfiles: AircraftProfile[] = [
-  { 
-    id: 'PH-VCR', 
-    name: 'Robin DR400/140B', 
-    cruiseSpeed: 110, 
-    fuelBurn: 35, 
+  {
+    id: 'PH-VCR',
+    name: 'Robin DR400/140B',
+    cruiseSpeed: 110,
+    fuelBurn: 35,
     usableFuel: 110,
-    emptyWeight: 600, 
+    emptyWeight: 600,
     maxTakeoffMass: 1000,
     cgMin: 0.2, cgMax: 0.8,
     armPilot: 0.4, armPax: 0.4, armBaggage: 1.1, armFuel: 0.8
-  }, 
-  { 
-    id: 'PH-XYZ', 
-    name: 'Piper PA-28-181', 
-    cruiseSpeed: 105, 
-    fuelBurn: 38, 
+  },
+  {
+    id: 'PH-XYZ',
+    name: 'Piper PA-28-181',
+    cruiseSpeed: 105,
+    fuelBurn: 38,
     usableFuel: 136,
     emptyWeight: 710,
     maxTakeoffMass: 1157,
@@ -39,11 +39,11 @@ export const mockNavData: Record<string, NavPoint> = {
     sunset: '19:45',
     magVar: 1,
     runways: [
-      { id: '06', length: 2200, width: 45, surface: 'Asphalt', trueHeading: 59 }, 
+      { id: '06', length: 2200, width: 45, surface: 'Asphalt', trueHeading: 59 },
       { id: '24', length: 2200, width: 45, surface: 'Asphalt', trueHeading: 239 }
     ],
     frequencies: [
-      { type: 'TWR', frequency: '118.205' }, 
+      { type: 'TWR', frequency: '118.205' },
       { type: 'ATIS', frequency: '131.355' },
       { type: 'GND', frequency: '121.905' }
     ],
@@ -59,7 +59,7 @@ export const mockNavData: Record<string, NavPoint> = {
     sunset: '19:48',
     magVar: 1,
     runways: [
-      { id: '18R', length: 3800, width: 60, surface: 'Asphalt', trueHeading: 182 }, 
+      { id: '18R', length: 3800, width: 60, surface: 'Asphalt', trueHeading: 182 },
       { id: '36L', length: 3800, width: 60, surface: 'Asphalt', trueHeading: 2 },
       { id: '27', length: 3800, width: 60, surface: 'Asphalt', trueHeading: 270 }
     ],
@@ -150,7 +150,7 @@ export const mockInitialFlightPlan: FlightPlan = {
 };
 
 export const mockNotams: Notam[] = [
-    { id: 'B0123/25', text: 'B0123/25 NOTAMN Q) EHAA/QMRXX/IV/NBO/A/000/999/5157N00426E005 A) EHRD B) 2505140800 C) 2508141700 EST E) RUNWAY 06/24 WIP. EXPECT DELAYS.' },
-    { id: 'D0444/25', text: 'D0444/25 NOTAMN Q) EHAA/QWPLW/IV/M/W/000/030/5152N00427E002 A) EHRD B) 2505140500 C) 2505142100 E) PJE WILL TAKE PLACE AT ROTTERDAM/THE HAGUE AP. RADIUS 2NM CENTER 5157N00426E. ACT SUBJ ATC.' },
-    { id: 'A1234/25', text: 'A1234/25 NOTAMN Q) EHAA/QFAXX/IV/NBO/A/000/999/5157N00426E005 A) EHRD B) 2505140000 C) PERM E) EASA COMPLIANCE: AD REF CODE 4C.' },
+  { id: 'B0123/25', text: 'B0123/25 NOTAMN Q) EHAA/QMRXX/IV/NBO/A/000/999/5157N00426E005 A) EHRD B) 2505140800 C) 2508141700 EST E) RUNWAY 06/24 WIP. EXPECT DELAYS.' },
+  { id: 'D0444/25', text: 'D0444/25 NOTAMN Q) EHAA/QWPLW/IV/M/W/000/030/5152N00427E002 A) EHRD B) 2505140500 C) 2505142100 E) PJE WILL TAKE PLACE AT ROTTERDAM/THE HAGUE AP. RADIUS 2NM CENTER 5157N00426E. ACT SUBJ ATC.' },
+  { id: 'A1234/25', text: 'A1234/25 NOTAMN Q) EHAA/QFAXX/IV/NBO/A/000/999/5157N00426E005 A) EHRD B) 2505140000 C) PERM E) EASA COMPLIANCE: AD REF CODE 4C.' },
 ];

@@ -1,4 +1,3 @@
-
 export interface AircraftProfile {
   id: string;
   name: string;
@@ -83,19 +82,19 @@ export interface ParsedMetar {
 }
 
 export interface Notam {
-    id: string;
-    text: string;
+  id: string;
+  text: string;
 }
 
 export interface WindVector {
-    dir: number;
-    spd: number;
+  dir: number;
+  spd: number;
 }
 
 export interface WeatherCell {
-    id: string;
-    type: 'PRECIP' | 'TURB';
-    intensity: 'LIGHT' | 'MODERATE' | 'SEVERE';
-    polygons: { lat: number; lon: number }[];
-    timestamp: number;
+  id: string;
+  type: 'PRECIP' | 'TURB';
+  intensity: 'LIGHT' | 'MODERATE' | 'SEVERE';
+  polygons: { lat: number; lon: number }[];
+  timestamp: number;
 }
