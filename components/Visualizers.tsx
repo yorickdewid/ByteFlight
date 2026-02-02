@@ -29,11 +29,7 @@ interface VectorMapProps {
 
 export const VectorMap: React.FC<VectorMapProps> = ({
   flightPlan,
-  selectedPoint,
-  weatherLayers,
   airports,
-  showRadar,
-  showTurb,
   onCenterMap,
   onWaypointMove,
   onWaypointUpdate,
