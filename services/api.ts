@@ -1,4 +1,4 @@
-import { AircraftProfile, NavPoint, Notam, ParsedMetar } from '../types';
+import { AircraftProfile, NavPoint, Notam } from '../types';
 import { mockNavData, mockNotams, defaultAircraftProfiles } from '../constants';
 
 // Helper to simulate network latency
