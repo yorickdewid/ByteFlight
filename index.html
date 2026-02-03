@@ -5,8 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ByteFlight - VFR Planner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <meta name="description" content="VFR flight planning application" />
   <style>
     /* Custom Scrollbar - Softer & Rounder */
     .custom-scrollbar::-webkit-scrollbar {
@@ -58,23 +57,11 @@
       filter: invert(1);
     }
   </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "mapbox-gl": "https://esm.sh/mapbox-gl@2.15.0"
-  }
-}
-</script>
-  <link rel="stylesheet" href="/index.css">
 </head>
 
 <body>
   <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+  <script type="module" src="/src/app/main.tsx"></script>
 </body>
 
 </html>
