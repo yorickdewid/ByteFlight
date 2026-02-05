@@ -6,6 +6,31 @@ const API_BASE = 'https://api.byteflight.app';
 // Helper to add delay for better UX (prevents UI flashing)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Simple rate limiting
+const rateLimiter = {
+  requests: new Map<string, number[]>(),
+  isRateLimited(key: string, maxRequests: number = 10, windowMs: number = 60000): boolean {
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    if (!this.requests.has(key)) {
+      this.requests.set(key, []);
+    }
+    
+    const requests = this.requests.get(key)!;
+    // Remove old requests outside window
+    const validRequests = requests.filter(time => time > windowStart);
+    this.requests.set(key, validRequests);
+    
+    if (validRequests.length >= maxRequests) {
+      return true;
+    }
+    
+    validRequests.push(now);
+    return false;
+  }
+};
+
 // Transform API response to frontend format
 function transformAerodromeToNavPoint(data: any): NavPoint {
   return {
@@ -32,6 +57,11 @@ function transformAerodromeToNavPoint(data: any): NavPoint {
 }
 
 async function apiCall<T>(path: string): Promise<T> {
+  // Rate limit API calls per endpoint
+  if (rateLimiter.isRateLimited(path)) {
+    throw new Error('Rate limited - too many requests');
+  }
+  
   const response = await fetch(`${API_BASE}${path}`);
   if (!response.ok) {
     throw new Error(`API error ${response.status}: ${response.statusText}`);

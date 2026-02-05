@@ -24,8 +24,10 @@ export function useAppInit(
         setIsAppLoading(false);
       }
     };
+    
     init();
-  }, [onSetSelectedPoint, onRefreshPointData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
 
   return { isAppLoading };
 }
