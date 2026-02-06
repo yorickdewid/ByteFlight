@@ -388,12 +388,12 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
   }, [flightPlan, airports, mapLoaded]);
 
-  // Update Camera
+  // Update Camera - only on explicit center request, not every render
   useEffect(() => {
-    if (map.current && flightPlan.departure) {
-      map.current.flyTo({ center: [flightPlan.departure.lon, flightPlan.departure.lat], zoom: 9 });
-    }
-  }, [onCenterMap]);
+    // This effect is intentionally empty or should be removed
+    // Camera centering happens on map init only
+    // onCenterMap is called from UI button, not a dependency
+  }, []);
 
   if (mapError) {
     return (
