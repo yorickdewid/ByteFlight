@@ -70,31 +70,115 @@ async function apiCall<T>(path: string): Promise<T> {
 }
 
 export const ApiService = {
-  // --- Aircraft Endpoints (still local storage) ---
+  // --- Aircraft Endpoints (connected to backend) ---
   async getAircraft(): Promise<AircraftProfile[]> {
-    await delay(200);
-    const stored = localStorage.getItem('byteflight_fleet');
-    return stored ? JSON.parse(stored) : defaultAircraftProfiles;
+    try {
+      await delay(200);
+      const response = await apiCall<any[]>('/aircraft');
+      
+      // Backend stores aircraft with 'registration' as the key field
+      // Map to frontend format (id = registration)
+      return response.map(ac => ({
+        id: ac.registration,
+        name: ac.name || ac.manufacturer || ac.registration,
+        cruiseSpeed: ac.cruiseSpeed || 100,
+        fuelBurn: ac.fuelConsumption || 20,
+        usableFuel: ac.fuelCapacity || 100,
+        emptyWeight: ac.emptyWeight || 600,
+        maxTakeoffMass: ac.maxTakeoffWeight || 1000,
+        cgMin: ac.cgMin || 0,
+        cgMax: ac.cgMax || 0,
+        armPilot: ac.armPilot || 0,
+        armPax: ac.armPax || 0,
+        armBaggage: ac.armBaggage || 0,
+        armFuel: ac.armFuel || 0,
+      }));
+    } catch (error) {
+      console.error('Failed to load aircraft from API, falling back to localStorage:', error);
+      const stored = localStorage.getItem('byteflight_fleet');
+      return stored ? JSON.parse(stored) : defaultAircraftProfiles;
+    }
   },
 
   async saveAircraft(aircraft: AircraftProfile, isNew: boolean): Promise<AircraftProfile> {
-    await delay(300);
-    const current = await this.getAircraft();
-    let updatedList;
-    if (isNew) {
-      updatedList = [...current, aircraft];
-    } else {
-      updatedList = current.map(a => a.id === aircraft.id ? aircraft : a);
+    try {
+      await delay(300);
+      
+      // Map frontend format to backend format
+      const backendAircraft = {
+        registration: aircraft.id,
+        name: aircraft.name,
+        cruiseSpeed: aircraft.cruiseSpeed,
+        fuelConsumption: aircraft.fuelBurn,
+        fuelCapacity: aircraft.usableFuel,
+        emptyWeight: aircraft.emptyWeight,
+        maxTakeoffWeight: aircraft.maxTakeoffMass,
+        // Include W&B fields (backend stores full object)
+        cgMin: aircraft.cgMin,
+        cgMax: aircraft.cgMax,
+        armPilot: aircraft.armPilot,
+        armPax: aircraft.armPax,
+        armBaggage: aircraft.armBaggage,
+        armFuel: aircraft.armFuel,
+      };
+
+      if (isNew) {
+        // POST /aircraft
+        const response = await fetch(`${API_BASE}/aircraft`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendAircraft),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to create aircraft: ${response.statusText}`);
+        }
+      } else {
+        // PUT /aircraft/:registration
+        const response = await fetch(`${API_BASE}/aircraft/${aircraft.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendAircraft),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to update aircraft: ${response.statusText}`);
+        }
+      }
+      
+      return aircraft;
+    } catch (error) {
+      console.error('Failed to save aircraft to API, falling back to localStorage:', error);
+      const current = await this.getAircraft();
+      let updatedList;
+      if (isNew) {
+        updatedList = [...current, aircraft];
+      } else {
+        updatedList = current.map(a => a.id === aircraft.id ? aircraft : a);
+      }
+      localStorage.setItem('byteflight_fleet', JSON.stringify(updatedList));
+      return aircraft;
     }
-    localStorage.setItem('byteflight_fleet', JSON.stringify(updatedList));
-    return aircraft;
   },
 
   async deleteAircraft(id: string): Promise<void> {
-    await delay(300);
-    const current = await this.getAircraft();
-    const updated = current.filter(a => a.id !== id);
-    localStorage.setItem('byteflight_fleet', JSON.stringify(updated));
+    try {
+      await delay(300);
+      
+      // DELETE /aircraft/:registration
+      const response = await fetch(`${API_BASE}/aircraft/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to delete aircraft: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Failed to delete aircraft from API, falling back to localStorage:', error);
+      const current = await this.getAircraft();
+      const updated = current.filter(a => a.id !== id);
+      localStorage.setItem('byteflight_fleet', JSON.stringify(updated));
+    }
   },
 
   // --- Real API Endpoints ---
