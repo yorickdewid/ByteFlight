@@ -1,4 +1,4 @@
-import { AircraftProfile, NavPoint, Notam } from '../types';
+import { AircraftProfile, FlightPlanRequest, NavLog, NavPoint, Notam } from '../types';
 import { defaultAircraftProfiles } from './constants';
 
 const API_BASE = 'https://api.byteflight.app';
@@ -279,5 +279,31 @@ export const ApiService = {
       console.error(`Failed to get wind data for ${icao}:`, error);
       return null;
     }
+  },
+
+  // --- Flight Planning (Backend Calculation) ---
+  async createFlightPlan(request: FlightPlanRequest): Promise<NavLog> {
+    const response = await fetch(`${API_BASE}/flightplan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(error.error || `Flight plan failed: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  // Build route string from flight plan (e.g., "EHRD GDA SUGOL EHAM")
+  buildRouteString(departure: NavPoint, waypoints: { id?: string; name?: string }[], arrival: NavPoint): string {
+    const parts = [
+      departure.id || departure.icao,
+      ...waypoints.map(wp => wp.id || wp.name),
+      arrival.id || arrival.icao,
+    ].filter(Boolean);
+    return parts.join(' ');
   },
 };

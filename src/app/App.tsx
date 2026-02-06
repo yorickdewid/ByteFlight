@@ -17,10 +17,11 @@ import { useClock } from '../hooks/useClock';
 import { useFavorites } from '../hooks/useFavorites';
 import { useFlightPlan } from '../hooks/useFlightPlan';
 import { useNavigation } from '../hooks/useNavigation';
+import { useNavLog } from '../hooks/useNavLog';
 import { useSearch } from '../hooks/useSearch';
 import { useWeather } from '../hooks/useWeather';
 
-import { calculateFuelRequirements, calculateRouteDistance, calculateRouteTime, getMetarStations } from '../lib/flightCalculations';
+import { getMetarStations } from '../lib/flightCalculations';
 
 export default function App() {
   // --- Custom Hooks ---
@@ -64,13 +65,17 @@ export default function App() {
   const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
   const [, setCenterMapTrigger] = useState(0);
 
-  // --- Calculations ---
-  const routeDist = useMemo(() => calculateRouteDistance(flightPlan), [flightPlan]);
-  const routeTime = useMemo(() => calculateRouteTime(routeDist, flightPlan.aircraft.cruiseSpeed), [routeDist, flightPlan.aircraft.cruiseSpeed]);
-  const fuelCalcs = useMemo(
-    () => calculateFuelRequirements(routeTime, flightPlan.aircraft.fuelBurn, flightPlan.reserveType),
-    [routeTime, flightPlan.aircraft.fuelBurn, flightPlan.reserveType]
-  );
+  // --- Flight Planning (Backend) ---
+  const { 
+    navLog,
+    isLoading: isNavLogLoading,
+    error: navLogError,
+    totalDistance: routeDist,
+    totalDuration: routeTime,
+    totalFuel: fuelTotal,
+  } = useNavLog(flightPlan);
+
+  // METAR stations from mock data (for map display)
   const metarStations = useMemo(() => getMetarStations(mockNavData), []);
 
   // --- Handlers ---
@@ -127,10 +132,10 @@ export default function App() {
           selectedPoint={selectedPoint}
           weatherLayers={weatherLayers}
           metarStations={metarStations}
-          routeDist={routeDist}
-          routeTime={routeTime}
-          fuelTotal={fuelCalcs.total}
-          isWeatherLoading={isWeatherLoading}
+          routeDist={Math.round(routeDist)}
+          routeTime={Math.round(routeTime)}
+          fuelTotal={Math.round(fuelTotal)}
+          isWeatherLoading={isWeatherLoading || isNavLogLoading}
           onCenterMap={() => setCenterMapTrigger(t => t + 1)}
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}
@@ -161,7 +166,7 @@ export default function App() {
         confirmLabel="Sign Out"
       />
 
-      {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} onClose={() => setIsNavLogOpen(false)} />}
+      {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} navLog={navLog} isLoading={isNavLogLoading} error={navLogError} onClose={() => setIsNavLogOpen(false)} />}
       {isWbOpen && <WeightBalanceModal aircraft={flightPlan.aircraft} payload={flightPlan.payload} onClose={() => setIsWbOpen(false)} onUpdatePayload={(pl) => setFlightPlan(p => ({ ...p, payload: pl }))} />}
       {isAircraftManagerOpen && <AircraftManagerModal isOpen={isAircraftManagerOpen} aircraftList={aircraftProfiles} onClose={() => setIsAircraftManagerOpen(false)} onSave={handleSaveAircraft} onDelete={handleDeleteAircraft} />}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} fuelPolicy={flightPlan.reserveType} onSetFuelPolicy={(type) => setFlightPlan(p => ({ ...p, reserveType: type }))} />}

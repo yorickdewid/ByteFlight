@@ -98,3 +98,77 @@ export interface WeatherCell {
   polygons: { lat: number; lon: number }[];
   timestamp: number;
 }
+
+// --- Nav Log Types (from backend flight-planner) ---
+
+export interface RouteLegPerformance {
+  headWind: number;
+  crossWind: number;
+  trueAirspeed: number;
+  windCorrectionAngle: number;
+  trueHeading: number;
+  magneticHeading: number;
+  groundSpeed: number;
+  duration: number;
+  fuelConsumption?: number;
+}
+
+export interface RouteSegmentWaypoint {
+  icao?: string;
+  name?: string;
+  coords: [number, number]; // [lon, lat]
+  elevation?: number;
+}
+
+export interface RouteSegment {
+  waypoint: RouteSegmentWaypoint;
+  altitude?: number;
+}
+
+export interface RouteLeg {
+  start: RouteSegment;
+  end: RouteSegment;
+  course: {
+    distance: number;
+    track: number;
+    magneticTrack: number;
+  };
+  wind?: {
+    direction: number;
+    speed: number;
+    gust?: number;
+  };
+  arrivalDate?: string;
+  performance?: RouteLegPerformance;
+}
+
+export interface NavLog {
+  route: RouteLeg[];
+  routeAlternate?: RouteLeg;
+  totalDistance: number;
+  totalDuration: number;
+  totalTripFuel?: number;
+  fuelBreakdown?: {
+    trip: number;
+    reserve: number;
+    takeoff?: number;
+    landing?: number;
+    taxi?: number;
+    alternate?: number;
+  };
+  departureDate?: string;
+  arrivalDate?: string;
+  generatedAt: string;
+  remarks?: string;
+}
+
+export interface FlightPlanRequest {
+  route: string;
+  alternate?: string;
+  aircraftRegistration: string;
+  departureDate?: string;
+  defaultAltitude?: number;
+  taxiFuel?: number;
+  takeoffFuel?: number;
+  landingFuel?: number;
+}
