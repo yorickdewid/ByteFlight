@@ -15,7 +15,6 @@ interface VectorMapProps {
   airports: NavPoint[]; // New prop for all airports with METAR
   showRadar: boolean;
   showTurb: boolean;
-  onCenterMap: () => void;
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
@@ -24,7 +23,6 @@ interface VectorMapProps {
 export const VectorMap: React.FC<VectorMapProps> = ({
   flightPlan,
   airports,
-  onCenterMap,
   onWaypointMove,
   onWaypointUpdate,
   onAddWaypoint
@@ -388,12 +386,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
   }, [flightPlan, airports, mapLoaded]);
 
-  // Update Camera - only on explicit center request, not every render
-  useEffect(() => {
-    // This effect is intentionally empty or should be removed
-    // Camera centering happens on map init only
-    // onCenterMap is called from UI button, not a dependency
-  }, []);
+  // Camera centering removed - re-center button calls flyTo directly
 
   if (mapError) {
     return (
