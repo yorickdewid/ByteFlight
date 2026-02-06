@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { NavPoint, Notam } from '../types';
+import { MetarResponse, NavPoint, Notam } from '../types';
 import { ApiService } from '../lib/api';
 
 export function useNavigation() {
   const [selectedPoint, setSelectedPoint] = useState<NavPoint | null>(null);
-  const [selectedPointMetar, setSelectedPointMetar] = useState<string | null>(null);
+  const [selectedPointMetar, setSelectedPointMetar] = useState<MetarResponse | null>(null);
   const [selectedPointNotams, setSelectedPointNotams] = useState<Notam[]>([]);
   const [sidebarTab, setSidebarTab] = useState<'INFO' | 'WX' | 'NOTAM'>('INFO');
 

@@ -1,4 +1,4 @@
-import { AircraftProfile, FlightPlanRequest, NavLog, NavPoint, Notam } from '../types';
+import { AircraftProfile, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis } from '../types';
 import { defaultAircraftProfiles } from './constants';
 
 const API_BASE = 'https://api.byteflight.app';
@@ -226,16 +226,11 @@ export const ApiService = {
     }
   },
 
-  async getMetar(icao: string): Promise<string | null> {
+  async getMetar(icao: string): Promise<MetarResponse | null> {
     try {
       await delay(100);
-      const response = await apiCall<any>(`/metar/${icao.toUpperCase()}`);
-      
-      if (response.metar?.raw) {
-        return response.metar.raw;
-      }
-      
-      return null;
+      const response = await apiCall<MetarResponse>(`/metar/${icao.toUpperCase()}`);
+      return response;
     } catch (error) {
       console.error(`Failed to get METAR for ${icao}:`, error);
       return null;
@@ -271,12 +266,12 @@ export const ApiService = {
     }
   },
 
-  async getWindRecommendation(icao: string): Promise<any> {
+  async getRunwayWindAnalysis(icao: string): Promise<RunwayWindAnalysis | null> {
     try {
-      const response = await apiCall<any>(`/aerodrome/${icao.toUpperCase()}/wind`);
+      const response = await apiCall<RunwayWindAnalysis>(`/aerodrome/${icao.toUpperCase()}/wind`);
       return response;
     } catch (error) {
-      console.error(`Failed to get wind data for ${icao}:`, error);
+      console.error(`Failed to get runway wind analysis for ${icao}:`, error);
       return null;
     }
   },

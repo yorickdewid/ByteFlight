@@ -1,6 +1,12 @@
 import { FlightPlan, NavPoint } from '../types';
 import { calculateDistance } from './utils';
 
+/**
+ * @deprecated Replaced by backend /flightplan endpoint (useNavLog hook)
+ * All flight planning calculations now happen on the backend
+ * This file will be removed after confirming no dependencies remain
+ */
+
 export function calculateRouteDistance(flightPlan: FlightPlan): number {
   let distance = 0;
   const points = [flightPlan.departure, ...flightPlan.waypoints, flightPlan.arrival].filter(p => p.lat);

@@ -22,6 +22,11 @@ export const calculateBearing = (lat1: number, lon1: number, lat2: number, lon2:
   return (θ * 180 / Math.PI + 360) % 360;
 };
 
+/**
+ * @deprecated Use backend MetarResponse instead (ApiService.getMetar)
+ * This function is only used for legacy mock data in Visualizers.tsx
+ * Will be removed in Phase 2 when weather integration is complete
+ */
 export const parseMetar = (metarString: string): ParsedMetar => {
   const result: ParsedMetar = {
     raw: metarString,

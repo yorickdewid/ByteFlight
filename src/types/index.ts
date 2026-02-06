@@ -68,6 +68,53 @@ export interface FlightPlan {
   aircraft: AircraftProfile;
 }
 
+// Backend METAR response structure
+export interface MetarResponse {
+  station: string;
+  metar: {
+    station: string;
+    observationTime: string;
+    raw: string;
+    wind: {
+      direction: number;
+      directionMin?: number;
+      directionMax?: number;
+      speed: number;
+      gust?: number;
+    };
+    temperature: number;
+    dewpoint: number;
+    visibility: number;
+    qnh: number;
+    clouds: {
+      quantity: string;
+      height: number;
+    }[];
+    flightCategory?: 'VFR' | 'MVFR' | 'IFR' | 'LIFR';
+  };
+  tafRaw?: string;
+  coords: [number, number];
+}
+
+// Runway wind analysis response
+export interface RunwayWindAnalysis {
+  wind: {
+    direction: number;
+    directionMin?: number;
+    directionMax?: number;
+    speed: number;
+    gust?: number;
+  };
+  runways: {
+    designator: string;
+    windAngle: number;
+    headwind: number;
+    crosswind: number;
+    favored: boolean;
+  }[];
+}
+
+// Legacy type - kept for compatibility, will be removed
 export interface ParsedMetar {
   raw: string;
   wind: { dir: number; speed: number; gust: number | null; vrb: boolean };

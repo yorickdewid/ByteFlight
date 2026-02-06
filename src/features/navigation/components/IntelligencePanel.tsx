@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle } from 'lucide-react';
-import { NavPoint, Notam } from '../../../types';
+import { MetarResponse, NavPoint, Notam } from '../../../types';
 import { ActiveRunway } from '../../map/components/ActiveRunway';
 import { DataTag } from '../../../components/ui';
 
 interface IntelligencePanelProps {
   selectedPoint: NavPoint | null;
-  selectedPointMetar: string | null;
+  selectedPointMetar: MetarResponse | null;
   selectedPointNotams: Notam[];
   favorites: string[];
   onAddWaypoint: (point: NavPoint) => void;
@@ -126,20 +126,70 @@ export default function IntelligencePanel({
                     <Cloud size={14} className="text-sky-500" /> Current Conditions
                   </div>
                   <div className="p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all shadow-inner">
-                    {selectedPointMetar}
+                    {selectedPointMetar.metar.raw}
                   </div>
+                  {selectedPointMetar.metar.flightCategory && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Flight Category:</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                        selectedPointMetar.metar.flightCategory === 'VFR' ? 'bg-emerald-500/20 text-emerald-400' :
+                        selectedPointMetar.metar.flightCategory === 'MVFR' ? 'bg-blue-500/20 text-blue-400' :
+                        selectedPointMetar.metar.flightCategory === 'IFR' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-purple-500/20 text-purple-400'
+                      }`}>
+                        {selectedPointMetar.metar.flightCategory}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
                   <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Decoded METAR</div>
                   <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-slate-500">Wind:</span><span className="text-slate-200 font-mono">270° @ 15kt</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Visibility:</span><span className="text-slate-200">10km+</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Clouds:</span><span className="text-slate-200">SCT 2500ft</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Temperature:</span><span className="text-slate-200">12°C / 10°C</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Altimeter:</span><span className="text-slate-200 font-mono">Q1013</span></div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Wind:</span>
+                      <span className="text-slate-200 font-mono">
+                        {selectedPointMetar.metar.wind.direction}° @ {selectedPointMetar.metar.wind.speed}kt
+                        {selectedPointMetar.metar.wind.gust && ` G${selectedPointMetar.metar.wind.gust}kt`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Visibility:</span>
+                      <span className="text-slate-200">
+                        {selectedPointMetar.metar.visibility >= 9999 ? '10km+' : `${(selectedPointMetar.metar.visibility / 1000).toFixed(1)}km`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Clouds:</span>
+                      <span className="text-slate-200">
+                        {selectedPointMetar.metar.clouds.length > 0 
+                          ? selectedPointMetar.metar.clouds.map(c => `${c.quantity} ${c.height}ft`).join(', ')
+                          : 'Clear'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Temperature:</span>
+                      <span className="text-slate-200">
+                        {selectedPointMetar.metar.temperature}°C / {selectedPointMetar.metar.dewpoint}°C
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Altimeter:</span>
+                      <span className="text-slate-200 font-mono">Q{selectedPointMetar.metar.qnh}</span>
+                    </div>
                   </div>
                 </div>
+
+                {selectedPointMetar.tafRaw && (
+                  <div className="space-y-3">
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Wind size={14} className="text-sky-500" /> Terminal Forecast (TAF)
+                    </div>
+                    <div className="p-4 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all shadow-inner">
+                      {selectedPointMetar.tafRaw}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-12 text-slate-600">
