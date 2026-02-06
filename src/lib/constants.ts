@@ -1,8 +1,9 @@
 import { AircraftProfile, NavPoint, Notam, FlightPlan } from '../types';
 
 export const APP_VERSION = "v4.14-BETA-RC3";
-// TODO: Replace with your own Mapbox Access Token
-export const MAPBOX_TOKEN = "pk.eyJ1IjoiZGVtb3VzZXIiLCJhIjoiY2x4b3F4ZmY5MGRwbzJqcXl6bnF6bXF6NyJ9.P1-uV5u2qQ_eWzd-lq6b5w";
+
+// Mapbox token: set VITE_MAPBOX_TOKEN in .env.local
+export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 export const defaultAircraftProfiles: AircraftProfile[] = [
   {

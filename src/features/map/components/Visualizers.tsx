@@ -5,14 +5,8 @@ import { MAPBOX_TOKEN } from '../../../lib/constants';
 import { parseMetar } from '../../../lib/utils';
 import { FlightPlan, NavPoint, Waypoint, WeatherCell } from '../../../types';
 
-// Fix for Mapbox CSP/Worker issue in restricted environments (iframe/sandboxes)
-// This prevents the "Failed to read a named property 'href' from 'Location'" error
-try {
-  // @ts-ignore
-  mapboxgl.workerUrl = "https://unpkg.com/mapbox-gl@2.15.0/dist/mapbox-gl-csp-worker.js";
-} catch (e) {
-  console.warn("Could not set Mapbox worker URL", e);
-}
+// Import mapbox-gl CSS inline for proper styling
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface VectorMapProps {
   flightPlan: FlightPlan;
@@ -39,12 +33,18 @@ export const VectorMap: React.FC<VectorMapProps> = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const draggedPoint = useRef<{ type: string, index: number } | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Initialize Map
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
 
     try {
+      if (!MAPBOX_TOKEN) {
+        setMapError('Mapbox token not configured. Set VITE_MAPBOX_TOKEN in .env.local');
+        return;
+      }
+
       mapboxgl.accessToken = MAPBOX_TOKEN;
 
       if (!mapboxgl.supported()) {
@@ -298,6 +298,9 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           // 3. Add Waypoint
           onAddWaypoint(e.lngLat.lat, e.lngLat.lng);
         });
+
+        // Signal that map is ready for data
+        setMapLoaded(true);
       });
 
       m.on('error', (e) => {
@@ -317,7 +320,8 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
   // Update Sources
   useEffect(() => {
-    if (!map.current || !map.current.isStyleLoaded()) return;
+    // Wait for mapLoaded (set after on('load') fires) - style is guaranteed loaded then
+    if (!map.current || !mapLoaded) return;
 
     // Route & Waypoints
     const pts = [flightPlan.departure, ...flightPlan.waypoints, flightPlan.arrival];
@@ -382,7 +386,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       });
     }
 
-  }, [flightPlan, airports]);
+  }, [flightPlan, airports, mapLoaded]);
 
   // Update Camera
   useEffect(() => {
