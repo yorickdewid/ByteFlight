@@ -63,7 +63,6 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
-  const [, setCenterMapTrigger] = useState(0);
 
   // --- Flight Planning (Backend) ---
   const { 
@@ -136,7 +135,6 @@ export default function App() {
           routeTime={Math.round(routeTime)}
           fuelTotal={Math.round(fuelTotal)}
           isWeatherLoading={isWeatherLoading || isNavLogLoading}
-          onCenterMap={() => setCenterMapTrigger(t => t + 1)}
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}
           onAddWaypoint={handleMapAddWaypoint}

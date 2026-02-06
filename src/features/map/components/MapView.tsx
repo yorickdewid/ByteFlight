@@ -11,7 +11,6 @@ interface MapViewProps {
   routeTime: number;
   fuelTotal: number;
   isWeatherLoading: boolean;
-  onCenterMap: () => void;
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
@@ -30,7 +29,6 @@ export default function MapView({
   routeTime,
   fuelTotal,
   isWeatherLoading,
-  onCenterMap,
   onWaypointMove,
   onWaypointUpdate,
   onAddWaypoint,
@@ -56,7 +54,6 @@ export default function MapView({
           airports={metarStations}
           showRadar={showRadar}
           showTurb={showTurb}
-          onCenterMap={onCenterMap}
           onWaypointMove={onWaypointMove}
           onWaypointUpdate={onWaypointUpdate}
           onAddWaypoint={onAddWaypoint}
