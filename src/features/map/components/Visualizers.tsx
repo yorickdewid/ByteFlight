@@ -73,13 +73,13 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
         // --- Layers ---
 
-        // 1. Route Line
+        // 1. Route Line (Aviation magenta)
         m.addLayer({
           id: 'route-line',
           type: 'line',
           source: 'route',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#38bdf8', 'line-width': 3, 'line-dasharray': [2, 1] }
+          paint: { 'line-color': '#E946EF', 'line-width': 3, 'line-dasharray': [2, 1] }
         });
 
         // 2. METAR Dots (Circles)
