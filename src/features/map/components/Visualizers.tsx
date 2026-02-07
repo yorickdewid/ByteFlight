@@ -229,7 +229,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           }
         });
 
-        // --- Interaction: Click ---
+        // --- Interaction: Click (waypoints and METAR) ---
         m.on('click', (e) => {
           if (draggedPoint.current) return;
 
@@ -311,8 +311,21 @@ export const VectorMap: React.FC<VectorMapProps> = ({
             }
             return;
           }
+        });
 
-          // 3. Add Waypoint
+        // --- Interaction: Double-click to add waypoint ---
+        m.on('dblclick', (e) => {
+          if (draggedPoint.current) return;
+
+          // Don't add waypoint if clicking on existing features
+          const wpFeatures = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
+          const metarFeatures = m.queryRenderedFeatures(e.point, { layers: ['metar-dots-circle'] });
+
+          if (wpFeatures.length > 0 || metarFeatures.length > 0) {
+            return; // Don't add waypoint on feature double-click
+          }
+
+          // Add waypoint at double-click location
           onAddWaypoint(e.lngLat.lat, e.lngLat.lng);
         });
 
@@ -448,7 +461,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
       <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur border border-slate-700/50 rounded-lg p-2 text-xs text-slate-400 z-30 shadow-lg max-w-[200px]">
         <p className="flex items-center gap-2 mb-1"><MousePointer2 size={12} className="text-sky-500" /> Drag points to move</p>
-        <p className="flex items-center gap-2"><Plus size={12} className="text-emerald-500" /> Click map to add WP</p>
+        <p className="flex items-center gap-2"><Plus size={12} className="text-emerald-500" /> Double-click map to add WP</p>
       </div>
     </div>
   );
