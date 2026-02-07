@@ -19,6 +19,7 @@ interface VectorMapProps {
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
   onSelectMetarStation: (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => void;
+  onUpdateMetarStations: (bounds: { center: { lat: number; lon: number }; zoom: number }) => void;
 }
 
 export const VectorMap: React.FC<VectorMapProps> = ({
@@ -27,7 +28,8 @@ export const VectorMap: React.FC<VectorMapProps> = ({
   onWaypointMove,
   onWaypointUpdate,
   onAddWaypoint,
-  onSelectMetarStation
+  onSelectMetarStation,
+  onUpdateMetarStations
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -316,6 +318,19 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
         // Signal that map is ready for data
         setMapLoaded(true);
+
+        // Initial METAR station load
+        const center = m.getCenter();
+        const zoom = m.getZoom();
+        onUpdateMetarStations({ center: { lat: center.lat, lon: center.lng }, zoom });
+      });
+
+      // Update METAR stations when map moves/zooms
+      m.on('moveend', () => {
+        if (!m) return;
+        const center = m.getCenter();
+        const zoom = m.getZoom();
+        onUpdateMetarStations({ center: { lat: center.lat, lon: center.lng }, zoom });
       });
 
       m.on('error', (e) => {

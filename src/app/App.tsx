@@ -1,7 +1,6 @@
 import { Loader2, Plane } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
-import { mockNavData } from '../lib/constants';
 import type { NavPoint } from '../types';
 
 import Header from '../components/layout/header';
@@ -16,12 +15,11 @@ import { useAppInit } from '../hooks/useAppInit';
 import { useClock } from '../hooks/useClock';
 import { useFavorites } from '../hooks/useFavorites';
 import { useFlightPlan } from '../hooks/useFlightPlan';
+import { useMetarStations } from '../hooks/useMetarStations';
 import { useNavigation } from '../hooks/useNavigation';
 import { useNavLog } from '../hooks/useNavLog';
 import { useSearch } from '../hooks/useSearch';
 import { useWeather } from '../hooks/useWeather';
-
-import { getMetarStations } from '../lib/flightCalculations';
 
 export default function App() {
   // --- Custom Hooks ---
@@ -54,6 +52,8 @@ export default function App() {
 
   const { favorites, toggleFavorite } = useFavorites();
 
+  const { metarStations, isLoading: isMetarLoading, updateStations } = useMetarStations();
+
   const time = useClock();
 
   const { isAppLoading } = useAppInit(setSelectedPoint, refreshPointData);
@@ -67,7 +67,7 @@ export default function App() {
   const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
 
   // --- Flight Planning (Backend) ---
-  const { 
+  const {
     navLog,
     isLoading: isNavLogLoading,
     error: navLogError,
@@ -75,9 +75,6 @@ export default function App() {
     totalDuration: routeTime,
     totalFuel: fuelTotal,
   } = useNavLog(flightPlan);
-
-  // METAR stations from mock data (for map display)
-  const metarStations = useMemo(() => getMetarStations(mockNavData), []);
 
   // --- Handlers ---
   const handleSelectPoint = async (point: NavPoint) => {
@@ -136,11 +133,12 @@ export default function App() {
           routeDist={Math.round(routeDist)}
           routeTime={Math.round(routeTime)}
           fuelTotal={Math.round(fuelTotal)}
-          isWeatherLoading={isWeatherLoading || isNavLogLoading}
+          isWeatherLoading={isWeatherLoading || isNavLogLoading || isMetarLoading}
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}
           onAddWaypoint={handleMapAddWaypoint}
           onSelectMetarStation={handleSelectPoint}
+          onUpdateMetarStations={updateStations}
           onToggleRadar={toggleRadar}
           onToggleTurb={toggleTurb}
           showRadar={showRadar}
