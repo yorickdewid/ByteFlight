@@ -42,6 +42,8 @@ export default function App() {
     setSelectedPoint,
     selectedPointMetar,
     selectedPointNotams,
+    sidebarTab,
+    setSidebarTab,
     refreshPointData,
     handleSelectPoint: handleSelectPointBase,
   } = useNavigation();
@@ -138,6 +140,7 @@ export default function App() {
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}
           onAddWaypoint={handleMapAddWaypoint}
+          onSelectMetarStation={handleSelectPoint}
           onToggleRadar={toggleRadar}
           onToggleTurb={toggleTurb}
           showRadar={showRadar}
@@ -148,6 +151,8 @@ export default function App() {
           selectedPoint={selectedPoint}
           selectedPointMetar={selectedPointMetar}
           selectedPointNotams={selectedPointNotams}
+          sidebarTab={sidebarTab}
+          setSidebarTab={setSidebarTab}
           favorites={favorites}
           onAddWaypoint={handleAddWaypoint}
           onToggleFavorite={toggleFavorite}

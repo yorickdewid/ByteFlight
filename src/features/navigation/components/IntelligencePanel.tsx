@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle } from 'lucide-react';
 import { MetarResponse, NavPoint, Notam } from '../../../types';
 import { ActiveRunway } from '../../map/components/ActiveRunway';
@@ -8,6 +7,8 @@ interface IntelligencePanelProps {
   selectedPoint: NavPoint | null;
   selectedPointMetar: MetarResponse | null;
   selectedPointNotams: Notam[];
+  sidebarTab: 'INFO' | 'WX' | 'NOTAM';
+  setSidebarTab: (tab: 'INFO' | 'WX' | 'NOTAM') => void;
   favorites: string[];
   onAddWaypoint: (point: NavPoint) => void;
   onToggleFavorite: (id: string) => void;
@@ -17,11 +18,12 @@ export default function IntelligencePanel({
   selectedPoint,
   selectedPointMetar,
   selectedPointNotams,
+  sidebarTab,
+  setSidebarTab,
   favorites,
   onAddWaypoint,
   onToggleFavorite,
 }: IntelligencePanelProps) {
-  const [sidebarTab, setSidebarTab] = useState<'INFO' | 'WX' | 'NOTAM'>('INFO');
 
   if (!selectedPoint) {
     return (

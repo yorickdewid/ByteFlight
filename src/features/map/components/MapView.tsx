@@ -14,6 +14,7 @@ interface MapViewProps {
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
+  onSelectMetarStation: (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => void;
   onToggleRadar: () => void;
   onToggleTurb: () => void;
   showRadar: boolean;
@@ -32,6 +33,7 @@ export default function MapView({
   onWaypointMove,
   onWaypointUpdate,
   onAddWaypoint,
+  onSelectMetarStation,
   onToggleRadar,
   onToggleTurb,
   showRadar,
@@ -57,6 +59,7 @@ export default function MapView({
           onWaypointMove={onWaypointMove}
           onWaypointUpdate={onWaypointUpdate}
           onAddWaypoint={onAddWaypoint}
+          onSelectMetarStation={onSelectMetarStation}
         />
 
         <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">

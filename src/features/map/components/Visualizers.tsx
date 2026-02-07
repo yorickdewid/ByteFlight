@@ -18,6 +18,7 @@ interface VectorMapProps {
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
+  onSelectMetarStation: (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => void;
 }
 
 export const VectorMap: React.FC<VectorMapProps> = ({
@@ -25,7 +26,8 @@ export const VectorMap: React.FC<VectorMapProps> = ({
   airports,
   onWaypointMove,
   onWaypointUpdate,
-  onAddWaypoint
+  onAddWaypoint,
+  onSelectMetarStation
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -274,6 +276,21 @@ export const VectorMap: React.FC<VectorMapProps> = ({
             const metar = props.metar;
             const cat = props.category;
 
+            // Update sidebar with selected METAR station
+            if (f.geometry.type === 'Point') {
+              const coords = f.geometry.coordinates as [number, number];
+              const station: NavPoint = {
+                type: 'AIRPORT',
+                id: props.name,
+                name: props.name,
+                lat: coords[1],
+                lon: coords[0],
+                metar: metar
+              };
+              onSelectMetarStation(station, 'WX');
+            }
+
+            // Also show quick popup
             const colorClass = cat === 'VFR' ? 'text-emerald-400' : cat === 'MVFR' ? 'text-blue-400' : cat === 'IFR' ? 'text-yellow-400' : 'text-purple-400';
 
             if (f.geometry.type === 'Point') {

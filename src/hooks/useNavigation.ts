@@ -18,11 +18,11 @@ export function useNavigation() {
     setSelectedPointNotams(notams);
   };
 
-  const handleSelectPoint = async (point: NavPoint) => {
+  const handleSelectPoint = async (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => {
     // Get full detail (e.g. runways/freqs might be lightweight in search results)
     const fullPoint = await ApiService.getNavPointDetail(point.id) || point;
     setSelectedPoint(fullPoint);
-    setSidebarTab('INFO'); // Reset tab on new selection
+    setSidebarTab(tab || 'INFO'); // Use provided tab or default to INFO
 
     // Fetch dynamic data
     refreshPointData(fullPoint.id);
