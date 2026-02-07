@@ -33,35 +33,6 @@ export function useMetarStations() {
   };
 
   /**
-   * Fetch METAR data for a list of aerodromes
-   * Batches requests with slight delays to avoid rate limiting
-   */
-  const fetchMetarsForAerodromes = async (aerodromes: NavPoint[]): Promise<NavPoint[]> => {
-    // Fetch METARs in parallel but with rate limiting awareness
-    const metarPromises = aerodromes.map(async (aerodrome, index) => {
-      // Stagger requests slightly to avoid rate limiting (10 req/min limit)
-      await new Promise(resolve => setTimeout(resolve, index * 100));
-
-      try {
-        const metarData = await ApiService.getMetar(aerodrome.id);
-        if (metarData && metarData.metar) {
-          return {
-            ...aerodrome,
-            metar: metarData.metar.raw,
-            // Store decoded data if needed
-          };
-        }
-      } catch (error) {
-        console.warn(`Failed to fetch METAR for ${aerodrome.id}`);
-      }
-      return null;
-    });
-
-    const results = await Promise.all(metarPromises);
-    return results.filter((station) => station !== null && station?.metar !== undefined) as NavPoint[];
-  };
-
-  /**
    * Update METAR stations based on map bounds
    * Debounced to prevent excessive API calls during map movement
    */
@@ -86,20 +57,15 @@ export function useMetarStations() {
       lastFetchRef.current = cacheKey;
 
       try {
-        // Fetch nearby aerodromes
-        const aerodromes = await ApiService.getNearbyAerodromes(
+        // Fetch nearby METAR stations in ONE API call (much faster!)
+        const stations = await ApiService.getNearbyMetars(
           center.lat,
           center.lon,
           radius
         );
 
-        // Limit to prevent excessive METAR fetches (max 20 stations)
-        const limitedAerodromes = aerodromes.slice(0, 20);
-
-        // Fetch METARs for each aerodrome
-        const stationsWithMetar = await fetchMetarsForAerodromes(limitedAerodromes);
-
-        setMetarStations(stationsWithMetar);
+        // Stations already include METAR data from backend
+        setMetarStations(stations);
       } catch (error) {
         console.error('Failed to update METAR stations:', error);
         setMetarStations([]);

@@ -237,6 +237,26 @@ export const ApiService = {
     }
   },
 
+  async getNearbyMetars(lat: number, lon: number, radius: number = 50): Promise<NavPoint[]> {
+    try {
+      await delay(100);
+      const response = await apiCall<any[]>(`/metar/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
+
+      // Transform API response to NavPoint format
+      return response.map(station => ({
+        type: 'AIRPORT' as const,
+        id: station.station,
+        name: station.station,
+        lat: station.coords[1], // API returns [lon, lat]
+        lon: station.coords[0],
+        metar: station.metar?.raw || undefined,
+      }));
+    } catch (error) {
+      console.error('Failed to get nearby METARs:', error);
+      return [];
+    }
+  },
+
   async getNotams(icao: string): Promise<Notam[]> {
     try {
       await delay(100);
