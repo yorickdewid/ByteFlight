@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../lib/api';
-import { mockInitialFlightPlan } from '../lib/constants';
+import { mockInitialFlightPlan } from '../lib/mock-data';
 import { FlightPlan, NavPoint, Waypoint } from '../types';
 
 export function useFlightPlan() {
@@ -21,25 +21,22 @@ export function useFlightPlan() {
     return mockInitialFlightPlan;
   });
 
-  const [centerMapTrigger, setCenterMapTrigger] = useState(0);
-
   // Persistence
   useEffect(() => {
     localStorage.setItem('byteflight_plan', JSON.stringify(flightPlan));
   }, [flightPlan]);
 
   const handlePointChange = async (type: 'departure' | 'arrival' | 'alternate', val: string) => {
-    const icao = val.toUpperCase();
-    // Optimistic update
-    setFlightPlan(p => ({ ...p, [type]: { ...p[type], icao } }));
+    const id = val.toUpperCase();
+    // Optimistic update — set id so the sidebar input reflects the typed value immediately
+    setFlightPlan(p => ({ ...p, [type]: { ...p[type], id } }));
 
     // Async lookup to fill coordinates
-    if (icao.length >= 3) {
-      const pt = await ApiService.getNavPointDetail(icao);
+    if (id.length >= 3) {
+      const pt = await ApiService.getNavPointDetail(id);
       if (pt) {
         setFlightPlan(p => ({ ...p, [type]: pt }));
-        setCenterMapTrigger(prev => prev + 1);
-      }
+}
     }
   };
 
@@ -96,7 +93,6 @@ export function useFlightPlan() {
   return {
     flightPlan,
     setFlightPlan,
-    centerMapTrigger,
     handlePointChange,
     handleAddWaypoint,
     handleMapWaypointMove,

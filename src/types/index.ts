@@ -36,12 +36,12 @@ export interface NavPoint {
   elevation?: number | null;
   magVar?: number;
   metar?: string;
+  flightCategory?: 'VFR' | 'MVFR' | 'IFR' | 'LIFR';
   nearestMetarStation?: string;
   sunset?: string;
   runways?: Runway[];
   frequencies?: Frequency[];
   vfrAllowed?: boolean;
-  icao?: string; // Optional alias for id in some contexts
 }
 
 export interface Waypoint extends NavPoint {
@@ -112,20 +112,6 @@ export interface RunwayWindAnalysis {
     crosswind: number;
     favored: boolean;
   }[];
-}
-
-// Legacy type - kept for compatibility, will be removed
-export interface ParsedMetar {
-  raw: string;
-  wind: { dir: number; speed: number; gust: number | null; vrb: boolean };
-  vis: number;
-  temp: number | string;
-  dew: number | string;
-  qnh: string;
-  ceiling: { type: string; altitude: number };
-  clouds: { type: string; alt: number }[];
-  timestamp: Date | null;
-  category: 'VFR' | 'MVFR' | 'IFR' | 'LIFR';
 }
 
 export interface Notam {

@@ -10,16 +10,18 @@ import FlightPlanSidebar from '../features/flight-plan/components/FlightPlanSide
 import MapView from '../features/map/components/MapView';
 import IntelligencePanel from '../features/navigation/components/IntelligencePanel';
 
-import { useAircraft } from '../hooks/useAircraft';
-import { useAppInit } from '../hooks/useAppInit';
-import { useClock } from '../hooks/useClock';
-import { useFavorites } from '../hooks/useFavorites';
-import { useFlightPlan } from '../hooks/useFlightPlan';
-import { useMetarStations } from '../hooks/useMetarStations';
-import { useNavigation } from '../hooks/useNavigation';
-import { useNavLog } from '../hooks/useNavLog';
-import { useSearch } from '../hooks/useSearch';
-import { useWeather } from '../hooks/useWeather';
+import {
+  useAircraft,
+  useAppInit,
+  useClock,
+  useFavorites,
+  useFlightPlan,
+  useMetarStations,
+  useNavigation,
+  useNavLog,
+  useSearch,
+  useWeather,
+} from '../hooks';
 
 export default function App() {
   // --- Custom Hooks ---
@@ -48,7 +50,7 @@ export default function App() {
 
   const { searchQuery, searchResults, isSearching, handleSearch, clearSearch } = useSearch();
 
-  const { weatherLayers, showRadar, showTurb, isWeatherLoading, toggleRadar, toggleTurb } = useWeather(flightPlan.departure);
+  const { showRadar, showTurb, isWeatherLoading, toggleRadar, toggleTurb } = useWeather(flightPlan.departure);
 
   const { favorites, toggleFavorite } = useFavorites();
 
@@ -128,8 +130,6 @@ export default function App() {
 
         <MapView
           flightPlan={flightPlan}
-          selectedPoint={selectedPoint}
-          weatherLayers={weatherLayers}
           metarStations={metarStations}
           routeDist={Math.round(routeDist)}
           routeTime={Math.round(routeTime)}

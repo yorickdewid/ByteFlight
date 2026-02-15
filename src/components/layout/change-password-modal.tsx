@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { X, Lock, Shield } from 'lucide-react';
 import { Button, Input } from '../ui';
 
-export const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+interface ChangePasswordModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState<'form' | 'success'>('form');
 
   if (!isOpen) return null;

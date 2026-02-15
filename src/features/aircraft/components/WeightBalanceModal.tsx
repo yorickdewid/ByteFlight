@@ -3,7 +3,14 @@ import { X, Scale } from 'lucide-react';
 import { AircraftProfile, Payload } from '../../../types';
 import { Input } from '../../../components/ui';
 
-export const WeightBalanceModal: React.FC<{ aircraft: AircraftProfile, payload: Payload, onClose: () => void, onUpdatePayload: (pl: Payload) => void }> = ({ aircraft, payload, onClose, onUpdatePayload }) => {
+interface WeightBalanceModalProps {
+  aircraft: AircraftProfile;
+  payload: Payload;
+  onClose: () => void;
+  onUpdatePayload: (pl: Payload) => void;
+}
+
+export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft, payload, onClose, onUpdatePayload }) => {
   const fuelWeight = payload.fuel * 0.72;
   const totalWeight = aircraft.emptyWeight + payload.pilot + payload.pax + payload.baggage + fuelWeight;
   const takeoffLimit = aircraft.maxTakeoffMass;

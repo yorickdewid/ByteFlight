@@ -1,5 +1,5 @@
 import { AircraftProfile, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis, Waypoint } from '../types';
-import { defaultAircraftProfiles } from './constants';
+import { defaultAircraftProfiles } from './config';
 
 const API_BASE = 'https://api.byteflight.app';
 
@@ -30,6 +30,19 @@ const rateLimiter = {
     return false;
   }
 };
+
+// Derive flight category from decoded METAR visibility and cloud ceiling (ICAO/FAA rules)
+function deriveFlightCategory(visibility?: number, clouds?: { quantity: string; height?: number }[]): 'VFR' | 'MVFR' | 'IFR' | 'LIFR' {
+  const vis = visibility ?? 10000;
+  const ceiling = clouds
+    ?.filter(c => c.quantity === 'BKN' || c.quantity === 'OVC')
+    .reduce((min, c) => Math.min(min, c.height ?? Infinity), Infinity) ?? Infinity;
+
+  if (ceiling < 500 || vis < 1600) return 'LIFR';
+  if (ceiling < 1000 || vis < 5000) return 'IFR';
+  if (ceiling <= 3000 || vis <= 8000) return 'MVFR';
+  return 'VFR';
+}
 
 // Transform API response to frontend format
 function transformAerodromeToNavPoint(data: any): NavPoint {
@@ -200,7 +213,7 @@ export const ApiService = {
 
       // For now, fallback to mock data for partial matches
       // TODO: Implement search endpoint in API
-      const mockResults = await import('./constants').then(m => 
+      const mockResults = await import('./mock-data').then(m => 
         Object.values(m.mockNavData).filter(a =>
           a.id.includes(q) || a.name.toUpperCase().includes(q)
         )
@@ -221,7 +234,7 @@ export const ApiService = {
     } catch (error) {
       console.error(`Failed to get details for ${id}:`, error);
       // Fallback to mock data
-      const mockData = await import('./constants');
+      const mockData = await import('./mock-data');
       return mockData.mockNavData[id.toUpperCase()] || null;
     }
   },
@@ -242,7 +255,6 @@ export const ApiService = {
       await delay(100);
       const response = await apiCall<any[]>(`/metar/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
 
-      // Transform API response to NavPoint format
       return response.map(station => ({
         type: 'AIRPORT' as const,
         id: station.station,
@@ -250,6 +262,9 @@ export const ApiService = {
         lat: station.coords[1], // API returns [lon, lat]
         lon: station.coords[0],
         metar: station.metar?.raw || undefined,
+        flightCategory: station.metar
+          ? deriveFlightCategory(station.metar.visibility, station.metar.clouds)
+          : undefined,
       }));
     } catch (error) {
       console.error('Failed to get nearby METARs:', error);
@@ -329,9 +344,9 @@ export const ApiService = {
     };
 
     const parts = [
-      departure.id || departure.icao,
+      departure.id,
       ...waypoints.map(formatWaypoint),
-      arrival.id || arrival.icao,
+      arrival.id,
     ].filter(Boolean);
     return parts.join(' ');
   },

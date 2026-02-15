@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, Monitor, Ruler, Map, Moon, Sun, Fuel } from 'lucide-react';
 
-export const SettingsModal: React.FC<{
+interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   fuelPolicy: 'VFR_DAY' | 'VFR_NIGHT';
   onSetFuelPolicy: (val: 'VFR_DAY' | 'VFR_NIGHT') => void;
-}> = ({ isOpen, onClose, fuelPolicy, onSetFuelPolicy }) => {
+}
+
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, fuelPolicy, onSetFuelPolicy }) => {
   const [activeTab, setActiveTab] = useState('general');
 
   if (!isOpen) return null;

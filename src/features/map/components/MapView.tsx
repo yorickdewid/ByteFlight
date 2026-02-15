@@ -1,11 +1,9 @@
 import { CloudRain, Waves, RefreshCw, MapPin } from 'lucide-react';
-import { FlightPlan, NavPoint, WeatherCell, Waypoint } from '../../../types';
+import { FlightPlan, NavPoint, Waypoint } from '../../../types';
 import { PerformanceStrip, VectorMap } from './Visualizers';
 
 interface MapViewProps {
   flightPlan: FlightPlan;
-  selectedPoint: NavPoint | null;
-  weatherLayers: WeatherCell[];
   metarStations: NavPoint[];
   routeDist: number;
   routeTime: number;
@@ -25,8 +23,6 @@ interface MapViewProps {
 
 export default function MapView({
   flightPlan,
-  selectedPoint,
-  weatherLayers,
   metarStations,
   routeDist,
   routeTime,
@@ -56,11 +52,7 @@ export default function MapView({
       <div className="flex-1 relative z-10">
         <VectorMap
           flightPlan={flightPlan}
-          selectedPoint={selectedPoint}
-          weatherLayers={weatherLayers}
           airports={metarStations}
-          showRadar={showRadar}
-          showTurb={showTurb}
           onWaypointMove={onWaypointMove}
           onWaypointUpdate={onWaypointUpdate}
           onAddWaypoint={onAddWaypoint}

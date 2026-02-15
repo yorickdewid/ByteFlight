@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Plane, Search, Clock, Loader2, Sliders, Key, LogOut } from 'lucide-react';
 import { NavPoint } from '../../types';
-import { APP_VERSION } from '../../lib/constants';
+import { APP_VERSION } from '../../lib/config';
 
 interface HeaderProps {
   searchQuery: string;

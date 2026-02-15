@@ -1,20 +1,15 @@
 import { Compass, Map as MapIcon, MousePointer2, Plus, ZoomIn, ZoomOut } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
-import { MAPBOX_TOKEN } from '../../../lib/constants';
-import { parseMetar } from '../../../lib/utils';
-import { FlightPlan, NavPoint, Waypoint, WeatherCell } from '../../../types';
+import { MAPBOX_TOKEN } from '../../../lib/config';
+import { FlightPlan, NavPoint, Waypoint } from '../../../types';
 
 // Import mapbox-gl CSS inline for proper styling
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface VectorMapProps {
   flightPlan: FlightPlan;
-  selectedPoint: NavPoint | null;
-  weatherLayers: WeatherCell[];
-  airports: NavPoint[]; // New prop for all airports with METAR
-  showRadar: boolean;
-  showTurb: boolean;
+  airports: NavPoint[];
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
@@ -407,7 +402,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       else { type = 'WP'; index = i - 1; }
       return {
         type: 'Feature',
-        properties: { type, index, name: p.id || p.icao, alt: (p as Waypoint).alt || 0 },
+        properties: { type, index, name: p.id, alt: (p as Waypoint).alt || 0 },
         geometry: { type: 'Point', coordinates: [p.lon, p.lat] }
       };
     });
@@ -421,22 +416,20 @@ export const VectorMap: React.FC<VectorMapProps> = ({
     }
 
     // Update METAR Stations
-    const stationFeatures = airports.map(a => {
-      const parsed = a.metar ? parseMetar(a.metar) : null;
-      if (!parsed) return null;
-      return {
+    const stationFeatures = airports
+      .filter(a => a.flightCategory)
+      .map(a => ({
         type: 'Feature',
         properties: {
           name: a.id,
           metar: a.metar,
-          category: parsed.category
+          category: a.flightCategory,
         },
         geometry: {
           type: 'Point',
-          coordinates: [a.lon, a.lat]
-        }
-      };
-    }).filter(Boolean);
+          coordinates: [a.lon, a.lat],
+        },
+      }));
 
     const metarSource = map.current.getSource('metar-stations') as mapboxgl.GeoJSONSource;
     if (metarSource) {
