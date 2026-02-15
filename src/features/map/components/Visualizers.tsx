@@ -86,7 +86,46 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           paint: { 'line-color': '#E946EF', 'line-width': 3, 'line-dasharray': [2, 1] }
         });
 
-        // 2. METAR Dots (Circles)
+        // 2. Waypoint Circles (On top of route)
+        m.addLayer({
+          id: 'waypoints-circle',
+          type: 'circle',
+          source: 'waypoints',
+          paint: {
+            'circle-radius': 6,
+            'circle-color': [
+              'match',
+              ['get', 'type'],
+              'DEP', '#10b981',
+              'ARR', '#ef4444',
+              '#38bdf8'
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#0f172a'
+          }
+        });
+
+        // 3. Waypoint Labels
+        m.addLayer({
+          id: 'waypoints-label',
+          type: 'symbol',
+          source: 'waypoints',
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 12,
+            'text-offset': [0, 1.5],
+            'text-anchor': 'top',
+            'text-allow-overlap': true
+          },
+          paint: {
+            'text-color': '#e2e8f0',
+            'text-halo-color': '#0f172a',
+            'text-halo-width': 2
+          }
+        });
+
+        // 4. METAR Dots (Circles) — on top so weather is always visible
         // Green (VFR), Blue (MVFR), Yellow (IFR), Purple (LIFR)
         m.addLayer({
           id: 'metar-dots-circle',
@@ -108,7 +147,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           }
         });
 
-        // 3. METAR Dots (Text Symbols V, M, I, L)
+        // 5. METAR Dots (Text Symbols V, M, I, L)
         m.addLayer({
           id: 'metar-dots-label',
           type: 'symbol',
@@ -129,45 +168,6 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           },
           paint: {
             'text-color': '#ffffff'
-          }
-        });
-
-        // 4. Waypoint Circles (On top of route)
-        m.addLayer({
-          id: 'waypoints-circle',
-          type: 'circle',
-          source: 'waypoints',
-          paint: {
-            'circle-radius': 6,
-            'circle-color': [
-              'match',
-              ['get', 'type'],
-              'DEP', '#10b981',
-              'ARR', '#ef4444',
-              '#38bdf8'
-            ],
-            'circle-stroke-width': 2,
-            'circle-stroke-color': '#0f172a'
-          }
-        });
-
-        // 5. Waypoint Labels
-        m.addLayer({
-          id: 'waypoints-label',
-          type: 'symbol',
-          source: 'waypoints',
-          layout: {
-            'text-field': ['get', 'name'],
-            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-            'text-size': 12,
-            'text-offset': [0, 1.5],
-            'text-anchor': 'top',
-            'text-allow-overlap': true
-          },
-          paint: {
-            'text-color': '#e2e8f0',
-            'text-halo-color': '#0f172a',
-            'text-halo-width': 2
           }
         });
 
