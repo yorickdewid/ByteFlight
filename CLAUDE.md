@@ -27,19 +27,19 @@ pnpm install          # Install dependencies (never use npm/yarn)
 
 ByteFlight uses custom React hooks for ALL state management - no Redux, Zustand, or other state libraries. All hooks are composed in `App.tsx`, which acts as a thin orchestration layer.
 
-**Key Hooks** (all in `/src/hooks/`):
+**Key Hooks** (all in `/src/hooks/`, barrel-exported from `/src/hooks/index.ts`):
 - `useFlightPlan` - Core flight plan state (departure, arrival, waypoints, aircraft, payload). Persists to localStorage (`byteflight_plan`).
 - `useNavigation` - Selected point, METAR, NOTAMs, sidebar tab. Fetches data from backend API.
-- `useNavLog` - Backend flight calculations. Debounced (500ms) to prevent excessive API calls.
+- `useNavLog` - Backend flight calculations. Debounced (500ms), auto-refreshes every 5 minutes.
 - `useAircraft` - Fleet management. Loads from backend with localStorage fallback (`byteflight_fleet`).
 - `useSearch` - Airport/waypoint search. Debounced (300ms).
-- `useWeather` - Weather overlay state. Auto-refresh (30s).
-- `useMetarStations` - METAR stations visible in map viewport. Updates on map move.
+- `useWeather` - Weather overlay state. Auto-refresh (30s). Currently uses mock data.
+- `useMetarStations` - METAR stations with LRU accumulator (cap: 1000). Merges new stations on map pan, auto-refreshes every 5 minutes.
 - `useFavorites` - Favorite locations. Persists to localStorage (`byteflight_favorites`).
 - `useClock` - UTC time display (1s interval).
 - `useAppInit` - App initialization, loads default demo route (EHRD).
 
-**Pattern**: Hooks return both state and handlers. Handlers are passed down as props to components. No prop drilling for data - components can import hooks where needed.
+**Pattern**: Hooks return both state and handlers. Handlers are passed down as props to components. Import hooks via the barrel: `import { useFlightPlan, useNavLog } from '../hooks'`.
 
 ### Backend-First Architecture
 
@@ -55,24 +55,28 @@ ByteFlight uses custom React hooks for ALL state management - no Redux, Zustand,
 - `GET /aerodrome/:icao` - Aerodrome details (transforms backend `[lon, lat]` → `{lat, lon}`)
 - `GET /aerodrome/:icao/wind` - Runway wind analysis (favored runway calculation)
 - `GET /metar/:icao` - METAR data with decoded fields, flight category, TAF
+- `GET /metar/nearby` - METAR stations within radius of coordinates
 - `GET /notam/:icao` - NOTAMs for aerodrome
 - `POST /flightplan` - Calculate full nav log (distance, track, heading, time, fuel per leg)
 
-**Helper Methods**:
+**Helper Methods** (in `api.ts`):
 - `transformAerodromeToNavPoint()` - Converts backend format to frontend `NavPoint` type
-- `buildRouteString()` - Constructs route like "EHRD GDA SUGOL EHAM"
+- `deriveFlightCategory()` - Computes VFR/MVFR/IFR/LIFR from decoded METAR visibility and cloud ceiling
+- `buildRouteString()` - Constructs route like "EHRD GDA SUGOL EHAM". Named navaids (2-5 letter alphabetic) are sent as-is; coordinate waypoints use `WP(lat,lon)` format
 
 ### Type System
 
 All types in `/src/types/index.ts`. **Important**: TypeScript strict mode is **OFF** (`"strict": false`).
 
 **Core Types**:
-- `NavPoint` - Location (airport/VOR/waypoint) with coords, elevation, frequencies, runways
+- `NavPoint` - Location (airport/VOR/waypoint) with coords, elevation, frequencies, runways, optional `flightCategory`
 - `Waypoint` - Extends `NavPoint` with altitude property
 - `FlightPlan` - Central data structure: departure, arrival, alternate, waypoints, aircraft, payload, datetime
 - `AircraftProfile` - Performance data (cruise speed, fuel burn, W&B parameters)
 - `MetarResponse` - Backend METAR format with decoded wind, visibility, clouds, flight category
 - `NavLog` - Backend flight calculation response (per-leg data + totals)
+
+**Note**: `NavPoint.id` is the canonical identifier everywhere. There is no `icao` field on `NavPoint` — backend responses are mapped through `transformAerodromeToNavPoint()`.
 
 ### Mapbox GL Integration
 
@@ -80,12 +84,12 @@ Map logic lives in `/src/features/map/components/Visualizers.tsx` (VectorMap com
 
 **Layers** (order matters for proper rendering):
 1. Route line (dashed blue, 3px width)
-2. METAR station dots (color by flight category)
-3. METAR labels (V/M/I/L single letter)
-4. Waypoint circles (DEP=green, ARR=red, WP=sky blue)
-5. Waypoint labels (ICAO codes)
+2. Waypoint circles (DEP=green, ARR=red, WP=sky blue)
+3. Waypoint labels (ICAO codes)
+4. METAR station dots (color by flight category — rendered on top)
+5. METAR labels (V/M/I/L single letter)
 
-**Performance**: Map created once in `useEffect`, mutated via refs. Updates are debounced (only when sources change). `mapLoaded` flag prevents premature updates.
+**Performance**: Map created once in `useEffect`, mutated via refs. Updates are debounced (only when sources change). `mapLoaded` flag prevents premature updates. Map position persists to localStorage (`byteflight_map_position`) — restores on reload.
 
 **Interactions**:
 - Drag waypoints → calls `onWaypointMove(index, lat, lon)`
@@ -97,15 +101,25 @@ Map logic lives in `/src/features/map/components/Visualizers.tsx` (VectorMap com
 ### Feature-Based Organization
 
 ```
-src/features/
-├── aircraft/       # AircraftManagerModal, WeightBalanceModal
-├── flight-plan/    # FlightPlanSidebar, NavLogModal
-├── map/            # MapView, VectorMap, RunwayVisualizer, PerformanceStrip
-├── navigation/     # IntelligencePanel (NOTAMs, weather, runway analysis)
-└── weather/        # MetarTile component
+src/
+├── app/                    # App.tsx orchestrator, main.tsx entry
+├── components/
+│   ├── ui/                 # Primitives (button, input, altitude-input, data-tag, panel-box)
+│   └── layout/             # Header, modals barrel, settings-modal, change-password-modal
+├── features/
+│   ├── aircraft/           # AircraftManagerModal, WeightBalanceModal
+│   ├── flight-plan/        # FlightPlanSidebar, NavLogModal
+│   ├── map/                # MapView, VectorMap, RunwayVisualizer, PerformanceStrip
+│   ├── navigation/         # IntelligencePanel (NOTAMs, weather, runway analysis)
+│   └── weather/            # MetarTile component
+├── hooks/                  # Custom React hooks + index.ts barrel
+├── lib/
+│   ├── api.ts              # Backend API client (ApiService)
+│   ├── config.ts           # Runtime config (APP_VERSION, MAPBOX_TOKEN, defaultAircraftProfiles)
+│   ├── mock-data.ts        # Demo/fallback data (mockNavData, mockInitialFlightPlan)
+│   └── utils.ts            # Utility functions (fetchMockWeather)
+└── types/                  # TypeScript definitions
 ```
-
-Each feature contains its own components. Shared UI primitives in `src/components/ui/`.
 
 ## Important Conventions
 
@@ -127,7 +141,9 @@ if (isLoading) return <Loader />;
 return <div>...</div>;
 ```
 
-**Modal State**: Lives in `App.tsx` as `useState`. Modals defined in `/src/components/layout/modals.tsx`.
+**Modal Props**: All modals use named `ComponentNameProps` interfaces (e.g., `SettingsModalProps`, `WeightBalanceModalProps`). Never use inline anonymous types for component props.
+
+**Modal State**: Lives in `App.tsx` as `useState`. Modals re-exported from `/src/components/layout/modals.tsx`.
 
 ### Naming Conventions
 
@@ -145,15 +161,16 @@ return <div>...</div>;
 
 - Flight plan: localStorage `byteflight_plan` (saved in `useFlightPlan`)
 - Aircraft fleet: Backend + localStorage fallback `byteflight_fleet`
-- Favorites: localStorage `byteflight_favorites`
+- Favorites: localStorage `byteflight_favorites` (saved in `useFavorites`)
+- Map position: localStorage `byteflight_map_position` (center + zoom, saved on every pan)
 
 ### Aviation-Specific Logic
 
-**Flight Category** (used for METAR color coding):
-- VFR (green): visibility ≥5SM, ceiling ≥3000ft
-- MVFR (blue): visibility 3-5SM, ceiling 1000-3000ft
-- IFR (yellow): visibility 1-3SM, ceiling 500-1000ft
-- LIFR (purple): visibility <1SM, ceiling <500ft
+**Flight Category** (derived from decoded METAR in `api.ts` via `deriveFlightCategory()`):
+- VFR (green): visibility >8000m, ceiling >3000ft
+- MVFR (blue): visibility 5000-8000m, ceiling 1000-3000ft
+- IFR (yellow): visibility 1600-5000m, ceiling 500-1000ft
+- LIFR (purple): visibility <1600m, ceiling <500ft
 
 **Runway Wind Analysis**:
 - Backend calculates favored runway based on wind
@@ -199,7 +216,7 @@ return <div>...</div>;
 1. User searches airport in `FlightPlanSidebar`
 2. `useSearch` hook calls `ApiService.lookupNavPoint(query)`
 3. User selects result → calls `handlePointChange('departure', icao)`
-4. `useFlightPlan` updates state and persists to localStorage
+4. `useFlightPlan` updates state (optimistic `id` update) and persists to localStorage
 5. Map re-renders via `flightPlan` prop change
 6. `useNavLog` debounces and calls backend `/flightplan` endpoint
 7. NavLog updated with calculated legs, distance, time, fuel
@@ -208,10 +225,13 @@ return <div>...</div>;
 
 1. **Map mutations**: Map instance created once, mutated via refs. Don't recreate on every render.
 2. **NavPoint vs Waypoint**: NavPoint is a location; Waypoint extends it with `alt` property.
-3. **Flight plan order**: Always maintain departure → waypoints → arrival.
-4. **Backend calculations**: Never replicate flight calculations in frontend - backend is source of truth.
-5. **localStorage keys**: Always use `byteflight_` prefix for consistency.
-6. **TypeScript**: Strict mode OFF - be defensive with undefined/null checks.
+3. **NavPoint.id is canonical**: Never use `.icao` on NavPoint — it doesn't exist. Backend responses use `icao` internally but it's mapped to `id` via `transformAerodromeToNavPoint()`.
+4. **Flight plan order**: Always maintain departure → waypoints → arrival.
+5. **Backend calculations**: Never replicate flight calculations in frontend - backend is source of truth.
+6. **localStorage keys**: Always use `byteflight_` prefix for consistency.
+7. **TypeScript**: Strict mode OFF - be defensive with undefined/null checks.
+8. **Config vs mock data**: Runtime config in `lib/config.ts`, demo/fallback data in `lib/mock-data.ts`. Never mix them.
+9. **Route string format**: Named navaids (alphabetic, 2-5 chars) go as-is; user-placed waypoints use `WP(lat,lon)` format.
 
 ## Deployment
 
