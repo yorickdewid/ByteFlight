@@ -74,6 +74,7 @@ export default function App() {
     totalDistance: routeDist,
     totalDuration: routeTime,
     totalFuel: fuelTotal,
+    lastUpdated: navLogUpdated,
   } = useNavLog(flightPlan);
 
   // --- Handlers ---
@@ -133,6 +134,7 @@ export default function App() {
           routeDist={Math.round(routeDist)}
           routeTime={Math.round(routeTime)}
           fuelTotal={Math.round(fuelTotal)}
+          navLogUpdated={navLogUpdated}
           isWeatherLoading={isWeatherLoading || isNavLogLoading || isMetarLoading}
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}

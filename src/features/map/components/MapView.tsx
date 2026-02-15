@@ -10,6 +10,7 @@ interface MapViewProps {
   routeDist: number;
   routeTime: number;
   fuelTotal: number;
+  navLogUpdated: Date | null;
   isWeatherLoading: boolean;
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
@@ -30,6 +31,7 @@ export default function MapView({
   routeDist,
   routeTime,
   fuelTotal,
+  navLogUpdated,
   isWeatherLoading,
   onWaypointMove,
   onWaypointUpdate,
@@ -48,6 +50,7 @@ export default function MapView({
         ete={`${Math.floor(routeTime / 60)}:${(routeTime % 60).toString().padStart(2, '0')}`}
         fuel={fuelTotal}
         reserve={flightPlan.reserveType.replace('_', ' ')}
+        lastUpdated={navLogUpdated}
       />
 
       <div className="flex-1 relative z-10">

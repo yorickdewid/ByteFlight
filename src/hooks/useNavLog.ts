@@ -7,6 +7,7 @@ interface UseNavLogResult {
   isLoading: boolean;
   error: string | null;
   refresh: () => void;
+  lastUpdated: Date | null;
   // Computed values for quick access
   totalDistance: number;
   totalDuration: number;
@@ -17,6 +18,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
   const [navLog, setNavLog] = useState<NavLog | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
   // Debounce timer ref
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,6 +52,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
       // Only update if this is still the latest request
       if (requestId === requestIdRef.current) {
         setNavLog(result);
+        setLastUpdated(new Date());
         setError(null);
       }
     } catch (err) {
@@ -90,6 +93,14 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
     };
   }, [fetchNavLog]);
 
+  // Periodic refresh for weather-dependent data (wind, GS, fuel)
+  // Backend incorporates live METAR/wind into calculations, so stale data
+  // means incorrect headings, ground speeds, ETEs, and fuel burn
+  useEffect(() => {
+    const interval = setInterval(fetchNavLog, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchNavLog]);
+
   // Manual refresh
   const refresh = useCallback(() => {
     if (debounceRef.current) {
@@ -103,6 +114,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
     isLoading,
     error,
     refresh,
+    lastUpdated,
     // Computed values (fall back to 0 if no nav log)
     totalDistance: navLog?.totalDistance ?? 0,
     totalDuration: navLog?.totalDuration ?? 0,

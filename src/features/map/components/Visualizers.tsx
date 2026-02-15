@@ -530,28 +530,47 @@ export const RunwayVisualizer: React.FC<RunwayVisualizerProps> = ({ runwayHeadin
   );
 };
 
-export const PerformanceStrip: React.FC<{ dist: number; ete: string; fuel: number; reserve: string }> = ({ dist, ete, fuel, reserve }) => (
-  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-full shadow-2xl p-1">
-    <div className="px-5 py-2 flex flex-col items-center min-w-[90px] rounded-l-full hover:bg-white/5 transition-colors">
-      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Distance</span>
-      <span className="text-base font-bold text-white">{dist} <span className="text-[10px] text-slate-500 font-medium">NM</span></span>
-    </div>
-    <div className="w-px bg-slate-700/50 h-8"></div>
-    <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
-      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ETE</span>
-      <span className="text-base font-bold text-white">{ete}</span>
-    </div>
-    <div className="w-px bg-slate-700/50 h-8"></div>
-    <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
-      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fuel</span>
-      <div className="flex flex-col items-center">
-        <span className="text-base font-bold text-sky-400">{fuel} <span className="text-[10px] text-sky-600 font-medium">L</span></span>
+export const PerformanceStrip: React.FC<{ dist: number; ete: string; fuel: number; reserve: string; lastUpdated?: Date | null }> = ({ dist, ete, fuel, reserve, lastUpdated }) => {
+  // Relative freshness — re-computed each render (useClock in App.tsx ticks every 1s)
+  const freshness = (() => {
+    if (!lastUpdated) return null;
+    const mins = Math.floor((Date.now() - lastUpdated.getTime()) / 60_000);
+    if (mins < 1) return 'just now';
+    return `${mins}m ago`;
+  })();
+
+  return (
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-full shadow-2xl p-1">
+      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] rounded-l-full hover:bg-white/5 transition-colors">
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Distance</span>
+        <span className="text-base font-bold text-white">{dist} <span className="text-[10px] text-slate-500 font-medium">NM</span></span>
       </div>
+      <div className="w-px bg-slate-700/50 h-8"></div>
+      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ETE</span>
+        <span className="text-base font-bold text-white">{ete}</span>
+      </div>
+      <div className="w-px bg-slate-700/50 h-8"></div>
+      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
+        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fuel</span>
+        <div className="flex flex-col items-center">
+          <span className="text-base font-bold text-sky-400">{fuel} <span className="text-[10px] text-sky-600 font-medium">L</span></span>
+        </div>
+      </div>
+      <div className="w-px bg-slate-700/50 h-8"></div>
+      <div className="px-4 py-2 flex flex-col items-center min-w-[70px] bg-slate-900/40 rounded-r-full">
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Reserve</span>
+        <span className="text-xs font-semibold text-slate-300">{reserve}</span>
+      </div>
+      {freshness && (
+        <>
+          <div className="w-px bg-slate-700/50 h-8"></div>
+          <div className="px-4 py-2 flex flex-col items-center min-w-[60px] rounded-r-full">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Updated</span>
+            <span className="text-xs font-semibold text-slate-400">{freshness}</span>
+          </div>
+        </>
+      )}
     </div>
-    <div className="w-px bg-slate-700/50 h-8"></div>
-    <div className="px-4 py-2 flex flex-col items-center min-w-[70px] bg-slate-900/40 rounded-r-full">
-      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Reserve</span>
-      <span className="text-xs font-semibold text-slate-300">{reserve}</span>
-    </div>
-  </div>
-);
+  );
+};
