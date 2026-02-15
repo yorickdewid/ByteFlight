@@ -1,4 +1,4 @@
-import { Compass, Map as MapIcon, MousePointer2, Plus, ZoomIn, ZoomOut } from 'lucide-react';
+import { Compass, LocateFixed, Map as MapIcon, MousePointer2, Plus, ZoomIn, ZoomOut } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { MAPBOX_TOKEN } from '../../../lib/config';
@@ -457,10 +457,22 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
       <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-30">
         <div className="bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-xl p-1.5 flex flex-col gap-1 shadow-xl">
-          <button onClick={() => map.current?.zoomIn()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"><ZoomIn size={18} /></button>
-          <button onClick={() => map.current?.zoomOut()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"><ZoomOut size={18} /></button>
+          <button onClick={() => map.current?.zoomIn()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors" title="Zoom in"><ZoomIn size={18} /></button>
+          <button onClick={() => map.current?.zoomOut()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors" title="Zoom out"><ZoomOut size={18} /></button>
           <div className="h-px bg-slate-700/50 my-1 mx-2"></div>
-          <button onClick={() => map.current?.flyTo({ center: [flightPlan.departure.lon, flightPlan.departure.lat], zoom: 9 })} className="p-2.5 hover:bg-slate-700 text-sky-400 hover:text-sky-300 rounded-lg transition-colors" title="Re-center"><Compass size={18} /></button>
+          <button
+            onClick={() => {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => map.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 10 }),
+                () => { /* user denied or unavailable — silently ignore */ }
+              );
+            }}
+            className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+            title="My location"
+          >
+            <LocateFixed size={18} />
+          </button>
+          <button onClick={() => map.current?.flyTo({ center: [flightPlan.departure.lon, flightPlan.departure.lat], zoom: 9 })} className="p-2.5 hover:bg-slate-700 text-sky-400 hover:text-sky-300 rounded-lg transition-colors" title="Re-center on departure"><Compass size={18} /></button>
         </div>
       </div>
 
