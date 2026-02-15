@@ -54,11 +54,24 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         return;
       }
 
+      // Restore last map position, or default to departure airport
+      const savedPosition = (() => {
+        try {
+          const raw = localStorage.getItem('byteflight_map_position');
+          if (!raw) return null;
+          const { center, zoom } = JSON.parse(raw);
+          if (Array.isArray(center) && center.length === 2 && typeof zoom === 'number') {
+            return { center: center as [number, number], zoom };
+          }
+        } catch { /* corrupt data, ignore */ }
+        return null;
+      })();
+
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/dark-v11',
-        center: [flightPlan.departure.lon, flightPlan.departure.lat],
-        zoom: 9,
+        center: savedPosition?.center ?? [flightPlan.departure.lon, flightPlan.departure.lat],
+        zoom: savedPosition?.zoom ?? 9,
         attributionControl: false,
       });
 
@@ -338,12 +351,16 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         onUpdateMetarStations({ center: { lat: center.lat, lon: center.lng }, zoom });
       });
 
-      // Update METAR stations when map moves/zooms
+      // Update METAR stations when map moves/zooms + persist position
       m.on('moveend', () => {
         if (!m) return;
         const center = m.getCenter();
         const zoom = m.getZoom();
         onUpdateMetarStations({ center: { lat: center.lat, lon: center.lng }, zoom });
+        localStorage.setItem('byteflight_map_position', JSON.stringify({
+          center: [center.lng, center.lat],
+          zoom,
+        }));
       });
 
       m.on('error', (e) => {
