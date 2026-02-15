@@ -1,4 +1,4 @@
-import { AircraftProfile, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis } from '../types';
+import { AircraftProfile, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis, Waypoint } from '../types';
 import { defaultAircraftProfiles } from './constants';
 
 const API_BASE = 'https://api.byteflight.app';
@@ -312,11 +312,20 @@ export const ApiService = {
     return response.json();
   },
 
-  // Build route string from flight plan (e.g., "EHRD GDA SUGOL EHAM")
-  buildRouteString(departure: NavPoint, waypoints: { id?: string; name?: string }[], arrival: NavPoint): string {
+  // Build route string from flight plan (e.g., "EHRD WP(52.01,4.71) EHAM")
+  // Aerodromes use ICAO codes; all other waypoints use WP(lat,lon) coordinate format
+  // which the backend's CoordinateResolver parses via /^WP\((-?\d+\.?\d*),(-?\d+\.?\d*)\)$/
+  buildRouteString(departure: NavPoint, waypoints: Waypoint[], arrival: NavPoint): string {
+    const formatWaypoint = (wp: Waypoint): string => {
+      if (wp.type === 'AIRPORT' || wp.type === 'DEP' || wp.type === 'ARR') {
+        return wp.id || wp.icao || `WP(${wp.lat},${wp.lon})`;
+      }
+      return `WP(${wp.lat},${wp.lon})`;
+    };
+
     const parts = [
       departure.id || departure.icao,
-      ...waypoints.map(wp => wp.id || wp.name),
+      ...waypoints.map(formatWaypoint),
       arrival.id || arrival.icao,
     ].filter(Boolean);
     return parts.join(' ');
