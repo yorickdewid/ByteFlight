@@ -180,19 +180,24 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         });
 
         // --- Interaction: Dragging ---
-        m.on('mouseenter', 'waypoints-circle', () => m.getCanvas().style.cursor = 'move');
+        m.on('mouseenter', 'waypoints-circle', (e) => {
+          const features = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
+          const isDraggable = features.length > 0 && features[0].properties?.draggable;
+          m.getCanvas().style.cursor = isDraggable ? 'move' : 'pointer';
+        });
         m.on('mouseleave', 'waypoints-circle', () => m.getCanvas().style.cursor = '');
 
         m.on('mouseenter', 'metar-dots-circle', () => m.getCanvas().style.cursor = 'pointer');
         m.on('mouseleave', 'metar-dots-circle', () => m.getCanvas().style.cursor = '');
 
         m.on('mousedown', 'waypoints-circle', (e) => {
-          e.preventDefault();
-          m.dragPan.disable();
           const features = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
           if (features.length) {
             const feature = features[0];
-            const props = feature.properties as { type: string, index: number };
+            const props = feature.properties as { type: string, index: number, draggable: boolean };
+            if (!props.draggable) return; // Named waypoint — don't allow drag
+            e.preventDefault();
+            m.dragPan.disable();
             draggedPoint.current = { type: props.type, index: props.index };
           }
         });
@@ -394,15 +399,19 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       });
     }
 
+    // User-placed waypoints (wp-map-*, wp-sidebar-*) are draggable; named navaids are not
+    const isUserWaypoint = (id: string) => id.startsWith('wp-');
+
     const pointFeatures = pts.map((p, i) => {
       let type = 'WP';
       let index = -1;
+      let draggable = false;
       if (i === 0) type = 'DEP';
       else if (i === pts.length - 1) type = 'ARR';
-      else { type = 'WP'; index = i - 1; }
+      else { type = 'WP'; index = i - 1; draggable = isUserWaypoint(p.id); }
       return {
         type: 'Feature',
-        properties: { type, index, name: p.id, alt: (p as Waypoint).alt || 0 },
+        properties: { type, index, name: p.id, alt: (p as Waypoint).alt || 0, draggable },
         geometry: { type: 'Point', coordinates: [p.lon, p.lat] }
       };
     });

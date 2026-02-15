@@ -4,3 +4,4 @@ export { AltitudeInput } from './altitude-input';
 export { DataTag } from './data-tag';
 export { PanelBox } from './panel-box';
 export { SystemAlert } from './system-alert';
+export { WaypointInput } from './waypoint-input';

@@ -1,6 +1,6 @@
 import { FileText, PlusCircle, Trash2 } from 'lucide-react';
-import { AltitudeInput, Button, Input, PanelBox } from '../../../components/ui';
-import { AircraftProfile, FlightPlan } from '../../../types';
+import { AltitudeInput, Button, Input, PanelBox, WaypointInput } from '../../../components/ui';
+import { AircraftProfile, FlightPlan, NavPoint } from '../../../types';
 
 interface FlightPlanSidebarProps {
   flightPlan: FlightPlan;
@@ -69,11 +69,13 @@ export default function FlightPlanSidebar({
               <div className="absolute left-[10px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-slate-600 z-10 group-hover:bg-sky-400 group-hover:scale-125 transition-all"></div>
 
               <div className="flex-1 flex bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden group-focus-within:border-sky-500/50 transition-colors">
-                <input
-                  value={wp.name}
-                  onChange={e => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, name: e.target.value } : w) }))}
-                  className="flex-1 bg-transparent text-sm py-1.5 px-3 text-slate-200 focus:outline-none placeholder-slate-600 font-medium"
-                  placeholder="WAYPOINT"
+                <WaypointInput
+                  value={wp.id?.startsWith('wp-') ? (wp.name || '') : wp.id}
+                  onChange={text => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, name: text, id: text } : w) }))}
+                  onResolve={(point: NavPoint) => onUpdateFlightPlan(p => ({
+                    ...p,
+                    waypoints: p.waypoints.map((w, j) => j === i ? { ...point, alt: w.alt, type: point.type || 'WAYPOINT' } : w),
+                  }))}
                 />
 
                 <div className="w-px bg-slate-700/30"></div>
@@ -92,7 +94,14 @@ export default function FlightPlanSidebar({
 
           <div className="pl-8">
             <button
-              onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: [...p.waypoints, { id: `wp-map-${Date.now()}`, name: 'NEW WP', lat: 0, lon: 0, alt: 1500, type: 'WAYPOINT' }] }))}
+              onClick={() => onUpdateFlightPlan(p => {
+                // Interpolate midpoint between last route point and arrival
+                const lastPoint = p.waypoints.length > 0 ? p.waypoints[p.waypoints.length - 1] : p.departure;
+                const nextPoint = p.arrival;
+                const lat = (lastPoint.lat + nextPoint.lat) / 2;
+                const lon = (lastPoint.lon + nextPoint.lon) / 2;
+                return { ...p, waypoints: [...p.waypoints, { id: `wp-sidebar-${Date.now()}`, name: '', lat, lon, alt: p.cruiseAltitude || 1500, type: 'WAYPOINT' as const }] };
+              })}
               className="text-[10px] flex items-center gap-1.5 text-sky-500 hover:text-sky-400 font-bold transition-all uppercase tracking-wide py-1 px-2 rounded hover:bg-sky-500/10 -ml-2"
             >
               <PlusCircle size={14} /> Add Waypoint
