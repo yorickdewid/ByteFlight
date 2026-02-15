@@ -112,7 +112,7 @@ export default function FlightPlanSidebar({
       </PanelBox>
 
       <div className="p-4 bg-slate-900/80 mt-auto border-t border-slate-800/50 backdrop-blur-md">
-        <Button className="w-full py-2.5 text-sm font-bold shadow-sky-900/20 shadow-lg" variant="active" icon={FileText} onClick={onOpenNavLog}>Generate NavLog</Button>
+        <Button className="w-full py-2.5 text-sm font-bold shadow-sky-900/20 shadow-lg" variant="active" icon={FileText} onClick={onOpenNavLog}>View NavLog</Button>
       </div>
     </aside>
   );
