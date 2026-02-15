@@ -48,11 +48,6 @@ export function useFlightPlan() {
       ...prev,
       waypoints: [...prev.waypoints, {
         ...point,
-        id: `wp-${Date.now()}`,
-        name: point.id,
-        lat: point.lat,
-        lon: point.lon,
-        type: point.type,
         alt: prev.cruiseAltitude
       }]
     }));

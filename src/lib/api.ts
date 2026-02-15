@@ -312,13 +312,16 @@ export const ApiService = {
     return response.json();
   },
 
-  // Build route string from flight plan (e.g., "EHRD WP(52.01,4.71) EHAM")
-  // Aerodromes use ICAO codes; all other waypoints use WP(lat,lon) coordinate format
-  // which the backend's CoordinateResolver parses via /^WP\((-?\d+\.?\d*),(-?\d+\.?\d*)\)$/
+  // Build route string from flight plan (e.g., "EHRD GDA SUGOL EHAM")
+  // Named waypoints (airports, VOR, FIX, etc.) use their identifier directly.
+  // User-placed coordinate waypoints (map double-click) use WP(lat,lon) format
+  // which the backend's CoordinateResolver parses.
   buildRouteString(departure: NavPoint, waypoints: Waypoint[], arrival: NavPoint): string {
+    const isUserCoordinate = (id: string) => /^wp-map-\d+$/.test(id);
+
     const formatWaypoint = (wp: Waypoint): string => {
-      if (wp.type === 'AIRPORT' || wp.type === 'DEP' || wp.type === 'ARR') {
-        return wp.id || wp.icao || `WP(${wp.lat},${wp.lon})`;
+      if (wp.id && !isUserCoordinate(wp.id)) {
+        return wp.id;
       }
       return `WP(${wp.lat},${wp.lon})`;
     };

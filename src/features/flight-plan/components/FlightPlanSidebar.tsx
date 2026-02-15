@@ -64,14 +64,14 @@ export default function FlightPlanSidebar({
             <Input placeholder="ICAO" value={flightPlan.departure.icao} onChange={e => onPointChange('departure', e.target.value)} />
           </div>
 
-          {flightPlan.waypoints.map(wp => (
-            <div key={wp.id} className="flex items-center gap-2 mb-2 relative pl-8 group">
+          {flightPlan.waypoints.map((wp, i) => (
+            <div key={i} className="flex items-center gap-2 mb-2 relative pl-8 group">
               <div className="absolute left-[10px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-slate-600 z-10 group-hover:bg-sky-400 group-hover:scale-125 transition-all"></div>
 
               <div className="flex-1 flex bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden group-focus-within:border-sky-500/50 transition-colors">
                 <input
                   value={wp.name}
-                  onChange={e => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map(w => w.id === wp.id ? { ...w, name: e.target.value } : w) }))}
+                  onChange={e => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, name: e.target.value } : w) }))}
                   className="flex-1 bg-transparent text-sm py-1.5 px-3 text-slate-200 focus:outline-none placeholder-slate-600 font-medium"
                   placeholder="WAYPOINT"
                 />
@@ -80,19 +80,19 @@ export default function FlightPlanSidebar({
 
                 <AltitudeInput
                   value={wp.alt}
-                  onChange={(newAlt) => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map(w => w.id === wp.id ? { ...w, alt: newAlt } : w) }))}
+                  onChange={(newAlt) => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, alt: newAlt } : w) }))}
                   className="w-16 bg-transparent text-right text-xs font-mono text-sky-400 focus:outline-none placeholder-slate-700 py-1.5 px-2"
                   placeholder="ALT/FL"
                 />
               </div>
 
-              <button onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.filter(w => w.id !== wp.id) }))} className="text-slate-600 hover:text-red-400 ml-1 transition-colors p-1.5 hover:bg-slate-800 rounded-md"><Trash2 size={14} /></button>
+              <button onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.filter((_, j) => j !== i) }))} className="text-slate-600 hover:text-red-400 ml-1 transition-colors p-1.5 hover:bg-slate-800 rounded-md"><Trash2 size={14} /></button>
             </div>
           ))}
 
           <div className="pl-8">
             <button
-              onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: [...p.waypoints, { id: Date.now().toString(), name: 'NEW WP', lat: 0, lon: 0, alt: 1500, type: 'WAYPOINT' }] }))}
+              onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: [...p.waypoints, { id: `wp-map-${Date.now()}`, name: 'NEW WP', lat: 0, lon: 0, alt: 1500, type: 'WAYPOINT' }] }))}
               className="text-[10px] flex items-center gap-1.5 text-sky-500 hover:text-sky-400 font-bold transition-all uppercase tracking-wide py-1 px-2 rounded hover:bg-sky-500/10 -ml-2"
             >
               <PlusCircle size={14} /> Add Waypoint
