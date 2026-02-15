@@ -317,11 +317,13 @@ export const ApiService = {
   // User-placed coordinate waypoints (map double-click) use WP(lat,lon) format
   // which the backend's CoordinateResolver parses.
   buildRouteString(departure: NavPoint, waypoints: Waypoint[], arrival: NavPoint): string {
-    const isUserCoordinate = (id: string) => /^wp-map-\d+$/.test(id);
+    // Valid aviation identifiers: 2-5 uppercase alphanumeric (ICAO, VOR, FIX, etc.)
+    // Anything else (wp-map-xxx, wp1, timestamps, etc.) falls back to coordinates
+    const isNavIdentifier = (id: string) => /^[A-Z0-9]{2,5}$/.test(id.toUpperCase());
 
     const formatWaypoint = (wp: Waypoint): string => {
-      if (wp.id && !isUserCoordinate(wp.id)) {
-        return wp.id;
+      if (wp.id && isNavIdentifier(wp.id)) {
+        return wp.id.toUpperCase();
       }
       return `WP(${wp.lat},${wp.lon})`;
     };

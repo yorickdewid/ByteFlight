@@ -140,8 +140,8 @@ export const mockInitialFlightPlan: FlightPlan = {
   alternate: null,
   cruiseAltitude: 1500,
   waypoints: [
-    { id: 'wp1', name: 'GDA', lat: 52.0166, lon: 4.7166, type: 'VOR', alt: 1500, elevation: 0, magVar: 1 },
-    { id: 'wp2', name: 'SUGOL', lat: 52.2000, lon: 4.5000, type: 'FIX', alt: 2000, elevation: null, magVar: 1 },
+    { id: 'GDA', name: 'GDA', lat: 52.0166, lon: 4.7166, type: 'VOR', alt: 1500, elevation: 0, magVar: 1 },
+    { id: 'SUGOL', name: 'SUGOL', lat: 52.2000, lon: 4.5000, type: 'FIX', alt: 2000, elevation: null, magVar: 1 },
   ],
   dateTime: new Date().toISOString().substring(0, 16),
   payload: { pilot: 85, pax: 0, baggage: 10, fuel: 80 },
