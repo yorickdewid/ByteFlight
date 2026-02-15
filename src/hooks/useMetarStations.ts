@@ -16,6 +16,7 @@ export function useMetarStations() {
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const lastFetchRef = useRef<string>(''); // Prevent duplicate fetches
+  const lastBoundsRef = useRef<MapBounds | null>(null); // For periodic refresh
 
   /**
    * Calculate appropriate search radius based on zoom level
@@ -55,6 +56,7 @@ export function useMetarStations() {
     debounceTimer.current = setTimeout(async () => {
       setIsLoading(true);
       lastFetchRef.current = cacheKey;
+      lastBoundsRef.current = bounds;
 
       try {
         // Fetch nearby METAR stations in ONE API call (much faster!)
@@ -75,14 +77,22 @@ export function useMetarStations() {
     }, 500); // 500ms debounce
   }, []);
 
-  // Cleanup on unmount
+  // Periodic refresh for weather data staleness (METAR changes frequently)
+  // Bypasses the cache key so it always re-fetches current viewport
   useEffect(() => {
+    const interval = setInterval(() => {
+      if (!lastBoundsRef.current) return;
+      lastFetchRef.current = ''; // Clear cache to force re-fetch
+      updateStations(lastBoundsRef.current);
+    }, 5 * 60 * 1000);
+
     return () => {
+      clearInterval(interval);
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
     };
-  }, []);
+  }, [updateStations]);
 
   return {
     metarStations,
