@@ -2,87 +2,121 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavPoint } from '../types';
 import { ApiService } from '../lib/api';
 
+const MAX_STATIONS = 1000;
+
 interface MapBounds {
   center: { lat: number; lon: number };
   zoom: number;
 }
 
+interface StationEntry {
+  station: NavPoint;
+  lastSeen: number; // Timestamp — used for LRU eviction
+}
+
 /**
- * Hook to manage METAR stations based on map viewport
- * Fetches nearby aerodromes when map moves, then fetches METAR data for each
+ * Hook to manage METAR stations based on map viewport.
+ *
+ * Stations accumulate as the user pans — new stations are added,
+ * existing stations get their METAR data refreshed, and the oldest
+ * (least recently seen) stations are evicted when the cache exceeds
+ * MAX_STATIONS. This avoids the visual flicker of stations appearing
+ * and disappearing on every pan and reduces redundant API calls.
  */
 export function useMetarStations() {
   const [metarStations, setMetarStations] = useState<NavPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-  const lastFetchRef = useRef<string>(''); // Prevent duplicate fetches
-  const lastBoundsRef = useRef<MapBounds | null>(null); // For periodic refresh
+  const lastFetchRef = useRef<string>('');
+  const lastBoundsRef = useRef<MapBounds | null>(null);
+  const stationCache = useRef<Map<string, StationEntry>>(new Map());
 
   /**
-   * Calculate appropriate search radius based on zoom level
-   * Higher zoom = smaller radius (more focused view)
-   * Lower zoom = larger radius (wider view)
+   * Merge incoming stations into the accumulator.
+   * - Existing stations: update METAR data + lastSeen timestamp
+   * - New stations: add to cache
+   * - Over cap: evict least recently seen stations
+   */
+  const mergeStations = useCallback((incoming: NavPoint[]) => {
+    const now = Date.now();
+    const cache = stationCache.current;
+
+    for (const station of incoming) {
+      cache.set(station.id, { station, lastSeen: now });
+    }
+
+    // Evict oldest stations if over cap
+    if (cache.size > MAX_STATIONS) {
+      const entries = [...cache.entries()];
+      entries.sort((a, b) => a[1].lastSeen - b[1].lastSeen);
+
+      const toEvict = cache.size - MAX_STATIONS;
+      for (let i = 0; i < toEvict; i++) {
+        cache.delete(entries[i][0]);
+      }
+    }
+
+    // Derive array for React consumers
+    setMetarStations(
+      [...cache.values()].map(entry => entry.station)
+    );
+  }, []);
+
+  /**
+   * Calculate search radius based on zoom level.
+   * Higher zoom = smaller radius (more focused view).
    */
   const getRadiusFromZoom = (zoom: number): number => {
-    // Zoom levels: 0-22 (Mapbox)
-    // Radius in NM
-    if (zoom >= 12) return 15;   // Very zoomed in - 15 NM
-    if (zoom >= 10) return 25;   // City level - 25 NM
-    if (zoom >= 8) return 50;    // Regional - 50 NM
-    if (zoom >= 6) return 100;   // Country level - 100 NM
-    return 200;                  // Continent level - 200 NM
+    if (zoom >= 12) return 15;   // Very zoomed in — 15 NM
+    if (zoom >= 10) return 25;   // City level — 25 NM
+    if (zoom >= 8) return 50;    // Regional — 50 NM
+    if (zoom >= 6) return 100;   // Country level — 100 NM
+    return 200;                  // Continent level — 200 NM
   };
 
   /**
-   * Update METAR stations based on map bounds
-   * Debounced to prevent excessive API calls during map movement
+   * Fetch and merge METAR stations for the given map bounds.
+   * Debounced (500ms) to prevent excessive API calls during panning.
    */
-  const updateStations = useCallback(async (bounds: MapBounds) => {
+  const updateStations = useCallback((bounds: MapBounds) => {
     const { center, zoom } = bounds;
     const radius = getRadiusFromZoom(zoom);
 
-    // Create cache key to prevent duplicate fetches
+    // Cache key prevents re-fetching the exact same viewport
     const cacheKey = `${center.lat.toFixed(2)},${center.lon.toFixed(2)},${radius}`;
-    if (lastFetchRef.current === cacheKey) {
-      return; // Already fetched this area
-    }
+    if (lastFetchRef.current === cacheKey) return;
 
-    // Clear existing debounce timer
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Debounce: Wait 500ms after map stops moving
     debounceTimer.current = setTimeout(async () => {
       setIsLoading(true);
       lastFetchRef.current = cacheKey;
       lastBoundsRef.current = bounds;
 
       try {
-        // Fetch nearby METAR stations in ONE API call (much faster!)
         const stations = await ApiService.getNearbyMetars(
           center.lat,
           center.lon,
           radius
         );
-
-        // Stations already include METAR data from backend
-        setMetarStations(stations);
+        mergeStations(stations);
       } catch (error) {
         console.error('Failed to update METAR stations:', error);
-        setMetarStations([]);
       } finally {
         setIsLoading(false);
       }
-    }, 500); // 500ms debounce
-  }, []);
+    }, 500);
+  }, [mergeStations]);
 
-  // Periodic refresh for weather data staleness (METAR changes frequently)
-  // Bypasses the cache key so it always re-fetches current viewport
+  // Periodic refresh — re-fetch current viewport every 5 minutes
+  // to keep METAR data (flight categories, wind, vis) current.
+  // Clears cache key to bypass dedup, mergeStations handles the rest.
   useEffect(() => {
     const interval = setInterval(() => {
       if (!lastBoundsRef.current) return;
-      lastFetchRef.current = ''; // Clear cache to force re-fetch
+      lastFetchRef.current = '';
       updateStations(lastBoundsRef.current);
     }, 5 * 60 * 1000);
 
