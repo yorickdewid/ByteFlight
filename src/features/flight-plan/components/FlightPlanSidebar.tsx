@@ -61,7 +61,7 @@ export default function FlightPlanSidebar({
 
           <div className="relative pl-8">
             <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-emerald-500 bg-slate-900 z-10 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-            <Input placeholder="ICAO" value={flightPlan.departure.icao} onChange={e => onPointChange('departure', e.target.value)} />
+            <Input placeholder="ICAO" value={flightPlan.departure.id} onChange={e => onPointChange('departure', e.target.value)} />
           </div>
 
           {flightPlan.waypoints.map((wp, i) => (
@@ -101,12 +101,12 @@ export default function FlightPlanSidebar({
 
           <div className="relative pl-8">
             <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-slate-900 z-10 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
-            <Input placeholder="ICAO" value={flightPlan.arrival.icao} onChange={e => onPointChange('arrival', e.target.value)} />
+            <Input placeholder="ICAO" value={flightPlan.arrival.id} onChange={e => onPointChange('arrival', e.target.value)} />
           </div>
 
           <div className="relative pl-8 pt-4 mt-2 border-t border-slate-800/30">
             <div className="absolute left-[11px] top-8 w-1.5 h-1.5 rotate-45 border border-slate-500 z-10"></div>
-            <Input label="Alternate" placeholder="ICAO" value={flightPlan.alternate?.icao || ''} onChange={e => onPointChange('alternate', e.target.value)} />
+            <Input label="Alternate" placeholder="ICAO" value={flightPlan.alternate?.id || ''} onChange={e => onPointChange('alternate', e.target.value)} />
           </div>
         </div>
       </PanelBox>
