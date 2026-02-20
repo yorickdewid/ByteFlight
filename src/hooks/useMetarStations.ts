@@ -67,11 +67,11 @@ export function useMetarStations() {
    * Higher zoom = smaller radius (more focused view).
    */
   const getRadiusFromZoom = (zoom: number): number => {
-    if (zoom >= 12) return 15;   // Very zoomed in — 15 NM
-    if (zoom >= 10) return 25;   // City level — 25 NM
-    if (zoom >= 8) return 50;    // Regional — 50 NM
-    if (zoom >= 6) return 100;   // Country level — 100 NM
-    return 200;                  // Continent level — 200 NM
+    if (zoom >= 12) return 30;   // Very zoomed in — 30 NM
+    if (zoom >= 10) return 50;   // City level — 50 NM
+    if (zoom >= 8) return 100;   // Regional — 100 NM
+    if (zoom >= 6) return 200;   // Country level — 200 NM
+    return 400;                  // Continent level — 400 NM
   };
 
   /**
