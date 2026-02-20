@@ -1,30 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ApiService } from '../lib/api';
 import { mockInitialFlightPlan } from '../lib/mock-data';
 import { FlightPlan, NavPoint, Waypoint } from '../types';
 
+/**
+ * Core flight plan editor state.
+ *
+ * Persistence is handled externally by `useRoutes`, which auto-saves
+ * the flight plan into the active route on every change. This hook
+ * only manages the in-memory editing state and handlers.
+ */
 export function useFlightPlan() {
-  const [flightPlan, setFlightPlan] = useState<FlightPlan>(() => {
-    try {
-      const saved = localStorage.getItem('byteflight_plan');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Migration/Safety check: Ensure aircraft object exists if we have data from older version
-        if (!parsed.aircraft || !parsed.aircraft.fuelBurn) {
-          return mockInitialFlightPlan;
-        }
-        return parsed;
-      }
-    } catch (e) {
-      console.error("Failed to parse saved plan", e);
-    }
-    return mockInitialFlightPlan;
-  });
-
-  // Persistence
-  useEffect(() => {
-    localStorage.setItem('byteflight_plan', JSON.stringify(flightPlan));
-  }, [flightPlan]);
+  const [flightPlan, setFlightPlan] = useState<FlightPlan>(mockInitialFlightPlan);
 
   const handlePointChange = async (type: 'departure' | 'arrival' | 'alternate', val: string) => {
     const id = val.toUpperCase();
@@ -36,7 +23,7 @@ export function useFlightPlan() {
       const pt = await ApiService.getNavPointDetail(id);
       if (pt) {
         setFlightPlan(p => ({ ...p, [type]: pt }));
-}
+      }
     }
   };
 

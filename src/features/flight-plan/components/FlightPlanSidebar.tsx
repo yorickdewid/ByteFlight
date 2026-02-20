@@ -1,26 +1,118 @@
-import { FileText, PlusCircle, Trash2 } from 'lucide-react';
+import { FileText, Pencil, Plus, PlusCircle, Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { AltitudeInput, Button, Input, PanelBox, WaypointInput } from '../../../components/ui';
-import { AircraftProfile, FlightPlan, NavPoint } from '../../../types';
+import { AircraftProfile, FlightPlan, NavPoint, SavedRoute } from '../../../types';
 
 interface FlightPlanSidebarProps {
   flightPlan: FlightPlan;
   aircraftProfiles: AircraftProfile[];
+  routes: SavedRoute[];
+  activeRouteId: string;
   onUpdateFlightPlan: (updater: (prev: FlightPlan) => FlightPlan) => void;
   onPointChange: (type: 'departure' | 'arrival' | 'alternate', val: string) => void;
   onOpenNavLog: () => void;
   onOpenAircraftManager: () => void;
+  onCreateRoute: () => void;
+  onSwitchRoute: (id: string) => void;
+  onDeleteRoute: (id: string) => void;
+  onRenameRoute: (id: string, name: string) => void;
 }
 
 export default function FlightPlanSidebar({
   flightPlan,
   aircraftProfiles,
+  routes,
+  activeRouteId,
   onUpdateFlightPlan,
   onPointChange,
   onOpenNavLog,
   onOpenAircraftManager,
+  onCreateRoute,
+  onSwitchRoute,
+  onDeleteRoute,
+  onRenameRoute,
 }: FlightPlanSidebarProps) {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  const activeRoute = routes.find(r => r.id === activeRouteId);
+
+  const startRename = () => {
+    if (!activeRoute) return;
+    setRenameValue(activeRoute.name);
+    setIsRenaming(true);
+    // Focus after render
+    setTimeout(() => renameInputRef.current?.focus(), 0);
+  };
+
+  const commitRename = () => {
+    if (renameValue.trim() && activeRoute) {
+      onRenameRoute(activeRoute.id, renameValue.trim());
+    }
+    setIsRenaming(false);
+  };
+
   return (
     <aside className="w-80 bg-slate-900/50 border-r border-slate-800/50 flex flex-col z-20 backdrop-blur-sm">
+      {/* Route Management Bar */}
+      <div className="p-3 border-b border-slate-800/50">
+        <div className="flex items-center gap-2">
+          <select
+            className="flex-1 bg-slate-800/50 border border-slate-700/50 text-slate-200 text-xs py-1.5 px-2 rounded-md focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none transition-shadow truncate"
+            value={activeRouteId}
+            onChange={e => onSwitchRoute(e.target.value)}
+          >
+            {routes.map(r => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+
+          <button
+            onClick={onCreateRoute}
+            title="New Route"
+            className="p-1.5 text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-md transition-colors"
+          >
+            <Plus size={14} />
+          </button>
+
+          <button
+            onClick={() => activeRoute && onDeleteRoute(activeRoute.id)}
+            title="Delete Route"
+            disabled={routes.length <= 1}
+            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-500 disabled:hover:bg-transparent"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+
+        {/* Editable route name */}
+        <div className="mt-1.5 flex items-center gap-1.5 min-h-[24px]">
+          {isRenaming ? (
+            <input
+              ref={renameInputRef}
+              value={renameValue}
+              onChange={e => setRenameValue(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={e => {
+                if (e.key === 'Enter') commitRename();
+                if (e.key === 'Escape') setIsRenaming(false);
+              }}
+              className="flex-1 bg-slate-800 border border-sky-500/50 text-slate-200 text-xs py-0.5 px-1.5 rounded focus:outline-none font-medium"
+            />
+          ) : (
+            <button
+              onClick={startRename}
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors group"
+              title="Rename route"
+            >
+              <span className="font-medium truncate max-w-[220px]">{activeRoute?.name || 'Untitled'}</span>
+              <Pencil size={10} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+            </button>
+          )}
+        </div>
+      </div>
+
       <PanelBox title="Flight Parameters" className="flex-shrink-0 border-x-0 border-t-0 rounded-none bg-transparent">
         <div className="space-y-5">
           <div>

@@ -19,6 +19,7 @@ import {
   useMetarStations,
   useNavigation,
   useNavLog,
+  useRoutes,
   useSearch,
   useWeather,
 } from '../hooks';
@@ -34,6 +35,15 @@ export default function App() {
     handleMapWaypointUpdate,
     handleMapAddWaypoint,
   } = useFlightPlan();
+
+  const {
+    routes,
+    activeRouteId,
+    createRoute,
+    switchRoute,
+    deleteRoute,
+    renameRoute,
+  } = useRoutes(flightPlan, setFlightPlan);
 
   const { aircraftProfiles, handleSaveAircraft, handleDeleteAircraft } = useAircraft(flightPlan, setFlightPlan);
 
@@ -122,10 +132,16 @@ export default function App() {
         <FlightPlanSidebar
           flightPlan={flightPlan}
           aircraftProfiles={aircraftProfiles}
+          routes={routes}
+          activeRouteId={activeRouteId}
           onUpdateFlightPlan={setFlightPlan}
           onPointChange={handlePointChange}
           onOpenNavLog={() => setIsNavLogOpen(true)}
           onOpenAircraftManager={() => setIsAircraftManagerOpen(true)}
+          onCreateRoute={createRoute}
+          onSwitchRoute={switchRoute}
+          onDeleteRoute={deleteRoute}
+          onRenameRoute={renameRoute}
         />
 
         <MapView

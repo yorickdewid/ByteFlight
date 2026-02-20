@@ -195,6 +195,13 @@ export interface NavLog {
   remarks?: string;
 }
 
+export interface SavedRoute {
+  id: string;
+  name: string;
+  flightPlan: FlightPlan;
+  updatedAt: string;
+}
+
 export interface FlightPlanRequest {
   route: string;
   alternate?: string;
