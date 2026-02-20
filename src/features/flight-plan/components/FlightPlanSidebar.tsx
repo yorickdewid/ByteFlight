@@ -1,7 +1,26 @@
-import { FileText, Pencil, Plus, PlusCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { FileText, FolderOpen, Pencil, Plus, PlusCircle, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { AltitudeInput, Button, Input, PanelBox, WaypointInput } from '../../../components/ui';
 import { AircraftProfile, FlightPlan, NavPoint, SavedRoute } from '../../../types';
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function routeSummary(plan: FlightPlan): string {
+  const dep = plan.departure?.id || '—';
+  const arr = plan.arrival?.id || '—';
+  const wps = plan.waypoints?.length || 0;
+  return `${dep} → ${arr}${wps > 0 ? ` (${wps} wpt${wps > 1 ? 's' : ''})` : ''}`;
+}
 
 interface FlightPlanSidebarProps {
   flightPlan: FlightPlan;
@@ -31,11 +50,11 @@ export default function FlightPlanSidebar({
   onCreateRoute,
   onSwitchRoute,
   onDeleteRoute,
-  onClearRoute,
   onRenameRoute,
 }: FlightPlanSidebarProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [isRouteListOpen, setIsRouteListOpen] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   const activeRoute = routes.find(r => r.id === activeRouteId);
@@ -44,7 +63,6 @@ export default function FlightPlanSidebar({
     if (!activeRoute) return;
     setRenameValue(activeRoute.name);
     setIsRenaming(true);
-    // Focus after render
     setTimeout(() => renameInputRef.current?.focus(), 0);
   };
 
@@ -55,49 +73,21 @@ export default function FlightPlanSidebar({
     setIsRenaming(false);
   };
 
+  const handleSwitchRoute = (id: string) => {
+    onSwitchRoute(id);
+    setIsRouteListOpen(false);
+  };
+
+  const handleCreateRoute = () => {
+    onCreateRoute();
+    setIsRouteListOpen(false);
+  };
+
   return (
-    <aside className="w-80 bg-slate-900/50 border-r border-slate-800/50 flex flex-col z-20 backdrop-blur-sm">
-      {/* Route Management Bar */}
-      <div className="p-3 border-b border-slate-800/50">
-        <div className="flex items-center gap-2">
-          <select
-            className="flex-1 bg-slate-800/50 border border-slate-700/50 text-slate-200 text-xs py-1.5 px-2 rounded-md focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none transition-shadow truncate"
-            value={activeRouteId}
-            onChange={e => onSwitchRoute(e.target.value)}
-          >
-            {routes.map(r => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-
-          <button
-            onClick={onCreateRoute}
-            title="New Route"
-            className="p-1.5 text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-md transition-colors"
-          >
-            <Plus size={14} />
-          </button>
-
-          <button
-            onClick={onClearRoute}
-            title="Clear Route"
-            className="p-1.5 text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
-          >
-            <RotateCcw size={14} />
-          </button>
-
-          <button
-            onClick={() => activeRoute && onDeleteRoute(activeRoute.id)}
-            title="Delete Route"
-            disabled={routes.length <= 1}
-            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-500 disabled:hover:bg-transparent"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-
-        {/* Editable route name */}
-        <div className="mt-1.5 flex items-center gap-1.5 min-h-[24px]">
+    <aside className="w-80 bg-slate-900/50 border-r border-slate-800/50 flex flex-col z-20 backdrop-blur-sm relative">
+      {/* Active Route Header */}
+      <div className="px-4 py-3 border-b border-slate-800/50 flex items-center gap-2 min-h-[52px]">
+        <div className="flex-1 min-w-0">
           {isRenaming ? (
             <input
               ref={renameInputRef}
@@ -108,20 +98,114 @@ export default function FlightPlanSidebar({
                 if (e.key === 'Enter') commitRename();
                 if (e.key === 'Escape') setIsRenaming(false);
               }}
-              className="flex-1 bg-slate-800 border border-sky-500/50 text-slate-200 text-xs py-0.5 px-1.5 rounded focus:outline-none font-medium"
+              className="w-full bg-slate-800 border border-sky-500/50 text-slate-200 text-sm py-0.5 px-2 rounded focus:outline-none font-semibold"
             />
           ) : (
             <button
               onClick={startRename}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors group"
+              className="flex items-center gap-1.5 group max-w-full"
               title="Rename route"
             >
-              <span className="font-medium truncate max-w-[220px]">{activeRoute?.name || 'Untitled'}</span>
-              <Pencil size={10} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              <span className="text-sm font-semibold text-slate-200 truncate">{activeRoute?.name || 'Untitled'}</span>
+              <Pencil size={11} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </button>
           )}
         </div>
+
+        <button
+          onClick={onCreateRoute}
+          title="New Route"
+          className="p-1.5 text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-md transition-colors flex-shrink-0"
+        >
+          <Plus size={15} />
+        </button>
+
+        <button
+          onClick={() => setIsRouteListOpen(!isRouteListOpen)}
+          title="My Routes"
+          className={`p-1.5 rounded-md transition-colors flex-shrink-0 ${
+            isRouteListOpen
+              ? 'text-sky-400 bg-sky-500/15'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <FolderOpen size={15} />
+        </button>
       </div>
+
+      {/* Route List Panel (slide-over) */}
+      {isRouteListOpen && (
+        <div className="absolute inset-0 top-0 z-30 bg-slate-900/98 backdrop-blur-md flex flex-col animate-fade-in">
+          <div className="px-4 py-3 border-b border-slate-800/50 flex items-center justify-between min-h-[52px]">
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">My Routes</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleCreateRoute}
+                title="New Route"
+                className="p-1.5 text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-md transition-colors text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+              >
+                <Plus size={13} />
+                <span>New</span>
+              </button>
+              <button
+                onClick={() => setIsRouteListOpen(false)}
+                className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 rounded-md transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            {routes.map(route => {
+              const isActive = route.id === activeRouteId;
+              return (
+                <div
+                  key={route.id}
+                  onClick={() => !isActive && handleSwitchRoute(route.id)}
+                  className={`group relative rounded-lg px-3 py-2.5 transition-all ${
+                    isActive
+                      ? 'bg-sky-500/10 border border-sky-500/20 cursor-default'
+                      : 'hover:bg-slate-800/60 border border-transparent cursor-pointer'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-sky-500 flex-shrink-0" />}
+                        <span className={`text-sm font-semibold truncate ${isActive ? 'text-sky-300' : 'text-slate-200'}`}>
+                          {route.name}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 font-mono truncate">
+                        {routeSummary(route.flightPlan)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="text-[10px] text-slate-600 tabular-nums">
+                        {formatRelativeTime(route.updatedAt)}
+                      </span>
+                      {!isActive && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            onDeleteRoute(route.id);
+                          }}
+                          title="Delete route"
+                          className="p-1 text-slate-700 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <PanelBox title="Flight Parameters" className="flex-shrink-0 border-x-0 border-t-0 rounded-none bg-transparent">
         <div className="space-y-5">
