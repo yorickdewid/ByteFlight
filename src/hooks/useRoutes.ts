@@ -229,6 +229,12 @@ export function useRoutes(
     userRenamedRef.current.delete(id);
   }, [activeRouteId, setFlightPlan]);
 
+  const clearRoute = useCallback(() => {
+    const blank = createBlankFlightPlan();
+    setFlightPlan(blank);
+    userRenamedRef.current.delete(activeRouteId);
+  }, [activeRouteId, setFlightPlan]);
+
   const renameRoute = useCallback((id: string, name: string) => {
     userRenamedRef.current.add(id);
     setRoutes(prev => prev.map(r =>
@@ -247,6 +253,7 @@ export function useRoutes(
     createRoute,
     switchRoute,
     deleteRoute,
+    clearRoute,
     renameRoute,
   };
 }

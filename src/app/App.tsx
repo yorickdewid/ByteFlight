@@ -42,6 +42,7 @@ export default function App() {
     createRoute,
     switchRoute,
     deleteRoute,
+    clearRoute,
     renameRoute,
   } = useRoutes(flightPlan, setFlightPlan);
 
@@ -141,6 +142,7 @@ export default function App() {
           onCreateRoute={createRoute}
           onSwitchRoute={switchRoute}
           onDeleteRoute={deleteRoute}
+          onClearRoute={clearRoute}
           onRenameRoute={renameRoute}
         />
 

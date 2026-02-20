@@ -1,4 +1,4 @@
-import { FileText, Pencil, Plus, PlusCircle, Trash2 } from 'lucide-react';
+import { FileText, Pencil, Plus, PlusCircle, RotateCcw, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { AltitudeInput, Button, Input, PanelBox, WaypointInput } from '../../../components/ui';
 import { AircraftProfile, FlightPlan, NavPoint, SavedRoute } from '../../../types';
@@ -15,6 +15,7 @@ interface FlightPlanSidebarProps {
   onCreateRoute: () => void;
   onSwitchRoute: (id: string) => void;
   onDeleteRoute: (id: string) => void;
+  onClearRoute: () => void;
   onRenameRoute: (id: string, name: string) => void;
 }
 
@@ -30,6 +31,7 @@ export default function FlightPlanSidebar({
   onCreateRoute,
   onSwitchRoute,
   onDeleteRoute,
+  onClearRoute,
   onRenameRoute,
 }: FlightPlanSidebarProps) {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -74,6 +76,14 @@ export default function FlightPlanSidebar({
             className="p-1.5 text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 rounded-md transition-colors"
           >
             <Plus size={14} />
+          </button>
+
+          <button
+            onClick={onClearRoute}
+            title="Clear Route"
+            className="p-1.5 text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 rounded-md transition-colors"
+          >
+            <RotateCcw size={14} />
           </button>
 
           <button
