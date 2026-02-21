@@ -3,6 +3,8 @@ import { NavPoint } from '../types';
 import { ApiService } from '../lib/api';
 
 const MAX_STATIONS = 1000;
+const STORAGE_KEY = 'byteflight_metar_stations';
+const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes — METAR data goes stale
 
 interface MapBounds {
   center: { lat: number; lon: number };
@@ -12,6 +14,47 @@ interface MapBounds {
 interface StationEntry {
   station: NavPoint;
   lastSeen: number; // Timestamp — used for LRU eviction
+}
+
+interface StoredCache {
+  timestamp: number;
+  entries: [string, StationEntry][];
+}
+
+/**
+ * Restore station cache from localStorage if it exists and isn't stale.
+ */
+function loadCachedStations(): Map<string, StationEntry> | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+
+    const stored: StoredCache = JSON.parse(raw);
+    if (Date.now() - stored.timestamp > MAX_AGE_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+
+    return new Map(stored.entries);
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
+
+/**
+ * Persist station cache to localStorage.
+ */
+function saveCachedStations(cache: Map<string, StationEntry>) {
+  try {
+    const stored: StoredCache = {
+      timestamp: Date.now(),
+      entries: [...cache.entries()],
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+  } catch {
+    // Storage full or unavailable — silently ignore
+  }
 }
 
 /**
@@ -24,12 +67,15 @@ interface StationEntry {
  * and disappearing on every pan and reduces redundant API calls.
  */
 export function useMetarStations() {
-  const [metarStations, setMetarStations] = useState<NavPoint[]>([]);
+  const [metarStations, setMetarStations] = useState<NavPoint[]>(() => {
+    const cached = loadCachedStations();
+    return cached ? [...cached.values()].map(e => e.station) : [];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const lastFetchRef = useRef<string>('');
   const lastBoundsRef = useRef<MapBounds | null>(null);
-  const stationCache = useRef<Map<string, StationEntry>>(new Map());
+  const stationCache = useRef<Map<string, StationEntry>>(loadCachedStations() ?? new Map());
 
   /**
    * Merge incoming stations into the accumulator.
@@ -57,9 +103,11 @@ export function useMetarStations() {
     }
 
     // Derive array for React consumers
-    setMetarStations(
-      [...cache.values()].map(entry => entry.station)
-    );
+    const stations = [...cache.values()].map(entry => entry.station);
+    setMetarStations(stations);
+
+    // Persist to localStorage for instant restore on next load
+    saveCachedStations(cache);
   }, []);
 
   /**
