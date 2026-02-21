@@ -1,4 +1,4 @@
-import { CloudRain, Waves, RefreshCw, MapPin } from 'lucide-react';
+import { CloudRain, Waves, MapPin } from 'lucide-react';
 import { FlightPlan, NavPoint, Waypoint } from '../../../types';
 import { PerformanceStrip, VectorMap } from './Visualizers';
 
@@ -9,7 +9,6 @@ interface MapViewProps {
   routeTime: number;
   fuelTotal: number;
   navLogUpdated: Date | null;
-  isWeatherLoading: boolean;
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
   onAddWaypoint: (lat: number, lon: number) => void;
@@ -28,7 +27,6 @@ export default function MapView({
   routeTime,
   fuelTotal,
   navLogUpdated,
-  isWeatherLoading,
   onWaypointMove,
   onWaypointUpdate,
   onAddWaypoint,
@@ -70,7 +68,6 @@ export default function MapView({
             >
               <CloudRain size={16} className={showRadar ? "text-emerald-400" : "text-slate-500"} />
               <span>Weather Radar</span>
-              {isWeatherLoading && showRadar && <RefreshCw size={12} className="animate-spin ml-auto text-emerald-500" />}
             </button>
 
             <button
@@ -79,7 +76,6 @@ export default function MapView({
             >
               <Waves size={16} className={showTurb ? "text-amber-400" : "text-slate-500"} />
               <span>Turbulence</span>
-              {isWeatherLoading && showTurb && <RefreshCw size={12} className="animate-spin ml-auto text-amber-500" />}
             </button>
           </div>
         </div>

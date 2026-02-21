@@ -61,11 +61,11 @@ export default function App() {
 
   const { searchQuery, searchResults, isSearching, handleSearch, clearSearch } = useSearch();
 
-  const { showRadar, showTurb, isWeatherLoading, toggleRadar, toggleTurb } = useWeather(flightPlan.departure);
+  const { showRadar, showTurb, toggleRadar, toggleTurb } = useWeather();
 
   const { favorites, toggleFavorite } = useFavorites();
 
-  const { metarStations, isLoading: isMetarLoading, updateStations } = useMetarStations();
+  const { metarStations, updateStations } = useMetarStations();
 
   const time = useClock();
 
@@ -153,7 +153,7 @@ export default function App() {
           routeTime={Math.round(routeTime)}
           fuelTotal={Math.round(fuelTotal)}
           navLogUpdated={navLogUpdated}
-          isWeatherLoading={isWeatherLoading || isNavLogLoading || isMetarLoading}
+
           onWaypointMove={handleMapWaypointMove}
           onWaypointUpdate={handleMapWaypointUpdate}
           onAddWaypoint={handleMapAddWaypoint}

@@ -124,13 +124,6 @@ export interface WindVector {
   spd: number;
 }
 
-export interface WeatherCell {
-  id: string;
-  type: 'PRECIP' | 'TURB';
-  intensity: 'LIGHT' | 'MODERATE' | 'SEVERE';
-  polygons: { lat: number; lon: number }[];
-  timestamp: number;
-}
 
 // --- Nav Log Types (from backend flight-planner) ---
 
