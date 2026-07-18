@@ -27,6 +27,7 @@ type GeoJSONSourceWithData<T> = mapboxgl.GeoJSONSource & { _data?: T };
 
 interface VectorMapProps {
   flightPlan: FlightPlan;
+  focusPoint: { lat: number; lon: number; token: number } | null;
   airports: NavPoint[];
   onWaypointMove: (index: number | 'DEP' | 'ARR', lat: number, lon: number) => void;
   onWaypointUpdate: (index: number, updates: Partial<Waypoint>) => void;
@@ -37,6 +38,7 @@ interface VectorMapProps {
 
 export const VectorMap: React.FC<VectorMapProps> = ({
   flightPlan,
+  focusPoint,
   airports,
   onWaypointMove,
   onWaypointUpdate,
@@ -470,7 +472,11 @@ export const VectorMap: React.FC<VectorMapProps> = ({
 
   }, [flightPlan, airports, mapLoaded]);
 
-  // Camera centering removed - re-center button calls flyTo directly
+  // Fly to a search-selected point (token bumps on every pick, even repeats)
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !focusPoint) return;
+    map.current.flyTo({ center: [focusPoint.lon, focusPoint.lat], zoom: 10 });
+  }, [focusPoint, mapLoaded]);
 
   if (mapError) {
     return (

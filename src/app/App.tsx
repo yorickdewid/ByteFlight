@@ -89,12 +89,24 @@ export default function App() {
     lastUpdated: navLogUpdated,
   } = useNavLog(flightPlan);
 
+  // Map camera target — token forces a re-pan when the same point is picked again
+  const [mapFocus, setMapFocus] = useState<{ lat: number; lon: number; token: number } | null>(null);
+
   // --- Handlers ---
   const handleSelectPoint = (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => {
     void (async () => {
       await handleSelectPointBase(point, tab);
       clearSearch();
     })();
+  };
+
+  // Search picks also fly the map to the airport; METAR-dot clicks (already
+  // on screen) go through handleSelectPoint directly and leave the camera alone
+  const handleSearchSelect = (point: NavPoint) => {
+    handleSelectPoint(point);
+    if (point.lat || point.lon) {
+      setMapFocus(prev => ({ lat: point.lat, lon: point.lon, token: (prev?.token ?? 0) + 1 }));
+    }
   };
 
   const handleSignOut = () => {
@@ -124,7 +136,7 @@ export default function App() {
         user={user}
         isAuthLoading={isAuthLoading}
         onSearchChange={handleSearch}
-        onSelectPoint={handleSelectPoint}
+        onSelectPoint={handleSearchSelect}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onSignIn={signIn}
         onOpenLogoutAlert={() => setIsLogoutAlertOpen(true)}
@@ -149,6 +161,7 @@ export default function App() {
 
         <MapView
           flightPlan={flightPlan}
+          focusPoint={mapFocus}
           metarStations={metarStations}
           routeDist={Math.round(routeDist)}
           routeTime={Math.round(routeTime)}

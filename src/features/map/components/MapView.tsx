@@ -3,6 +3,7 @@ import { PerformanceStrip, VectorMap } from './Visualizers';
 
 interface MapViewProps {
   flightPlan: FlightPlan;
+  focusPoint: { lat: number; lon: number; token: number } | null;
   metarStations: NavPoint[];
   routeDist: number;
   routeTime: number;
@@ -17,6 +18,7 @@ interface MapViewProps {
 
 export default function MapView({
   flightPlan,
+  focusPoint,
   metarStations,
   routeDist,
   routeTime,
@@ -41,6 +43,7 @@ export default function MapView({
       <div className="flex-1 relative z-10">
         <VectorMap
           flightPlan={flightPlan}
+          focusPoint={focusPoint}
           airports={metarStations}
           onWaypointMove={onWaypointMove}
           onWaypointUpdate={onWaypointUpdate}
