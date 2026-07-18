@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { mockInitialFlightPlan } from '../lib/mock-data';
 import { defaultAircraftProfiles } from '../lib/config';
 import { FlightPlan, SavedRoute } from '../types';
 
@@ -29,107 +30,126 @@ function createBlankFlightPlan(): FlightPlan {
   };
 }
 
-function loadRoutes(): SavedRoute[] {
+function loadStoredRoutes(): SavedRoute[] {
   try {
     const stored = localStorage.getItem(ROUTES_KEY);
-    if (stored) return JSON.parse(stored) as SavedRoute[];
+    if (stored) {
+      const parsed = JSON.parse(stored) as SavedRoute[];
+      if (Array.isArray(parsed)) return parsed;
+    }
   } catch (e) {
     console.error('Failed to parse saved routes', e);
   }
   return [];
 }
 
-function loadActiveRouteId(): string | null {
-  return localStorage.getItem(ACTIVE_ROUTE_KEY);
+interface RoutesBootstrap {
+  routes: SavedRoute[];
+  activeRouteId: string;
 }
 
-/** Migrate legacy single-plan localStorage into the routes system */
-function migrateLegacyPlan(): SavedRoute | null {
-  try {
-    const legacy = localStorage.getItem(LEGACY_PLAN_KEY);
-    if (!legacy) return null;
-    const plan = JSON.parse(legacy) as FlightPlan;
-    // Validate it has minimum structure
-    if (!plan.aircraft || !plan.aircraft.fuelBurn) return null;
-    const route: SavedRoute = {
-      id: crypto.randomUUID(),
-      name: generateRouteName(plan),
-      flightPlan: plan,
-      updatedAt: new Date().toISOString(),
-    };
-    // Clean up legacy key after migration
-    localStorage.removeItem(LEGACY_PLAN_KEY);
-    return route;
-  } catch {
-    return null;
+// Resolved once per page load. useState initializers may run more than once
+// (StrictMode double-invokes them), and useFlightPlan needs the same answer —
+// so all callers share this cache instead of re-reading/migrating localStorage.
+let bootstrapCache: RoutesBootstrap | null = null;
+
+function bootstrap(): RoutesBootstrap {
+  if (bootstrapCache) return bootstrapCache;
+
+  let routes = loadStoredRoutes();
+
+  // One-time migration of the legacy single-plan key into the routes system
+  if (routes.length === 0) {
+    try {
+      const legacy = localStorage.getItem(LEGACY_PLAN_KEY);
+      if (legacy) {
+        const plan = JSON.parse(legacy) as FlightPlan;
+        if (plan.aircraft && plan.aircraft.fuelBurn) {
+          routes = [{
+            id: crypto.randomUUID(),
+            name: generateRouteName(plan),
+            flightPlan: plan,
+            updatedAt: new Date().toISOString(),
+          }];
+        }
+        localStorage.removeItem(LEGACY_PLAN_KEY);
+      }
+    } catch { /* corrupt legacy plan — ignore */ }
   }
+
+  // Brand-new user — seed with the demo route so the app shows something
+  if (routes.length === 0) {
+    routes = [{
+      id: crypto.randomUUID(),
+      name: generateRouteName(mockInitialFlightPlan),
+      flightPlan: mockInitialFlightPlan,
+      updatedAt: new Date().toISOString(),
+    }];
+  }
+
+  const savedId = localStorage.getItem(ACTIVE_ROUTE_KEY);
+  const activeRouteId = savedId && routes.some(r => r.id === savedId)
+    ? savedId
+    : routes[0].id;
+
+  bootstrapCache = { routes, activeRouteId };
+  return bootstrapCache;
+}
+
+/** Flight plan of the active saved route — useFlightPlan uses this as its initial state. */
+export function loadActiveFlightPlan(): FlightPlan {
+  const { routes, activeRouteId } = bootstrap();
+  return routes.find(r => r.id === activeRouteId)?.flightPlan ?? mockInitialFlightPlan;
 }
 
 export function useRoutes(
   flightPlan: FlightPlan,
   setFlightPlan: React.Dispatch<React.SetStateAction<FlightPlan>>,
 ) {
-  const [routes, setRoutes] = useState<SavedRoute[]>(() => {
-    const existing = loadRoutes();
-    if (existing.length > 0) return existing;
+  const [routes, setRoutes] = useState<SavedRoute[]>(() => bootstrap().routes);
+  const [activeRouteId, setActiveRouteId] = useState<string>(() => bootstrap().activeRouteId);
 
-    // First-time migration from legacy single plan
-    const migrated = migrateLegacyPlan();
-    if (migrated) return [migrated];
-
-    // No data at all — start with a blank route
-    const blank: SavedRoute = {
-      id: crypto.randomUUID(),
-      name: 'New Route',
-      flightPlan: createBlankFlightPlan(),
-      updatedAt: new Date().toISOString(),
-    };
-    return [blank];
-  });
-
-  const [activeRouteId, setActiveRouteId] = useState<string>(() => {
-    const existing = loadRoutes();
-    const savedId = loadActiveRouteId();
-
-    // If we have a saved active ID that exists in routes, use it
-    if (savedId && existing.find(r => r.id === savedId)) return savedId;
-
-    // Migration case — pick the first route
-    const migrated = migrateLegacyPlan();
-    if (existing.length > 0) return existing[0].id;
-    if (migrated) return migrated.id;
-
-    // Will be set after first render from routes state
-    return '';
-  });
+  // Every route id this session has seen (including ones we deleted). Storage
+  // writes never drop routes created by another tab: unknown ids are merged in
+  // rather than overwritten, while ids we knowingly deleted stay deleted.
+  const knownIdsRef = useRef<Set<string>>(new Set(bootstrap().routes.map(r => r.id)));
 
   // Ref to track whether the user manually renamed the route
   const userRenamedRef = useRef<Set<string>>(new Set());
 
-  // On mount: set the active route's flight plan into the editor
-  const initialized = useRef(false);
+  // Persist routes, merging in routes another tab saved since our last read
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    const known = knownIdsRef.current;
+    routes.forEach(r => known.add(r.id));
 
-    const active = routes.find(r => r.id === activeRouteId);
-    if (active) {
-      setFlightPlan(active.flightPlan);
+    const foreign = loadStoredRoutes().filter(s => !known.has(s.id));
+    localStorage.setItem(ROUTES_KEY, JSON.stringify([...routes, ...foreign]));
+
+    if (foreign.length > 0) {
+      foreign.forEach(f => known.add(f.id));
+      setRoutes(prev => [...prev, ...foreign]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Fix up activeRouteId if it's empty (first run with blank route)
-  useEffect(() => {
-    if (!activeRouteId && routes.length > 0) {
-      setActiveRouteId(routes[0].id);
-    }
-  }, [activeRouteId, routes]);
-
-  // Persist routes to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
   }, [routes]);
+
+  // Adopt routes created in other tabs as they appear
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== ROUTES_KEY || !e.newValue) return;
+      try {
+        const incoming = JSON.parse(e.newValue) as SavedRoute[];
+        if (!Array.isArray(incoming)) return;
+        setRoutes(prev => {
+          const known = knownIdsRef.current;
+          const foreign = incoming.filter(s => !known.has(s.id));
+          if (foreign.length === 0) return prev;
+          foreign.forEach(f => known.add(f.id));
+          return [...prev, ...foreign];
+        });
+      } catch { /* malformed write from elsewhere — ignore */ }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // Persist active route ID
   useEffect(() => {
@@ -145,21 +165,24 @@ export function useRoutes(
 
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      setRoutes(prev => prev.map(r => {
-        if (r.id !== activeRouteId) return r;
+      setRoutes(prev => {
+        const idx = prev.findIndex(r => r.id === activeRouteId);
+        if (idx === -1 || prev[idx].flightPlan === flightPlan) return prev;
 
         // Auto-generate name from DEP/ARR unless user manually renamed
-        const autoName = userRenamedRef.current.has(r.id)
-          ? r.name
+        const autoName = userRenamedRef.current.has(prev[idx].id)
+          ? prev[idx].name
           : generateRouteName(flightPlan);
 
-        return {
-          ...r,
+        const next = [...prev];
+        next[idx] = {
+          ...prev[idx],
           name: autoName,
           flightPlan,
           updatedAt: new Date().toISOString(),
         };
-      }));
+        return next;
+      });
     }, 300);
 
     return () => clearTimeout(saveTimer.current);
@@ -181,23 +204,21 @@ export function useRoutes(
   }, [setFlightPlan]);
 
   const switchRoute = useCallback((id: string) => {
-    // Save current state first
+    if (id === activeRouteId) return;
+    const target = routes.find(r => r.id === id);
+    if (!target) return;
+
+    // Flush the current plan into the outgoing route before switching
+    clearTimeout(saveTimer.current);
     setRoutes(prev => prev.map(r =>
-      r.id === activeRouteId
+      r.id === activeRouteId && r.flightPlan !== flightPlan
         ? { ...r, flightPlan, updatedAt: new Date().toISOString() }
         : r
     ));
 
-    // Load target route
-    setRoutes(prev => {
-      const target = prev.find(r => r.id === id);
-      if (target) {
-        setFlightPlan(target.flightPlan);
-        setActiveRouteId(id);
-      }
-      return prev;
-    });
-  }, [activeRouteId, flightPlan, setFlightPlan]);
+    setActiveRouteId(id);
+    setFlightPlan(target.flightPlan);
+  }, [routes, activeRouteId, flightPlan, setFlightPlan]);
 
   const deleteRoute = useCallback((id: string) => {
     setRoutes(prev => {

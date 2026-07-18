@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { ApiService } from '../lib/api';
-import { mockInitialFlightPlan } from '../lib/mock-data';
 import { FlightPlan, NavPoint, Waypoint } from '../types';
+import { loadActiveFlightPlan } from './useRoutes';
 
 /**
  * Core flight plan editor state.
  *
  * Persistence is handled externally by `useRoutes`, which auto-saves
  * the flight plan into the active route on every change. This hook
- * only manages the in-memory editing state and handlers.
+ * only manages the in-memory editing state and handlers; its initial
+ * state is the active saved route (demo plan for first-time users).
  */
 export function useFlightPlan() {
-  const [flightPlan, setFlightPlan] = useState<FlightPlan>(mockInitialFlightPlan);
+  const [flightPlan, setFlightPlan] = useState<FlightPlan>(loadActiveFlightPlan);
 
   const handlePointChange = async (type: 'departure' | 'arrival' | 'alternate', val: string) => {
     const id = val.toUpperCase();
