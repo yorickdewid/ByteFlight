@@ -87,15 +87,15 @@ export function WaypointInput({ value, onResolve, onChange, placeholder = 'WAYPO
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className="absolute top-full left-0 w-64 mt-1 bg-slate-800 border border-slate-700 shadow-2xl z-50 rounded-lg overflow-hidden p-0.5">
+        <div className="absolute top-full left-0 w-64 mt-1 bg-slate-900 border border-slate-700 shadow-2xl z-50 rounded-md overflow-hidden">
           {results.map(r => (
             <div
               key={r.id}
               onClick={() => handleSelect(r)}
-              className="px-3 py-2 hover:bg-slate-700/50 cursor-pointer flex justify-between text-xs rounded-md transition-colors group"
+              className="px-3 py-2 hover:bg-slate-800 cursor-pointer flex justify-between items-baseline text-xs transition-colors border-b border-slate-800 last:border-b-0"
             >
-              <span className="font-bold text-sky-400 font-mono group-hover:text-sky-300">{r.id}</span>
-              <span className="text-slate-500 group-hover:text-slate-300 truncate ml-2">{r.name}</span>
+              <span className="font-semibold text-sky-400 font-mono">{r.id}</span>
+              <span className="text-slate-500 truncate ml-2">{r.name}</span>
             </div>
           ))}
         </div>

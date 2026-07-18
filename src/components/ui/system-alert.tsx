@@ -17,24 +17,22 @@ export const SystemAlert: React.FC<SystemAlertProps> = ({ isOpen, type = 'info',
   if (!isOpen) return null;
 
   const styles = {
-    error: { icon: AlertTriangle, color: 'text-red-500', border: 'border-red-900/30', bg: 'bg-red-900/10' },
-    warning: { icon: AlertOctagon, color: 'text-amber-500', border: 'border-amber-900/30', bg: 'bg-amber-900/10' },
-    info: { icon: Info, color: 'text-sky-500', border: 'border-sky-900/30', bg: 'bg-sky-900/10' }
+    error: { icon: AlertTriangle, color: 'text-red-400' },
+    warning: { icon: AlertOctagon, color: 'text-amber-400' },
+    info: { icon: Info, color: 'text-sky-400' }
   }[type];
 
   return (
-    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className={`w-full max-w-md bg-slate-900 border ${styles.border} shadow-2xl rounded-2xl p-1`}>
-        <div className={`flex items-start gap-4 p-6 ${styles.bg} rounded-t-xl`}>
-          <div className={`p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 ${styles.color}`}>
-            {React.createElement(styles.icon, { size: 24 })}
-          </div>
+    <div className="fixed inset-0 bg-slate-950/70 z-[100] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-700 shadow-2xl rounded-md">
+        <div className="flex items-start gap-3 p-5">
+          {React.createElement(styles.icon, { size: 20, className: `${styles.color} mt-0.5 shrink-0` })}
           <div className="flex-1">
-            <h3 className={`text-base font-bold mb-2 ${styles.color}`}>{title}</h3>
-            <p className="text-sm text-slate-300 leading-relaxed">{message}</p>
+            <h3 className="text-sm font-semibold text-slate-100 mb-1.5">{title}</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">{message}</p>
           </div>
         </div>
-        <div className="flex justify-end gap-3 p-4 bg-slate-900 rounded-b-xl border-t border-slate-800/50">
+        <div className="flex justify-end gap-2 px-4 py-3 border-t border-slate-800">
           {onCancel && <Button variant="ghost" onClick={onCancel} size="sm">{cancelLabel}</Button>}
           <Button variant={type === 'error' ? 'danger' : 'active'} onClick={onConfirm} size="sm">{confirmLabel}</Button>
         </div>

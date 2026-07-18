@@ -105,11 +105,11 @@ export default function App() {
   if (isAppLoading) {
     return (
       <div className="h-screen w-full bg-slate-950 flex items-center justify-center flex-col gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-sky-900/20 shadow-lg animate-bounce">
-          <Plane size={24} className="text-white fill-current" style={{ transform: 'rotate(-45deg)' }} />
+        <div className="flex items-center justify-center w-10 h-10 rounded-sm bg-sky-600">
+          <Plane size={20} className="text-white fill-current" style={{ transform: 'rotate(-45deg)' }} />
         </div>
-        <div className="flex items-center gap-2 text-sky-500 font-mono text-sm">
-          <Loader2 className="animate-spin" size={16} /> Initializing Systems...
+        <div className="flex items-center gap-2 text-slate-500 font-mono text-sm">
+          <Loader2 className="animate-spin" size={14} /> Loading
         </div>
       </div>
     )

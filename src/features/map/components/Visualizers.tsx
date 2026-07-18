@@ -1,4 +1,4 @@
-import { Compass, LocateFixed, Map as MapIcon, MousePointer2, Plus, ZoomIn, ZoomOut } from 'lucide-react';
+import { Compass, LocateFixed, ZoomIn, ZoomOut } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { MAPBOX_TOKEN } from '../../../lib/config';
@@ -255,13 +255,13 @@ export const VectorMap: React.FC<VectorMapProps> = ({
               const div = document.createElement('div');
               div.innerHTML = `
                                 <div class="flex flex-col gap-2 min-w-[150px]">
-                                    <label class="text-xs font-bold text-slate-400">WAYPOINT</label>
-                                    <input id="popup-name" value="${props.name}" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-sky-500" />
+                                    <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Waypoint</label>
+                                    <input id="popup-name" value="${props.name}" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" />
                                     <div class="flex items-center gap-2">
-                                        <input id="popup-alt" type="text" value="${props.alt}" class="w-24 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-sky-500" placeholder="ALT/FL" />
+                                        <input id="popup-alt" type="text" value="${props.alt}" class="w-24 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" placeholder="ALT/FL" />
                                         <span class="text-xs text-slate-500">FT</span>
                                     </div>
-                                    <button id="popup-save" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold py-1 px-2 rounded mt-1">Update</button>
+                                    <button id="popup-save" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-1 px-2 rounded mt-1">Update</button>
                                 </div>
                             `;
               if (f.geometry.type === 'Point') {
@@ -312,12 +312,12 @@ export const VectorMap: React.FC<VectorMapProps> = ({
               new mapboxgl.Popup({ closeButton: false, offset: 10, className: 'metar-popup' })
                 .setLngLat(f.geometry.coordinates as [number, number])
                 .setHTML(`
-                                <div class="max-w-[200px]">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="font-bold text-white text-sm">${props.name}</span>
-                                        <span class="text-xs font-bold ${colorClass}">${cat}</span>
+                                <div class="max-w-[220px]">
+                                    <div class="flex justify-between items-baseline gap-3 mb-1">
+                                        <span class="font-semibold text-white text-sm font-mono">${props.name}</span>
+                                        <span class="text-xs font-semibold ${colorClass}">${cat}</span>
                                     </div>
-                                    <p class="text-[10px] text-slate-400 font-mono leading-tight">${metar}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono leading-snug">${metar}</p>
                                 </div>
                             `)
                 .addTo(m);
@@ -464,11 +464,11 @@ export const VectorMap: React.FC<VectorMapProps> = ({
     <div className="w-full h-full relative">
       <div ref={mapContainer} className="w-full h-full bg-slate-900" />
 
-      <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-30">
-        <div className="bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-xl p-1.5 flex flex-col gap-1 shadow-xl">
-          <button onClick={() => map.current?.zoomIn()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors" title="Zoom in"><ZoomIn size={18} /></button>
-          <button onClick={() => map.current?.zoomOut()} className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors" title="Zoom out"><ZoomOut size={18} /></button>
-          <div className="h-px bg-slate-700/50 my-1 mx-2"></div>
+      <div className="absolute bottom-4 right-3 flex flex-col gap-3 z-30">
+        <div className="bg-slate-900 border border-slate-800 rounded-md flex flex-col shadow-lg overflow-hidden">
+          <button onClick={() => map.current?.zoomIn()} className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" title="Zoom in"><ZoomIn size={16} /></button>
+          <button onClick={() => map.current?.zoomOut()} className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" title="Zoom out"><ZoomOut size={16} /></button>
+          <div className="h-px bg-slate-800"></div>
           <button
             onClick={() => {
               navigator.geolocation.getCurrentPosition(
@@ -476,23 +476,17 @@ export const VectorMap: React.FC<VectorMapProps> = ({
                 () => { /* user denied or unavailable — silently ignore */ }
               );
             }}
-            className="p-2.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
             title="My location"
           >
-            <LocateFixed size={18} />
+            <LocateFixed size={16} />
           </button>
-          <button onClick={() => map.current?.flyTo({ center: [flightPlan.departure.lon, flightPlan.departure.lat], zoom: 9 })} className="p-2.5 hover:bg-slate-700 text-sky-400 hover:text-sky-300 rounded-lg transition-colors" title="Re-center on departure"><Compass size={18} /></button>
+          <button onClick={() => map.current?.flyTo({ center: [flightPlan.departure.lon, flightPlan.departure.lat], zoom: 9 })} className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" title="Re-center on departure"><Compass size={16} /></button>
         </div>
       </div>
 
-      <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur border border-slate-700/50 rounded-full px-4 py-1.5 text-xs font-medium text-slate-400 z-30 shadow-lg flex items-center gap-2">
-        <MapIcon size={14} className="text-sky-500" />
-        <span>Mapbox VFR (Mock)</span>
-      </div>
-
-      <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur border border-slate-700/50 rounded-lg p-2 text-xs text-slate-400 z-30 shadow-lg max-w-[200px]">
-        <p className="flex items-center gap-2 mb-1"><MousePointer2 size={12} className="text-sky-500" /> Drag points to move</p>
-        <p className="flex items-center gap-2"><Plus size={12} className="text-emerald-500" /> Double-click map to add WP</p>
+      <div className="absolute bottom-4 left-3 bg-slate-900 border border-slate-800 rounded-sm px-2 py-1 text-[10px] font-mono text-slate-500 z-30">
+        MOCK VFR CHART
       </div>
     </div>
   );
@@ -551,11 +545,11 @@ export const RunwayVisualizer: React.FC<RunwayVisualizerProps> = ({ runwayHeadin
           <circle cx="100" cy="100" r="4" fill="#e2e8f0" stroke="#1e293b" strokeWidth="2" />
         </svg>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 w-full text-[11px] mt-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-        <div className="text-slate-400 font-medium">Headwind</div>
-        <div className={`text-right font-mono font-bold ${headwind < 0 ? 'text-red-400' : 'text-emerald-400'}`}>{headwind} KT</div>
-        <div className="text-slate-400 font-medium">Crosswind</div>
-        <div className={`text-right font-mono font-bold ${Math.abs(crosswind) > 15 ? 'text-red-400' : 'text-slate-200'}`}>{Math.abs(crosswind)} KT</div>
+      <div className="grid grid-cols-2 gap-x-6 w-full text-[11px] mt-3 bg-slate-950 p-3 rounded border border-slate-800">
+        <div className="text-slate-400">Headwind</div>
+        <div className={`text-right font-mono ${headwind < 0 ? 'text-red-400' : 'text-emerald-400'}`}>{headwind} KT</div>
+        <div className="text-slate-400">Crosswind</div>
+        <div className={`text-right font-mono ${Math.abs(crosswind) > 15 ? 'text-red-400' : 'text-slate-200'}`}>{Math.abs(crosswind)} KT</div>
       </div>
     </div>
   );
@@ -571,36 +565,28 @@ export const PerformanceStrip: React.FC<{ dist: number; ete: string; fuel: numbe
   })();
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-full shadow-2xl p-1">
-      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] rounded-l-full hover:bg-white/5 transition-colors">
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Distance</span>
-        <span className="text-base font-bold text-white">{dist} <span className="text-[10px] text-slate-500 font-medium">NM</span></span>
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-stretch bg-slate-900 border border-slate-800 rounded-md shadow-lg divide-x divide-slate-800">
+      <div className="px-4 py-1.5 flex flex-col min-w-[84px]">
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Distance</span>
+        <span className="text-sm font-mono text-slate-100 tabular-nums">{dist}<span className="text-[10px] text-slate-500 ml-1">NM</span></span>
       </div>
-      <div className="w-px bg-slate-700/50 h-8"></div>
-      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ETE</span>
-        <span className="text-base font-bold text-white">{ete}</span>
+      <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">ETE</span>
+        <span className="text-sm font-mono text-slate-100 tabular-nums">{ete}</span>
       </div>
-      <div className="w-px bg-slate-700/50 h-8"></div>
-      <div className="px-5 py-2 flex flex-col items-center min-w-[90px] hover:bg-white/5 transition-colors">
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fuel</span>
-        <div className="flex flex-col items-center">
-          <span className="text-base font-bold text-sky-400">{fuel} <span className="text-[10px] text-sky-600 font-medium">L</span></span>
-        </div>
+      <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Fuel</span>
+        <span className="text-sm font-mono text-sky-400 tabular-nums">{fuel}<span className="text-[10px] text-slate-500 ml-1">L</span></span>
       </div>
-      <div className="w-px bg-slate-700/50 h-8"></div>
-      <div className="px-4 py-2 flex flex-col items-center min-w-[70px] bg-slate-900/40 rounded-r-full">
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Reserve</span>
-        <span className="text-xs font-semibold text-slate-300">{reserve}</span>
+      <div className="px-4 py-1.5 flex flex-col min-w-[84px]">
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Reserve</span>
+        <span className="text-sm font-mono text-slate-300">{reserve}</span>
       </div>
       {freshness && (
-        <>
-          <div className="w-px bg-slate-700/50 h-8"></div>
-          <div className="px-4 py-2 flex flex-col items-center min-w-[60px] rounded-r-full">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Updated</span>
-            <span className="text-xs font-semibold text-slate-400">{freshness}</span>
-          </div>
-        </>
+        <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
+          <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Updated</span>
+          <span className="text-sm font-mono text-slate-400">{freshness}</span>
+        </div>
       )}
     </div>
   );
