@@ -202,10 +202,23 @@ export interface SavedRoute {
   updatedAt: string;
 }
 
+/** Inline aircraft performance data sent with a flight plan request.
+ *  Works without an account — the backend fleet lookup is only used when
+ *  referencing a stored aircraft by registration while signed in. */
+export interface FlightPlanAircraft {
+  registration: string;
+  cruiseSpeed?: number;
+  fuelCapacity?: number;
+  fuelConsumption?: number;
+  emptyWeight?: number;
+  maxTakeoffWeight?: number;
+}
+
 export interface FlightPlanRequest {
   route: string;
   alternate?: string;
-  aircraftRegistration: string;
+  aircraftRegistration?: string;
+  aircraft?: FlightPlanAircraft;
   departureDate?: string;
   defaultAltitude?: number;
   taxiFuel?: number;

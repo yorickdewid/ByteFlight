@@ -42,9 +42,18 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
         flightPlan.arrival
       );
 
+      // Inline performance data keeps the calculation working without an
+      // account — the profile is already local (fleet fetch or defaults)
       const result = await ApiService.createFlightPlan({
         route: routeString,
-        aircraftRegistration: flightPlan.aircraft.id,
+        aircraft: {
+          registration: flightPlan.aircraft.id,
+          cruiseSpeed: flightPlan.aircraft.cruiseSpeed,
+          fuelCapacity: flightPlan.aircraft.usableFuel,
+          fuelConsumption: flightPlan.aircraft.fuelBurn,
+          emptyWeight: flightPlan.aircraft.emptyWeight,
+          maxTakeoffWeight: flightPlan.aircraft.maxTakeoffMass,
+        },
         departureDate: flightPlan.dateTime,
         defaultAltitude: flightPlan.cruiseAltitude,
       });
