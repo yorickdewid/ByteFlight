@@ -13,11 +13,11 @@ interface ButtonProps {
 }
 
 export const Button: React.FC<ButtonProps> = ({ children, onClick, icon, variant = 'primary', size = 'md', className = '', disabled = false, title }) => {
-  const baseStyles = "font-medium rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed select-none";
+  const baseStyles = "font-medium rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed select-none";
   const variantStyles = {
     primary: "bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700",
     secondary: "bg-transparent hover:bg-slate-800 text-slate-300 border border-slate-700",
-    active: "bg-sky-600 hover:bg-sky-500 text-white border border-sky-600",
+    active: "bg-sky-600 hover:bg-sky-500 text-white border border-sky-500 shadow-md shadow-sky-900/30",
     danger: "bg-transparent hover:bg-red-950 text-red-400 border border-red-900",
     ghost: "bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-transparent",
   };

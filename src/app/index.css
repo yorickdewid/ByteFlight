@@ -31,24 +31,24 @@
 
 /* Mapbox Customization */
 .mapboxgl-popup-content {
-  background: #0f172a;
+  background: #1e293b;
   color: #e2e8f0;
   border: 1px solid #334155;
-  border-radius: 0.375rem;
+  border-radius: 0.75rem;
   padding: 10px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: #0f172a !important;
-  border-bottom-color: #0f172a !important;
+  border-top-color: #1e293b !important;
+  border-bottom-color: #1e293b !important;
 }
 
 .mapboxgl-ctrl-group {
-  background: #0f172a !important;
+  background: #1e293b !important;
   border: 1px solid #334155;
-  border-radius: 0.375rem !important;
+  border-radius: 0.75rem !important;
 }
 
 .mapboxgl-ctrl-icon {

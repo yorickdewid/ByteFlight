@@ -274,12 +274,12 @@ export const VectorMap: React.FC<VectorMapProps> = ({
               div.innerHTML = `
                                 <div class="flex flex-col gap-2 min-w-[150px]">
                                     <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Waypoint</label>
-                                    <input id="popup-name" value="${props.name}" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" />
+                                    <input id="popup-name" value="${props.name}" class="bg-slate-800/50 border border-slate-700 rounded-lg px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" />
                                     <div class="flex items-center gap-2">
-                                        <input id="popup-alt" type="text" value="${props.alt}" class="w-24 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" placeholder="ALT/FL" />
+                                        <input id="popup-alt" type="text" value="${props.alt}" class="w-24 bg-slate-800/50 border border-slate-700 rounded-lg px-2 py-1 text-sm font-mono text-white focus:outline-none focus:border-sky-500" placeholder="ALT/FL" />
                                         <span class="text-xs text-slate-500">FT</span>
                                     </div>
-                                    <button id="popup-save" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-1 px-2 rounded mt-1">Update</button>
+                                    <button id="popup-save" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-1 px-2 rounded-lg mt-1">Update</button>
                                 </div>
                             `;
               if (f.geometry.type === 'Point') {
@@ -485,7 +485,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       <div ref={mapContainer} className="w-full h-full bg-slate-900" />
 
       <div className="absolute bottom-4 right-3 flex flex-col gap-3 z-30">
-        <div className="bg-slate-900 border border-slate-800 rounded-md flex flex-col shadow-lg overflow-hidden">
+        <div className="bg-slate-900/95 border border-slate-700/60 rounded-xl flex flex-col shadow-xl overflow-hidden">
           <button onClick={() => map.current?.zoomIn()} className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" title="Zoom in"><ZoomIn size={16} /></button>
           <button onClick={() => map.current?.zoomOut()} className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors" title="Zoom out"><ZoomOut size={16} /></button>
           <div className="h-px bg-slate-800"></div>
@@ -505,7 +505,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-3 bg-slate-900 border border-slate-800 rounded-sm px-2 py-1 text-[10px] font-mono text-slate-500 z-30">
+      <div className="absolute bottom-4 left-3 bg-slate-900/90 border border-slate-700/60 rounded-md px-2 py-1 text-[10px] font-mono text-slate-500 z-30">
         MOCK VFR CHART
       </div>
     </div>
@@ -565,7 +565,7 @@ export const RunwayVisualizer: React.FC<RunwayVisualizerProps> = ({ runwayHeadin
           <circle cx="100" cy="100" r="4" fill="#e2e8f0" stroke="#1e293b" strokeWidth="2" />
         </svg>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 w-full text-[11px] mt-3 bg-slate-950 p-3 rounded border border-slate-800">
+      <div className="grid grid-cols-2 gap-x-6 w-full text-[11px] mt-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
         <div className="text-slate-400">Headwind</div>
         <div className={`text-right font-mono ${headwind < 0 ? 'text-red-400' : 'text-emerald-400'}`}>{headwind} KT</div>
         <div className="text-slate-400">Crosswind</div>
@@ -585,7 +585,7 @@ export const PerformanceStrip: React.FC<{ dist: number; ete: string; fuel: numbe
   })();
 
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-stretch bg-slate-900 border border-slate-800 rounded-md shadow-lg divide-x divide-slate-800">
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-stretch bg-slate-900/95 border border-slate-700/60 rounded-xl shadow-xl divide-x divide-slate-700/50">
       <div className="px-4 py-1.5 flex flex-col min-w-[84px]">
         <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><Route size={10} />Distance</span>
         <span className="text-sm font-mono text-slate-100 tabular-nums">{dist}<span className="text-[10px] text-slate-500 ml-1">NM</span></span>

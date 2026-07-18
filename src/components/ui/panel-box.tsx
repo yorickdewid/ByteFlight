@@ -14,7 +14,7 @@ export const PanelBox: React.FC<PanelBoxProps> = ({ title, icon, children, class
     {(title || headerActions) && (
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 min-h-[40px]">
         <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          {icon && React.createElement(icon, { size: 13, className: 'text-slate-500' })}
+          {icon && React.createElement(icon, { size: 13, className: 'text-sky-500' })}
           {title}
         </span>
         <div className="flex items-center gap-2">{headerActions}</div>

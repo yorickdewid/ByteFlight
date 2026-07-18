@@ -98,7 +98,7 @@ export default function FlightPlanSidebar({
                 if (e.key === 'Enter') commitRename();
                 if (e.key === 'Escape') setIsRenaming(false);
               }}
-              className="w-full bg-slate-950 border border-sky-500 text-slate-200 text-sm py-0.5 px-2 rounded focus:outline-none font-semibold"
+              className="w-full bg-slate-800/50 border border-sky-500 text-slate-200 text-sm py-0.5 px-2 rounded-lg focus:outline-none font-semibold"
             />
           ) : (
             <button
@@ -115,7 +115,7 @@ export default function FlightPlanSidebar({
         <button
           onClick={onCreateRoute}
           title="New route"
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-sm transition-colors flex-shrink-0"
+          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-md transition-colors flex-shrink-0"
         >
           <Plus size={15} />
         </button>
@@ -123,7 +123,7 @@ export default function FlightPlanSidebar({
         <button
           onClick={() => setIsRouteListOpen(!isRouteListOpen)}
           title="Saved routes"
-          className={`px-1.5 py-1.5 rounded-sm transition-colors flex-shrink-0 flex items-center gap-1 ${
+          className={`px-1.5 py-1.5 rounded-md transition-colors flex-shrink-0 flex items-center gap-1 ${
             isRouteListOpen
               ? 'text-sky-400 bg-slate-800'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -144,7 +144,7 @@ export default function FlightPlanSidebar({
             <div className="flex items-center gap-1">
               <button
                 onClick={handleCreateRoute}
-                className="px-2 py-1 text-sky-400 hover:text-sky-300 hover:bg-slate-800 rounded-sm transition-colors text-[11px] font-semibold flex items-center gap-1"
+                className="px-2 py-1 text-sky-400 hover:text-sky-300 hover:bg-slate-800 rounded-md transition-colors text-[11px] font-semibold flex items-center gap-1"
               >
                 <Plus size={13} />
                 New
@@ -152,28 +152,28 @@ export default function FlightPlanSidebar({
               <button
                 onClick={() => setIsRouteListOpen(false)}
                 title="Close"
-                className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-sm transition-colors"
+                className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-md transition-colors"
               >
                 <X size={15} />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
             {routes.map(route => {
               const isActive = route.id === activeRouteId;
               return (
                 <div
                   key={route.id}
                   onClick={() => !isActive && handleSwitchRoute(route.id)}
-                  className={`group border-b border-slate-800 px-4 py-2.5 transition-colors border-l-2 ${
+                  className={`group rounded-lg border px-3 py-2.5 transition-colors ${
                     isActive
-                      ? 'border-l-sky-500 bg-slate-800/60 cursor-default'
-                      : 'border-l-transparent hover:bg-slate-800/40 cursor-pointer'
+                      ? 'border-sky-500/30 bg-sky-500/10 cursor-default'
+                      : 'border-transparent hover:bg-slate-800/60 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`text-sm font-semibold truncate ${isActive ? 'text-slate-100' : 'text-slate-300'}`}>
+                    <span className={`text-sm font-semibold truncate ${isActive ? 'text-sky-300' : 'text-slate-300'}`}>
                       {route.name}
                     </span>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -187,7 +187,7 @@ export default function FlightPlanSidebar({
                             onDeleteRoute(route.id);
                           }}
                           title="Delete route"
-                          className="p-1 text-slate-600 hover:text-red-400 hover:bg-slate-800 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="p-1 text-slate-600 hover:text-red-400 hover:bg-slate-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -217,7 +217,7 @@ export default function FlightPlanSidebar({
               <button onClick={onOpenAircraftManager} className="text-[11px] text-sky-400 hover:text-sky-300 font-medium transition-colors">Manage fleet</button>
             </div>
             <select
-              className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm py-2 px-3 rounded focus:border-sky-500 outline-none transition-colors"
+              className="w-full bg-slate-800/50 border border-slate-700 text-slate-200 text-sm py-2 px-3 rounded-lg focus:border-sky-500 outline-none transition-colors"
               value={flightPlan.aircraftId}
               onChange={e => {
                 const ac = aircraftProfiles.find(p => p.id === e.target.value);
@@ -234,7 +234,7 @@ export default function FlightPlanSidebar({
               type="datetime-local"
               value={flightPlan.dateTime}
               onChange={e => onUpdateFlightPlan(p => ({ ...p, dateTime: e.target.value }))}
-              className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm rounded p-2 focus:border-sky-500 focus:outline-none font-mono transition-colors"
+              className="w-full bg-slate-800/50 border border-slate-700 text-slate-200 text-sm rounded-lg p-2 focus:border-sky-500 focus:outline-none font-mono transition-colors"
             />
           </div>
           <div>
@@ -248,7 +248,7 @@ export default function FlightPlanSidebar({
           <div className="absolute left-[15px] top-8 bottom-8 w-px border-l border-dashed border-slate-700"></div>
 
           <div className="relative pl-8">
-            <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-emerald-500 bg-slate-900 z-10"></div>
+            <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-emerald-500 bg-slate-900 z-10 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
             <Input placeholder="ICAO" mono value={flightPlan.departure.id} onChange={e => onPointChange('departure', e.target.value)} />
           </div>
 
@@ -256,7 +256,7 @@ export default function FlightPlanSidebar({
             <div key={i} className="flex items-center gap-2 mb-2 relative pl-8 group">
               <div className="absolute left-[10px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-slate-600 z-10 group-hover:bg-sky-400 transition-colors"></div>
 
-              <div className="flex-1 flex bg-slate-950 border border-slate-700 rounded overflow-hidden group-focus-within:border-sky-500 transition-colors">
+              <div className="flex-1 flex bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden group-focus-within:border-sky-500 transition-colors">
                 <WaypointInput
                   value={wp.id?.startsWith('wp-') ? (wp.name || '') : wp.id}
                   onChange={text => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, name: text, id: text } : w) }))}
@@ -276,7 +276,7 @@ export default function FlightPlanSidebar({
                 />
               </div>
 
-              <button onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.filter((_, j) => j !== i) }))} className="text-slate-600 hover:text-red-400 transition-colors p-1.5 hover:bg-slate-800 rounded-sm"><Trash2 size={14} /></button>
+              <button onClick={() => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.filter((_, j) => j !== i) }))} className="text-slate-600 hover:text-red-400 transition-colors p-1.5 hover:bg-slate-800 rounded-md"><Trash2 size={14} /></button>
             </div>
           ))}
 
@@ -290,14 +290,14 @@ export default function FlightPlanSidebar({
                 const lon = (lastPoint.lon + nextPoint.lon) / 2;
                 return { ...p, waypoints: [...p.waypoints, { id: `wp-sidebar-${Date.now()}`, name: '', lat, lon, alt: p.cruiseAltitude || 1500, type: 'WAYPOINT' as const }] };
               })}
-              className="text-[11px] flex items-center gap-1.5 text-sky-400 hover:text-sky-300 font-medium transition-colors py-1 px-2 rounded-sm hover:bg-slate-800 -ml-2"
+              className="text-[11px] flex items-center gap-1.5 text-sky-400 hover:text-sky-300 font-medium transition-colors py-1 px-2 rounded-md hover:bg-slate-800 -ml-2"
             >
               <PlusCircle size={13} /> Add waypoint
             </button>
           </div>
 
           <div className="relative pl-8">
-            <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-slate-900 z-10"></div>
+            <div className="absolute left-2 top-3 w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-slate-900 z-10 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
             <Input placeholder="ICAO" mono value={flightPlan.arrival.id} onChange={e => onPointChange('arrival', e.target.value)} />
           </div>
 

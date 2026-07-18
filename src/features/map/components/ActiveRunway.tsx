@@ -58,13 +58,13 @@ export const ActiveRunway: React.FC<ActiveRunwayProps> = ({ airport, metar }) =>
   if (!runwayData) return null;
 
   return (
-    <div className="bg-slate-950 p-4 border border-slate-800 rounded">
+    <div className="bg-slate-800/40 p-4 border border-slate-700/50 rounded-xl">
       <div className="flex justify-between items-center mb-3 border-b border-slate-800 pb-3">
         <div className="flex items-baseline gap-2">
           <span className="text-base font-bold text-white font-mono">
             RWY {favoredRunway.designator}
           </span>
-          <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider border border-emerald-900 bg-emerald-950 px-1.5 py-0.5 rounded-sm">
+          <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider border border-emerald-900 bg-emerald-950 px-1.5 py-0.5 rounded-md">
             Favored
           </span>
         </div>

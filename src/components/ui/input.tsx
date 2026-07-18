@@ -21,8 +21,8 @@ export const Input: React.FC<InputProps> = ({ label, type = 'text', value, onCha
         onChange={onChange}
         placeholder={placeholder}
         className={`block w-full ${icon ? 'pl-9' : 'pl-3'} pr-3 py-2
-          bg-slate-950 border ${error ? 'border-red-800' : 'border-slate-700'}
-          text-slate-100 rounded focus:outline-none focus:border-sky-500
+          bg-slate-800/50 border ${error ? 'border-red-800' : 'border-slate-700'}
+          text-slate-100 rounded-lg focus:outline-none focus:border-sky-500
           text-sm ${mono ? 'font-mono' : 'font-sans'} transition-colors placeholder-slate-600`}
         {...props}
       />

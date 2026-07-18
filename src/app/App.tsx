@@ -107,7 +107,7 @@ export default function App() {
   if (isAppLoading) {
     return (
       <div className="h-screen w-full bg-slate-950 flex items-center justify-center flex-col gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-sm bg-sky-600">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-lg shadow-sky-900/30">
           <Plane size={20} className="text-white fill-current" style={{ transform: 'rotate(-45deg)' }} />
         </div>
         <div className="flex items-center gap-2 text-slate-500 font-mono text-sm">

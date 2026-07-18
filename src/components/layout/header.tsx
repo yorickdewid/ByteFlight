@@ -48,7 +48,7 @@ export default function Header({
   return (
     <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center px-4 shrink-0 relative z-30">
       <div className="flex-1 flex items-center gap-3">
-        <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-sky-600">
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 shadow-md shadow-sky-900/30">
           <Plane size={16} className="text-white fill-current" style={{ transform: 'rotate(-45deg)' }} />
         </div>
         <div className="flex items-baseline gap-2">
@@ -66,7 +66,7 @@ export default function Header({
             value={searchQuery}
             onChange={onSearchChange}
             placeholder="Search airport, VOR, or waypoint"
-            className="w-full bg-slate-950 border border-slate-700 rounded py-1.5 pl-9 pr-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600 transition-colors"
+            className="w-full bg-slate-800/50 border border-slate-700 rounded-full py-1.5 pl-9 pr-4 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 placeholder-slate-500 transition-all"
           />
           {searchResults.length > 0 && (
             <div className="absolute top-full left-0 w-full mt-1 bg-slate-900 border border-slate-700 shadow-2xl z-50 rounded-md overflow-hidden">
@@ -93,17 +93,17 @@ export default function Header({
         <div className="relative" ref={profileMenuRef}>
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className={`w-8 h-8 rounded-sm flex items-center justify-center text-xs font-semibold border transition-colors select-none
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border transition-colors select-none
                       ${isProfileMenuOpen
-                ? 'bg-slate-700 text-slate-100 border-slate-600'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-slate-100'
+                ? 'bg-sky-500 text-white border-sky-500'
+                : 'bg-sky-900/40 text-sky-400 border-sky-700/50 hover:bg-sky-500 hover:text-white'
               }`}
           >
             YW
           </button>
 
           {isProfileMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-md shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-800">
                 <p className="text-sm font-semibold text-slate-100">Yorick de Wid</p>
                 <p className="text-xs text-slate-500 truncate">pilot@byteflight.app</p>

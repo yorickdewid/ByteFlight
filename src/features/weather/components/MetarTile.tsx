@@ -11,7 +11,7 @@ interface MetarTileProps {
 }
 
 export const MetarTile: React.FC<MetarTileProps> = ({ label, value, subtext, color = 'slate', icon, iconColor = 'text-slate-500' }) => (
-  <div className="bg-slate-950 p-3 border border-slate-800 rounded flex flex-col min-h-[64px]">
+  <div className="bg-slate-800/40 p-3 border border-slate-700/50 rounded-xl flex flex-col min-h-[64px]">
     <div className="text-[10px] font-semibold text-slate-500 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
       {icon && React.createElement(icon, { className: `w-3 h-3 ${iconColor}` })}
       {label}

@@ -36,17 +36,17 @@ export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 md:p-6 font-sans">
-      <div className="bg-slate-900 w-full max-w-3xl rounded-md shadow-2xl border border-slate-700 flex flex-col text-slate-300">
+      <div className="bg-slate-900 w-full max-w-3xl rounded-xl shadow-2xl border border-slate-700 flex flex-col text-slate-300">
         <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Scale size={16} className="text-slate-500" />
             Weight & Balance
           </h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-800 rounded-sm transition-colors"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"><X size={18} /></button>
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="bg-slate-950 p-5 rounded border border-slate-800">
+            <div className="bg-slate-800/40 p-5 rounded-xl border border-slate-700/50">
               <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-4">Variable Load</h3>
               <div className="space-y-4">
                 <Input label="Pilot (kg)" value={payload.pilot} type="number" onChange={e => onUpdatePayload({ ...payload, pilot: parseInt(e.target.value) || 0 })} />
@@ -56,7 +56,7 @@ export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft
               </div>
             </div>
 
-            <div className="p-4 bg-slate-950 rounded border border-slate-800">
+            <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
               <div className="flex justify-between text-sm mb-2 text-slate-400">
                 <span>Zero Fuel Mass</span>
                 <span className="font-mono text-slate-200">{(totalWeight - fuelWeight).toFixed(0)} kg</span>
@@ -70,7 +70,7 @@ export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft
           <div>
             <div className="h-full flex flex-col">
               <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-4">CG Envelope</h3>
-              <div className="flex-1 min-h-[300px] border border-slate-800 bg-slate-950 rounded relative overflow-hidden">
+              <div className="flex-1 min-h-[300px] border border-slate-700/50 bg-slate-950 rounded-xl relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#475569 1px, transparent 1px), linear-gradient(90deg, #475569 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
 
                 <svg className="absolute inset-0 w-full h-full">
@@ -98,12 +98,12 @@ export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft
                 <span className="absolute top-2 left-2 text-[10px] text-slate-500 font-semibold tracking-wider">MAX WEIGHT</span>
               </div>
 
-              <div className="mt-4 p-3 bg-slate-950 border border-slate-800 rounded">
+              <div className="mt-4 p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl">
                 <div className="flex justify-between text-sm items-center">
                   <span className="text-slate-400">Center of Gravity</span>
                   <span className={`font-mono ${isUnbalanced ? 'text-red-400' : 'text-slate-200'}`}>{currentCG.toFixed(3)} m</span>
                 </div>
-                {isUnbalanced && <div className="text-xs text-red-400 mt-2 border border-red-900 bg-red-950 p-2 rounded-sm text-center">Out of balance limits</div>}
+                {isUnbalanced && <div className="text-xs text-red-400 mt-2 border border-red-900 bg-red-950 p-2 rounded-md text-center">Out of balance limits</div>}
               </div>
             </div>
           </div>

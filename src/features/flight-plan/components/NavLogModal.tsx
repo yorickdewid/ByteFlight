@@ -34,7 +34,7 @@ export const NavLogModal: React.FC<NavLogModalProps> = ({
             <Layers size={16} className="text-slate-400" />
             Navigation Log
           </h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-sm text-slate-500 transition-colors"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-500 transition-colors"><X size={18} /></button>
         </div>
         
         <div className="p-8 overflow-auto flex-1 bg-slate-50">
@@ -54,7 +54,7 @@ export const NavLogModal: React.FC<NavLogModalProps> = ({
           )}
 
           {!isLoading && !error && navLog && (
-            <div className="bg-white border border-slate-200 p-8 shadow-sm rounded max-w-4xl mx-auto">
+            <div className="bg-white border border-slate-200 p-8 shadow-sm rounded-lg max-w-4xl mx-auto">
               <div className="flex justify-between mb-8 border-b border-slate-200 pb-6">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Flight Log</h1>

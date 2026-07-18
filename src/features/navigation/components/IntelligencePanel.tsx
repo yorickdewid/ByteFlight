@@ -24,7 +24,7 @@ const CATEGORY_STYLES: Record<string, string> = {
 function SectionLabel({ icon: Icon, children }: { icon?: React.ElementType; children: React.ReactNode }) {
   return (
     <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-      {Icon && <Icon size={13} className="text-slate-500" />}
+      {Icon && <Icon size={13} className="text-sky-500" />}
       {children}
     </div>
   );
@@ -61,14 +61,14 @@ export default function IntelligencePanel({
           <div className="flex gap-1">
             <button
               onClick={() => onAddWaypoint(selectedPoint)}
-              className="p-1.5 rounded-sm hover:bg-slate-800 text-slate-400 hover:text-sky-400 transition-colors"
+              className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-sky-400 transition-colors"
               title="Add to route"
             >
               <PlusCircle size={16} />
             </button>
             <button
               onClick={() => onToggleFavorite(selectedPoint.id)}
-              className="p-1.5 rounded-sm hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-md hover:bg-slate-800 transition-colors"
               title="Favorite"
             >
               <Star size={16} className={favorites.includes(selectedPoint.id) ? "fill-amber-400 text-amber-400" : "text-slate-400 hover:text-amber-400"} />
@@ -83,7 +83,7 @@ export default function IntelligencePanel({
               key={tab}
               onClick={() => setSidebarTab(tab)}
               className={`text-[11px] font-semibold px-3 py-2 border-b-2 transition-colors uppercase tracking-wide ${sidebarTab === tab
-                ? 'border-sky-500 text-slate-100'
+                ? 'border-sky-500 text-sky-300'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
                 }`}
             >
@@ -96,7 +96,7 @@ export default function IntelligencePanel({
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5">
         {sidebarTab === 'INFO' && (
           <>
-            <div className="grid grid-cols-3 gap-3 bg-slate-950 p-3 rounded border border-slate-800">
+            <div className="grid grid-cols-3 gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
               <DataTag label="Type" value={selectedPoint.type} />
               <DataTag label="Elevation" value={selectedPoint.elevation ? `${selectedPoint.elevation} ft` : 'N/A'} />
               <DataTag label="Freq" value={selectedPoint.frequencies?.[0]?.frequency || '—'} />
@@ -112,7 +112,7 @@ export default function IntelligencePanel({
             {selectedPoint.frequencies && selectedPoint.frequencies.length > 0 && (
               <div className="space-y-2">
                 <SectionLabel icon={Radio}>Communications</SectionLabel>
-                <div className="bg-slate-950 rounded border border-slate-800 divide-y divide-slate-800">
+                <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
                   {selectedPoint.frequencies.map((f, i) => (
                     <div key={i} className="flex justify-between items-center px-3 py-2 text-sm">
                       <span className="text-slate-400">{f.type}</span>
@@ -140,34 +140,34 @@ export default function IntelligencePanel({
                   <div className="flex items-center justify-between">
                     <SectionLabel icon={Cloud}>METAR</SectionLabel>
                     {selectedPointMetar.metar.flightCategory && (
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm border ${CATEGORY_STYLES[selectedPointMetar.metar.flightCategory] || 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${CATEGORY_STYLES[selectedPointMetar.metar.flightCategory] || 'bg-slate-800 text-slate-400 border-slate-700'}`}>
                         {selectedPointMetar.metar.flightCategory}
                       </span>
                     )}
                   </div>
-                  <div className="p-3 bg-slate-950 border border-slate-800 rounded text-xs font-mono text-slate-300 leading-relaxed break-all">
+                  <div className="p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all">
                     {selectedPointMetar.metar.raw}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <SectionLabel>Decoded</SectionLabel>
-                  <div className="bg-slate-950 rounded border border-slate-800 divide-y divide-slate-800 text-sm">
+                  <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50 text-sm">
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400 flex items-center gap-2"><Wind size={13} className="text-slate-600" />Wind</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Wind size={13} className="text-sky-500/70" />Wind</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.wind.direction}° @ {selectedPointMetar.metar.wind.speed}kt
                         {selectedPointMetar.metar.wind.gust && ` G${selectedPointMetar.metar.wind.gust}kt`}
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400 flex items-center gap-2"><Eye size={13} className="text-slate-600" />Visibility</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Eye size={13} className="text-sky-500/70" />Visibility</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.visibility >= 9999 ? '10km+' : `${(selectedPointMetar.metar.visibility / 1000).toFixed(1)}km`}
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400 flex items-center gap-2"><Cloud size={13} className="text-slate-600" />Clouds</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Cloud size={13} className="text-sky-500/70" />Clouds</span>
                       <span className="text-slate-200 font-mono text-right">
                         {selectedPointMetar.metar.clouds.length > 0
                           ? selectedPointMetar.metar.clouds.map(c => `${c.quantity} ${c.height}ft`).join(', ')
@@ -175,13 +175,13 @@ export default function IntelligencePanel({
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400 flex items-center gap-2"><Thermometer size={13} className="text-slate-600" />Temp / Dew</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Thermometer size={13} className="text-sky-500/70" />Temp / Dew</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.temperature}° / {selectedPointMetar.metar.dewpoint}°C
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400 flex items-center gap-2"><Gauge size={13} className="text-slate-600" />QNH</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Gauge size={13} className="text-sky-500/70" />QNH</span>
                       <span className="text-slate-200 font-mono">Q{selectedPointMetar.metar.qnh}</span>
                     </div>
                   </div>
@@ -190,7 +190,7 @@ export default function IntelligencePanel({
                 {selectedPointMetar.tafRaw && (
                   <div className="space-y-2">
                     <SectionLabel icon={Wind}>TAF</SectionLabel>
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded text-xs font-mono text-slate-300 leading-relaxed break-all">
+                    <div className="p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all">
                       {selectedPointMetar.tafRaw}
                     </div>
                   </div>
@@ -212,7 +212,7 @@ export default function IntelligencePanel({
               selectedPointNotams.length > 0 ? (
                 <div className="space-y-2">
                   {selectedPointNotams.map(notam => (
-                    <div key={notam.id} className="bg-slate-950 border border-slate-800 rounded p-3 space-y-1.5">
+                    <div key={notam.id} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 space-y-1.5">
                       <div className="flex justify-between items-baseline">
                         <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">NOTAM</span>
                         <span className="text-[10px] text-slate-500 font-mono">{notam.id}</span>

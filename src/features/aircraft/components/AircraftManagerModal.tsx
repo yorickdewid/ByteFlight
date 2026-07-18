@@ -65,18 +65,18 @@ export const AircraftManagerModal: React.FC<AircraftManagerModalProps> = ({ isOp
         confirmLabel={alert.action ? 'Delete' : 'OK'}
       />
 
-      <div className="bg-slate-900 w-full max-w-2xl h-[650px] rounded-md shadow-2xl border border-slate-700 flex flex-col text-slate-300 relative overflow-hidden">
+      <div className="bg-slate-900 w-full max-w-2xl h-[650px] rounded-xl shadow-2xl border border-slate-700 flex flex-col text-slate-300 relative overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center shrink-0">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Plane size={16} className="text-slate-500" />
             {view === 'list' ? 'Fleet' : (editingId === 'NEW' ? 'New Aircraft' : 'Edit Aircraft')}
           </h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-800 rounded-sm transition-colors"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"><X size={18} /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
           {view === 'list' ? (
-            <div className="bg-slate-950 border border-slate-800 rounded divide-y divide-slate-800">
+            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl divide-y divide-slate-700/50">
               {aircraftList.map(ac => (
                 <div key={ac.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-900 transition-colors group">
                   <div>
@@ -91,8 +91,8 @@ export const AircraftManagerModal: React.FC<AircraftManagerModalProps> = ({ isOp
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleEdit(ac)} className="p-1.5 hover:bg-slate-800 hover:text-sky-400 rounded-sm text-slate-400 transition-colors"><Edit2 size={14} /></button>
-                    <button onClick={() => confirmDelete(ac.id)} className="p-1.5 hover:bg-slate-800 hover:text-red-400 rounded-sm text-slate-400 transition-colors"><Trash2 size={14} /></button>
+                    <button onClick={() => handleEdit(ac)} className="p-1.5 hover:bg-slate-800 hover:text-sky-400 rounded-md text-slate-400 transition-colors"><Edit2 size={14} /></button>
+                    <button onClick={() => confirmDelete(ac.id)} className="p-1.5 hover:bg-slate-800 hover:text-red-400 rounded-md text-slate-400 transition-colors"><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}
@@ -108,7 +108,7 @@ export const AircraftManagerModal: React.FC<AircraftManagerModalProps> = ({ isOp
                 <Input label="Type / Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Robin DR400" />
               </div>
 
-              <div className="bg-slate-950 p-5 rounded border border-slate-800">
+              <div className="bg-slate-800/40 p-5 rounded-xl border border-slate-700/50">
                 <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Layers size={13} /> Performance</h3>
                 <div className="grid grid-cols-3 gap-5">
                   <Input label="Cruise Speed (KT)" type="number" value={formData.cruiseSpeed} onChange={e => setFormData({ ...formData, cruiseSpeed: parseInt(e.target.value) || 0 })} />
@@ -117,7 +117,7 @@ export const AircraftManagerModal: React.FC<AircraftManagerModalProps> = ({ isOp
                 </div>
               </div>
 
-              <div className="bg-slate-950 p-5 rounded border border-slate-800">
+              <div className="bg-slate-800/40 p-5 rounded-xl border border-slate-700/50">
                 <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Scale size={13} /> Weight & Balance</h3>
                 <div className="grid grid-cols-2 gap-5 mb-5">
                   <Input label="Empty Weight (KG)" type="number" value={formData.emptyWeight} onChange={e => setFormData({ ...formData, emptyWeight: parseInt(e.target.value) || 0 })} />

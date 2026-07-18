@@ -59,7 +59,7 @@ export default function MapView({
         />
 
         <div className="absolute top-3 right-3 z-20">
-          <div className="bg-slate-900 border border-slate-800 rounded-md shadow-lg overflow-hidden">
+          <div className="bg-slate-900/95 border border-slate-700/60 rounded-xl shadow-xl overflow-hidden">
             <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-3 pt-2 pb-1">Overlays</div>
 
             <button
