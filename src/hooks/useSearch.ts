@@ -37,7 +37,7 @@ export function useSearch() {
 
     // Debounce search by 300ms
     debounceRef.current = setTimeout(() => {
-      performSearch(q);
+      void performSearch(q);
     }, 300);
   };
 

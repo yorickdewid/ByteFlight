@@ -8,8 +8,8 @@ export function useFavorites() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed as string[];
       }
     } catch { /* corrupt data, use defaults */ }
     return DEFAULT_FAVORITES;

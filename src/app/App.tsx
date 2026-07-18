@@ -69,7 +69,7 @@ export default function App() {
 
   const time = useClock();
 
-  const { isAppLoading } = useAppInit(setSelectedPoint, refreshPointData);
+  const { isAppLoading } = useAppInit(setSelectedPoint, (icao) => { void refreshPointData(icao); });
 
   // --- Modal State ---
   const [isNavLogOpen, setIsNavLogOpen] = useState(false);
@@ -91,9 +91,11 @@ export default function App() {
   } = useNavLog(flightPlan);
 
   // --- Handlers ---
-  const handleSelectPoint = async (point: NavPoint) => {
-    await handleSelectPointBase(point);
-    clearSearch();
+  const handleSelectPoint = (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => {
+    void (async () => {
+      await handleSelectPointBase(point, tab);
+      clearSearch();
+    })();
   };
 
   const handleSignOut = () => {
@@ -136,7 +138,7 @@ export default function App() {
           routes={routes}
           activeRouteId={activeRouteId}
           onUpdateFlightPlan={setFlightPlan}
-          onPointChange={handlePointChange}
+          onPointChange={(type, val) => { void handlePointChange(type, val); }}
           onOpenNavLog={() => setIsNavLogOpen(true)}
           onOpenAircraftManager={() => setIsAircraftManagerOpen(true)}
           onCreateRoute={createRoute}
@@ -189,7 +191,7 @@ export default function App() {
 
       {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} navLog={navLog} isLoading={isNavLogLoading} error={navLogError} onClose={() => setIsNavLogOpen(false)} />}
       {isWbOpen && <WeightBalanceModal aircraft={flightPlan.aircraft} payload={flightPlan.payload} onClose={() => setIsWbOpen(false)} onUpdatePayload={(pl) => setFlightPlan(p => ({ ...p, payload: pl }))} />}
-      {isAircraftManagerOpen && <AircraftManagerModal isOpen={isAircraftManagerOpen} aircraftList={aircraftProfiles} onClose={() => setIsAircraftManagerOpen(false)} onSave={handleSaveAircraft} onDelete={handleDeleteAircraft} />}
+      {isAircraftManagerOpen && <AircraftManagerModal isOpen={isAircraftManagerOpen} aircraftList={aircraftProfiles} onClose={() => setIsAircraftManagerOpen(false)} onSave={(ac, isNew) => { void handleSaveAircraft(ac, isNew); }} onDelete={(id) => { void handleDeleteAircraft(id); }} />}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} fuelPolicy={flightPlan.reserveType} onSetFuelPolicy={(type) => setFlightPlan(p => ({ ...p, reserveType: type }))} />}
       {isPasswordModalOpen && <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />}
     </div>

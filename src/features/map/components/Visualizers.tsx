@@ -1,3 +1,4 @@
+import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { Compass, LocateFixed, ZoomIn, ZoomOut } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
@@ -6,6 +7,23 @@ import { FlightPlan, NavPoint, Waypoint } from '../../../types';
 
 // Import mapbox-gl CSS inline for proper styling
 import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Properties attached to features in the 'waypoints' GeoJSON source
+interface WaypointFeatureProps {
+  type: string;
+  index: number;
+  name: string;
+  alt: number;
+  draggable: boolean;
+}
+
+type WaypointFeature = Feature<Point, WaypointFeatureProps>;
+type WaypointCollection = FeatureCollection<Point, WaypointFeatureProps>;
+type RouteCollection = FeatureCollection<LineString>;
+
+// GeoJSONSource keeps its last-set data in the private _data field; typing it
+// here beats duplicating the collections in refs just to read them back.
+type GeoJSONSourceWithData<T> = mapboxgl.GeoJSONSource & { _data?: T };
 
 interface VectorMapProps {
   flightPlan: FlightPlan;
@@ -54,7 +72,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         try {
           const raw = localStorage.getItem('byteflight_map_position');
           if (!raw) return null;
-          const { center, zoom } = JSON.parse(raw);
+          const { center, zoom } = JSON.parse(raw) as { center?: unknown; zoom?: unknown };
           if (Array.isArray(center) && center.length === 2 && typeof zoom === 'number') {
             return { center: center as [number, number], zoom };
           }
@@ -182,7 +200,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         // --- Interaction: Dragging ---
         m.on('mouseenter', 'waypoints-circle', (e) => {
           const features = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
-          const isDraggable = features.length > 0 && features[0].properties?.draggable;
+          const isDraggable = features.length > 0 && (features[0].properties as WaypointFeatureProps).draggable;
           m.getCanvas().style.cursor = isDraggable ? 'move' : 'pointer';
         });
         m.on('mouseleave', 'waypoints-circle', () => m.getCanvas().style.cursor = '');
@@ -194,7 +212,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           const features = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
           if (features.length) {
             const feature = features[0];
-            const props = feature.properties as { type: string, index: number, draggable: boolean };
+            const props = feature.properties as WaypointFeatureProps;
             if (!props.draggable) return; // Named waypoint — don't allow drag
             e.preventDefault();
             m.dragPan.disable();
@@ -205,11 +223,11 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         m.on('mousemove', (e) => {
           if (!draggedPoint.current) return;
           const lngLat = e.lngLat;
-          const source: any = m.getSource('waypoints');
+          const source = m.getSource<GeoJSONSourceWithData<WaypointCollection>>('waypoints');
           const data = source._data;
 
           if (data && data.features) {
-            const feature = data.features.find((f: any) => {
+            const feature = data.features.find(f => {
               const p = f.properties;
               return p.type === draggedPoint.current?.type && p.index === draggedPoint.current?.index;
             });
@@ -217,7 +235,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
             if (feature) {
               feature.geometry.coordinates = [lngLat.lng, lngLat.lat];
               source.setData(data);
-              const routeSource: any = m.getSource('route');
+              const routeSource = m.getSource<GeoJSONSourceWithData<RouteCollection>>('route');
               const routeData = routeSource._data;
               if (routeData && routeData.features[0]) {
                 let coordIndex = 0;
@@ -250,7 +268,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           const wpFeatures = m.queryRenderedFeatures(e.point, { layers: ['waypoints-circle'] });
           if (wpFeatures.length > 0) {
             const f = wpFeatures[0];
-            const props = f.properties as any;
+            const props = f.properties as WaypointFeatureProps;
             if (props.type === 'WP') {
               const div = document.createElement('div');
               div.innerHTML = `
@@ -267,8 +285,8 @@ export const VectorMap: React.FC<VectorMapProps> = ({
               if (f.geometry.type === 'Point') {
                 const popup = new mapboxgl.Popup({ closeButton: false, offset: 10 }).setLngLat(f.geometry.coordinates as [number, number]).setDOMContent(div).addTo(m);
                 div.querySelector('#popup-save')?.addEventListener('click', () => {
-                const newName = (div.querySelector('#popup-name') as HTMLInputElement).value;
-                const altStr = (div.querySelector('#popup-alt') as HTMLInputElement).value;
+                const newName = div.querySelector<HTMLInputElement>('#popup-name').value;
+                const altStr = div.querySelector<HTMLInputElement>('#popup-alt').value;
                 let newAlt = 0;
                 const clean = altStr.toUpperCase().replace(/\s/g, '');
                 if (clean.startsWith('FL')) {
@@ -287,7 +305,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
           const metarFeatures = m.queryRenderedFeatures(e.point, { layers: ['metar-dots-circle'] });
           if (metarFeatures.length > 0) {
             const f = metarFeatures[0];
-            const props = f.properties as any;
+            const props = f.properties as { name: string; metar?: string; category?: string };
             const metar = props.metar;
             const cat = props.category;
 
@@ -376,6 +394,8 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       map.current?.remove();
       map.current = null;
     };
+    // Map is created exactly once; handlers read latest values via refs/props closure
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update Sources
@@ -387,7 +407,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
     const pts = [flightPlan.departure, ...flightPlan.waypoints, flightPlan.arrival];
     const routeCoords = pts.map(p => [p.lon, p.lat]);
 
-    const routeSource = map.current.getSource('route') as mapboxgl.GeoJSONSource;
+    const routeSource = map.current.getSource<mapboxgl.GeoJSONSource>('route');
     if (routeSource) {
       routeSource.setData({
         type: 'FeatureCollection',
@@ -402,7 +422,7 @@ export const VectorMap: React.FC<VectorMapProps> = ({
     // User-placed waypoints (wp-map-*, wp-sidebar-*) are draggable; named navaids are not
     const isUserWaypoint = (id: string) => id.startsWith('wp-');
 
-    const pointFeatures = pts.map((p, i) => {
+    const pointFeatures: WaypointFeature[] = pts.map((p, i) => {
       let type = 'WP';
       let index = -1;
       let draggable = false;
@@ -416,16 +436,16 @@ export const VectorMap: React.FC<VectorMapProps> = ({
       };
     });
 
-    const wpSource = map.current.getSource('waypoints') as mapboxgl.GeoJSONSource;
+    const wpSource = map.current.getSource<mapboxgl.GeoJSONSource>('waypoints');
     if (wpSource) {
       wpSource.setData({
         type: 'FeatureCollection',
-        features: pointFeatures as any
+        features: pointFeatures
       });
     }
 
     // Update METAR Stations
-    const stationFeatures = airports
+    const stationFeatures: Feature<Point>[] = airports
       .filter(a => a.flightCategory)
       .map(a => ({
         type: 'Feature',
@@ -440,11 +460,11 @@ export const VectorMap: React.FC<VectorMapProps> = ({
         },
       }));
 
-    const metarSource = map.current.getSource('metar-stations') as mapboxgl.GeoJSONSource;
+    const metarSource = map.current.getSource<mapboxgl.GeoJSONSource>('metar-stations');
     if (metarSource) {
       metarSource.setData({
         type: 'FeatureCollection',
-        features: stationFeatures as any
+        features: stationFeatures
       });
     }
 

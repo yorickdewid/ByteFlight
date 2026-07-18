@@ -66,6 +66,9 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
         setIsLoading(false);
       }
     }
+    // Route string is built from point identifiers — depending on the full
+    // departure/arrival objects would refetch on every coordinate nudge
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     flightPlan.departure?.id,
     flightPlan.arrival?.id,
@@ -83,7 +86,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
 
     // Debounce 500ms to avoid hammering API during rapid edits
     debounceRef.current = setTimeout(() => {
-      fetchNavLog();
+      void fetchNavLog();
     }, 500);
 
     return () => {
@@ -97,7 +100,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
   // Backend incorporates live METAR/wind into calculations, so stale data
   // means incorrect headings, ground speeds, ETEs, and fuel burn
   useEffect(() => {
-    const interval = setInterval(fetchNavLog, 5 * 60 * 1000);
+    const interval = setInterval(() => { void fetchNavLog(); }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchNavLog]);
 
@@ -106,7 +109,7 @@ export function useNavLog(flightPlan: FlightPlan): UseNavLogResult {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    fetchNavLog();
+    void fetchNavLog();
   }, [fetchNavLog]);
 
   return {

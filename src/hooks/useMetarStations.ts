@@ -29,7 +29,7 @@ function loadCachedStations(): Map<string, StationEntry> | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
 
-    const stored: StoredCache = JSON.parse(raw);
+    const stored = JSON.parse(raw) as StoredCache;
     if (Date.now() - stored.timestamp > MAX_AGE_MS) {
       localStorage.removeItem(STORAGE_KEY);
       return null;
@@ -75,7 +75,7 @@ export function useMetarStations() {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const lastFetchRef = useRef<string>('');
   const lastBoundsRef = useRef<MapBounds | null>(null);
-  const stationCache = useRef<Map<string, StationEntry>>(loadCachedStations() ?? new Map());
+  const stationCache = useRef<Map<string, StationEntry>>(loadCachedStations() ?? new Map<string, StationEntry>());
 
   /**
    * Merge incoming stations into the accumulator.
@@ -138,7 +138,7 @@ export function useMetarStations() {
       clearTimeout(debounceTimer.current);
     }
 
-    debounceTimer.current = setTimeout(async () => {
+    const fetchStations = async () => {
       setIsLoading(true);
       lastFetchRef.current = cacheKey;
       lastBoundsRef.current = bounds;
@@ -155,7 +155,9 @@ export function useMetarStations() {
       } finally {
         setIsLoading(false);
       }
-    }, 500);
+    };
+
+    debounceTimer.current = setTimeout(() => { void fetchStations(); }, 500);
   }, [mergeStations]);
 
   // Periodic refresh — re-fetch current viewport every 5 minutes

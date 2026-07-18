@@ -48,7 +48,7 @@ export function WaypointInput({ value, onResolve, onChange, placeholder = 'WAYPO
       return;
     }
 
-    debounceRef.current = setTimeout(async () => {
+    const search = async () => {
       setIsSearching(true);
       try {
         const res = await ApiService.lookupNavPoint(text);
@@ -59,7 +59,9 @@ export function WaypointInput({ value, onResolve, onChange, placeholder = 'WAYPO
       } finally {
         setIsSearching(false);
       }
-    }, 300);
+    };
+
+    debounceRef.current = setTimeout(() => { void search(); }, 300);
   };
 
   const handleSelect = (point: NavPoint) => {

@@ -21,6 +21,8 @@ export const AltitudeInput: React.FC<{ value: number, onChange: (val: number) =>
     if (value !== currentParsed) {
       setStrVal(value === 0 ? '' : value.toString());
     }
+    // Only sync when the external value changes — strVal is the live edit buffer
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const handleBlur = () => {

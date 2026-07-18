@@ -25,7 +25,7 @@ export function useNavigation() {
     setSidebarTab(tab || 'INFO'); // Use provided tab or default to INFO
 
     // Fetch dynamic data
-    refreshPointData(fullPoint.id);
+    void refreshPointData(fullPoint.id);
   };
 
   return {

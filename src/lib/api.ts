@@ -6,30 +6,93 @@ const API_BASE = 'https://api.byteflight.app';
 // Helper to add delay for better UX (prevents UI flashing)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// --- Backend wire formats (transport shapes local to the API client) ---
+
+interface BackendRunway {
+  designator?: string;
+  id?: string;
+  length?: number;
+  width?: number;
+  surface?: number;
+  heading?: number;
+}
+
+interface BackendFrequency {
+  name?: string;
+  type?: string;
+  value?: string;
+  frequency?: string;
+}
+
+interface BackendAerodrome {
+  icao?: string;
+  id?: string;
+  name?: string;
+  coords?: [number, number]; // [lon, lat]
+  latitude?: number;
+  longitude?: number;
+  elevation?: number;
+  declination?: number;
+  runways?: BackendRunway[];
+  frequencies?: BackendFrequency[];
+  ppr?: boolean;
+}
+
+interface BackendAircraft {
+  registration: string;
+  name?: string;
+  manufacturer?: string;
+  cruiseSpeed?: number;
+  fuelConsumption?: number;
+  fuelCapacity?: number;
+  emptyWeight?: number;
+  maxTakeoffWeight?: number;
+  cgMin?: number;
+  cgMax?: number;
+  armPilot?: number;
+  armPax?: number;
+  armBaggage?: number;
+  armFuel?: number;
+}
+
+interface BackendMetar {
+  raw?: string;
+  visibility?: number;
+  clouds?: { quantity: string; height?: number }[];
+}
+
+interface BackendMetarStation {
+  station: string;
+  coords: [number, number]; // [lon, lat]
+  metar?: BackendMetar;
+}
+
+interface BackendNotam {
+  id?: string;
+  text?: string;
+  message?: string;
+  raw?: string;
+}
+
 // Simple rate limiting
-const rateLimiter = {
-  requests: new Map<string, number[]>(),
-  isRateLimited(key: string, maxRequests: number = 10, windowMs: number = 60000): boolean {
-    const now = Date.now();
-    const windowStart = now - windowMs;
-    
-    if (!this.requests.has(key)) {
-      this.requests.set(key, []);
-    }
-    
-    const requests = this.requests.get(key)!;
-    // Remove old requests outside window
-    const validRequests = requests.filter(time => time > windowStart);
-    this.requests.set(key, validRequests);
-    
-    if (validRequests.length >= maxRequests) {
-      return true;
-    }
-    
-    validRequests.push(now);
-    return false;
+const rateLimitRequests = new Map<string, number[]>();
+
+function isRateLimited(key: string, maxRequests: number = 10, windowMs: number = 60000): boolean {
+  const now = Date.now();
+  const windowStart = now - windowMs;
+
+  const requests = rateLimitRequests.get(key) ?? [];
+  // Remove old requests outside window
+  const validRequests = requests.filter(time => time > windowStart);
+  rateLimitRequests.set(key, validRequests);
+
+  if (validRequests.length >= maxRequests) {
+    return true;
   }
-};
+
+  validRequests.push(now);
+  return false;
+}
 
 // Derive flight category from decoded METAR visibility and cloud ceiling (ICAO/FAA rules)
 function deriveFlightCategory(visibility?: number, clouds?: { quantity: string; height?: number }[]): 'VFR' | 'MVFR' | 'IFR' | 'LIFR' {
@@ -45,7 +108,7 @@ function deriveFlightCategory(visibility?: number, clouds?: { quantity: string; 
 }
 
 // Transform API response to frontend format
-function transformAerodromeToNavPoint(data: any): NavPoint {
+function transformAerodromeToNavPoint(data: BackendAerodrome): NavPoint {
   return {
     type: 'AIRPORT',
     id: data.icao || data.id,
@@ -54,14 +117,14 @@ function transformAerodromeToNavPoint(data: any): NavPoint {
     lon: data.coords ? data.coords[0] : data.longitude,
     elevation: data.elevation ? Math.round(data.elevation) : null,
     magVar: data.declination || null,
-    runways: data.runways?.map((rwy: any) => ({
+    runways: data.runways?.map(rwy => ({
       id: rwy.designator || rwy.id,
       length: rwy.length || 0,
       width: rwy.width || 0,
       surface: rwy.surface === 0 ? 'Asphalt' : 'Unknown',
       trueHeading: rwy.heading || 0,
     })) || [],
-    frequencies: data.frequencies?.map((f: any) => ({
+    frequencies: data.frequencies?.map(f => ({
       type: f.name || f.type || 'Unknown',
       frequency: f.value || f.frequency || '',
     })) || [],
@@ -71,15 +134,15 @@ function transformAerodromeToNavPoint(data: any): NavPoint {
 
 async function apiCall<T>(path: string): Promise<T> {
   // Rate limit API calls per endpoint
-  if (rateLimiter.isRateLimited(path)) {
+  if (isRateLimited(path)) {
     throw new Error('Rate limited - too many requests');
   }
-  
+
   const response = await fetch(`${API_BASE}${path}`);
   if (!response.ok) {
     throw new Error(`API error ${response.status}: ${response.statusText}`);
   }
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export const ApiService = {
@@ -87,8 +150,8 @@ export const ApiService = {
   async getAircraft(): Promise<AircraftProfile[]> {
     try {
       await delay(200);
-      const response = await apiCall<any[]>('/aircraft');
-      
+      const response = await apiCall<BackendAircraft[]>('/aircraft');
+
       // Backend stores aircraft with 'registration' as the key field
       // Map to frontend format (id = registration)
       return response.map(ac => ({
@@ -109,16 +172,16 @@ export const ApiService = {
     } catch (error) {
       console.error('Failed to load aircraft from API, falling back to localStorage:', error);
       const stored = localStorage.getItem('byteflight_fleet');
-      return stored ? JSON.parse(stored) : defaultAircraftProfiles;
+      return stored ? (JSON.parse(stored) as AircraftProfile[]) : defaultAircraftProfiles;
     }
   },
 
   async saveAircraft(aircraft: AircraftProfile, isNew: boolean): Promise<AircraftProfile> {
     try {
       await delay(300);
-      
+
       // Map frontend format to backend format
-      const backendAircraft = {
+      const backendAircraft: BackendAircraft = {
         registration: aircraft.id,
         name: aircraft.name,
         cruiseSpeed: aircraft.cruiseSpeed,
@@ -142,7 +205,7 @@ export const ApiService = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(backendAircraft),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to create aircraft: ${response.statusText}`);
         }
@@ -153,17 +216,17 @@ export const ApiService = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(backendAircraft),
         });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to update aircraft: ${response.statusText}`);
         }
       }
-      
+
       return aircraft;
     } catch (error) {
       console.error('Failed to save aircraft to API, falling back to localStorage:', error);
-      const current = await this.getAircraft();
-      let updatedList;
+      const current = await ApiService.getAircraft();
+      let updatedList: AircraftProfile[];
       if (isNew) {
         updatedList = [...current, aircraft];
       } else {
@@ -177,18 +240,18 @@ export const ApiService = {
   async deleteAircraft(id: string): Promise<void> {
     try {
       await delay(300);
-      
+
       // DELETE /aircraft/:registration
       const response = await fetch(`${API_BASE}/aircraft/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to delete aircraft: ${response.statusText}`);
       }
     } catch (error) {
       console.error('Failed to delete aircraft from API, falling back to localStorage:', error);
-      const current = await this.getAircraft();
+      const current = await ApiService.getAircraft();
       const updated = current.filter(a => a.id !== id);
       localStorage.setItem('byteflight_fleet', JSON.stringify(updated));
     }
@@ -204,21 +267,21 @@ export const ApiService = {
       // Try exact ICAO lookup first
       if (q.length === 4) {
         try {
-          const aerodrome = await apiCall<any>(`/aerodrome/${q}`);
+          const aerodrome = await apiCall<BackendAerodrome>(`/aerodrome/${q}`);
           return [transformAerodromeToNavPoint(aerodrome)];
-        } catch (e) {
+        } catch {
           // If not found, continue with nearby search
         }
       }
 
       // For now, fallback to mock data for partial matches
       // TODO: Implement search endpoint in API
-      const mockResults = await import('./mock-data').then(m => 
+      const mockResults = await import('./mock-data').then(m =>
         Object.values(m.mockNavData).filter(a =>
           a.id.includes(q) || a.name.toUpperCase().includes(q)
         )
       );
-      
+
       return mockResults.slice(0, 10); // Limit results
     } catch (error) {
       console.error('Search error:', error);
@@ -229,7 +292,7 @@ export const ApiService = {
   async getNavPointDetail(id: string): Promise<NavPoint | null> {
     try {
       await delay(100);
-      const aerodrome = await apiCall<any>(`/aerodrome/${id.toUpperCase()}`);
+      const aerodrome = await apiCall<BackendAerodrome>(`/aerodrome/${id.toUpperCase()}`);
       return transformAerodromeToNavPoint(aerodrome);
     } catch (error) {
       console.error(`Failed to get details for ${id}:`, error);
@@ -253,7 +316,7 @@ export const ApiService = {
   async getNearbyMetars(lat: number, lon: number, radius: number = 50): Promise<NavPoint[]> {
     try {
       await delay(100);
-      const response = await apiCall<any[]>(`/metar/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
+      const response = await apiCall<BackendMetarStation[]>(`/metar/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
 
       return response.map(station => ({
         type: 'AIRPORT' as const,
@@ -275,12 +338,12 @@ export const ApiService = {
   async getNotams(icao: string): Promise<Notam[]> {
     try {
       await delay(100);
-      const response = await apiCall<any>(`/notam/${icao.toUpperCase()}`);
-      
+      const response = await apiCall<BackendNotam[] | { notams?: BackendNotam[] }>(`/notam/${icao.toUpperCase()}`);
+
       // API returns array of NOTAMs
       const notams = Array.isArray(response) ? response : response.notams || [];
-      
-      return notams.map((n: any, index: number) => ({
+
+      return notams.map((n, index) => ({
         id: n.id || `NOTAM-${index + 1}`,
         text: n.text || n.message || n.raw || 'No details available',
       }));
@@ -293,7 +356,7 @@ export const ApiService = {
   // --- New endpoints for enhanced functionality ---
   async getNearbyAerodromes(lat: number, lon: number, radius: number = 25): Promise<NavPoint[]> {
     try {
-      const response = await apiCall<any[]>(`/aerodrome/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
+      const response = await apiCall<BackendAerodrome[]>(`/aerodrome/nearby?lat=${lat}&lon=${lon}&radius=${radius}`);
       return response.map(transformAerodromeToNavPoint);
     } catch (error) {
       console.error('Failed to get nearby aerodromes:', error);
@@ -320,11 +383,11 @@ export const ApiService = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(error.error || `Flight plan failed: ${response.status}`);
+      const body = (await response.json().catch(() => ({ error: response.statusText }))) as { error?: string };
+      throw new Error(body.error || `Flight plan failed: ${response.status}`);
     }
 
-    return response.json();
+    return response.json() as Promise<NavLog>;
   },
 
   // Build route string from flight plan (e.g., "EHRD GDA SUGOL EHAM")

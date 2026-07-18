@@ -32,7 +32,7 @@ export const ActiveRunway: React.FC<ActiveRunwayProps> = ({ airport, metar }) =>
       }
     };
 
-    fetchWindAnalysis();
+    void fetchWindAnalysis();
   }, [airport?.id, metar]);
 
   if (!airport || !metar) return null;

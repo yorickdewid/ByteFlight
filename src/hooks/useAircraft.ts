@@ -27,7 +27,7 @@ export function useAircraft(flightPlan: FlightPlan, setFlightPlan: React.Dispatc
         console.error("Failed to load aircraft", e);
       }
     };
-    loadAircraft();
+    void loadAircraft();
   }, [setFlightPlan]);
 
   const handleSaveAircraft = async (ac: AircraftProfile, isNew: boolean) => {
