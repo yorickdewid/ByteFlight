@@ -1,5 +1,5 @@
 import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import { Compass, LocateFixed, ZoomIn, ZoomOut } from 'lucide-react';
+import { Clock, Compass, Fuel, LocateFixed, RefreshCw, Route, ShieldCheck, ZoomIn, ZoomOut } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 import React, { useEffect, useRef, useState } from 'react';
 import { MAPBOX_TOKEN } from '../../../lib/config';
@@ -587,24 +587,24 @@ export const PerformanceStrip: React.FC<{ dist: number; ete: string; fuel: numbe
   return (
     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-stretch bg-slate-900 border border-slate-800 rounded-md shadow-lg divide-x divide-slate-800">
       <div className="px-4 py-1.5 flex flex-col min-w-[84px]">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Distance</span>
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><Route size={10} />Distance</span>
         <span className="text-sm font-mono text-slate-100 tabular-nums">{dist}<span className="text-[10px] text-slate-500 ml-1">NM</span></span>
       </div>
       <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">ETE</span>
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><Clock size={10} />ETE</span>
         <span className="text-sm font-mono text-slate-100 tabular-nums">{ete}</span>
       </div>
       <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Fuel</span>
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><Fuel size={10} />Fuel</span>
         <span className="text-sm font-mono text-sky-400 tabular-nums">{fuel}<span className="text-[10px] text-slate-500 ml-1">L</span></span>
       </div>
       <div className="px-4 py-1.5 flex flex-col min-w-[84px]">
-        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Reserve</span>
+        <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><ShieldCheck size={10} />Reserve</span>
         <span className="text-sm font-mono text-slate-300">{reserve}</span>
       </div>
       {freshness && (
         <div className="px-4 py-1.5 flex flex-col min-w-[72px]">
-          <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Updated</span>
+          <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1"><RefreshCw size={10} />Updated</span>
           <span className="text-sm font-mono text-slate-400">{freshness}</span>
         </div>
       )}

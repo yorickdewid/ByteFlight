@@ -1,4 +1,4 @@
-import { FileText, FolderOpen, Pencil, Plus, PlusCircle, Trash2, X } from 'lucide-react';
+import { FileText, FolderOpen, Pencil, Plus, PlusCircle, Route, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { AltitudeInput, Button, Input, PanelBox, WaypointInput } from '../../../components/ui';
 import { AircraftProfile, FlightPlan, NavPoint, SavedRoute } from '../../../types';
@@ -194,7 +194,12 @@ export default function FlightPlanSidebar({
                       )}
                     </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 font-mono truncate">
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-mono truncate flex items-center gap-1.5">
+                    <span className="flex items-center gap-0.5 shrink-0" aria-hidden>
+                      <span className="w-1.5 h-1.5 rounded-full border border-emerald-500"></span>
+                      <span className="w-3 border-t border-dashed border-slate-600"></span>
+                      <span className="w-1.5 h-1.5 rounded-full border border-red-500"></span>
+                    </span>
                     {routeSummary(route.flightPlan)}
                   </p>
                 </div>
@@ -204,7 +209,7 @@ export default function FlightPlanSidebar({
         </div>
       )}
 
-      <PanelBox title="Flight Parameters" className="flex-shrink-0 border-x-0 border-t-0 rounded-none bg-transparent">
+      <PanelBox title="Flight Parameters" icon={SlidersHorizontal} className="flex-shrink-0 border-x-0 border-t-0 rounded-none bg-transparent">
         <div className="space-y-4">
           <div>
             <div className="flex justify-between items-baseline mb-1.5">
@@ -238,7 +243,7 @@ export default function FlightPlanSidebar({
         </div>
       </PanelBox>
 
-      <PanelBox title="Route" className="flex-1 border-x-0 border-t-0 rounded-none bg-transparent pt-0">
+      <PanelBox title="Route" icon={Route} className="flex-1 border-x-0 border-t-0 rounded-none bg-transparent pt-0">
         <div className="space-y-4 relative">
           <div className="absolute left-[15px] top-8 bottom-8 w-px border-l border-dashed border-slate-700"></div>
 

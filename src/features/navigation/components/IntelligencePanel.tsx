@@ -1,4 +1,4 @@
-import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle } from 'lucide-react';
+import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle, Eye, Thermometer, Gauge } from 'lucide-react';
 import { MetarResponse, NavPoint, Notam } from '../../../types';
 import { ActiveRunway } from '../../map/components/ActiveRunway';
 import { DataTag } from '../../../components/ui';
@@ -154,20 +154,20 @@ export default function IntelligencePanel({
                   <SectionLabel>Decoded</SectionLabel>
                   <div className="bg-slate-950 rounded border border-slate-800 divide-y divide-slate-800 text-sm">
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400">Wind</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Wind size={13} className="text-slate-600" />Wind</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.wind.direction}° @ {selectedPointMetar.metar.wind.speed}kt
                         {selectedPointMetar.metar.wind.gust && ` G${selectedPointMetar.metar.wind.gust}kt`}
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400">Visibility</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Eye size={13} className="text-slate-600" />Visibility</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.visibility >= 9999 ? '10km+' : `${(selectedPointMetar.metar.visibility / 1000).toFixed(1)}km`}
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400">Clouds</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Cloud size={13} className="text-slate-600" />Clouds</span>
                       <span className="text-slate-200 font-mono text-right">
                         {selectedPointMetar.metar.clouds.length > 0
                           ? selectedPointMetar.metar.clouds.map(c => `${c.quantity} ${c.height}ft`).join(', ')
@@ -175,13 +175,13 @@ export default function IntelligencePanel({
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400">Temp / Dew</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Thermometer size={13} className="text-slate-600" />Temp / Dew</span>
                       <span className="text-slate-200 font-mono">
                         {selectedPointMetar.metar.temperature}° / {selectedPointMetar.metar.dewpoint}°C
                       </span>
                     </div>
                     <div className="flex justify-between px-3 py-2">
-                      <span className="text-slate-400">QNH</span>
+                      <span className="text-slate-400 flex items-center gap-2"><Gauge size={13} className="text-slate-600" />QNH</span>
                       <span className="text-slate-200 font-mono">Q{selectedPointMetar.metar.qnh}</span>
                     </div>
                   </div>

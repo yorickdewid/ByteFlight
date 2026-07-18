@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin, Plane, RadioTower } from 'lucide-react';
 import { NavPoint } from '../../types';
 import { ApiService } from '../../lib/api';
+
+function pointTypeIcon(type: string) {
+  if (type === 'AIRPORT') return Plane;
+  if (type === 'VOR' || type === 'NDB') return RadioTower;
+  return MapPin;
+}
 
 interface WaypointInputProps {
   value: string;
@@ -90,16 +96,20 @@ export function WaypointInput({ value, onResolve, onChange, placeholder = 'WAYPO
 
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 w-64 mt-1 bg-slate-900 border border-slate-700 shadow-2xl z-50 rounded-md overflow-hidden">
-          {results.map(r => (
-            <div
-              key={r.id}
-              onClick={() => handleSelect(r)}
-              className="px-3 py-2 hover:bg-slate-800 cursor-pointer flex justify-between items-baseline text-xs transition-colors border-b border-slate-800 last:border-b-0"
-            >
-              <span className="font-semibold text-sky-400 font-mono">{r.id}</span>
-              <span className="text-slate-500 truncate ml-2">{r.name}</span>
-            </div>
-          ))}
+          {results.map(r => {
+            const TypeIcon = pointTypeIcon(r.type);
+            return (
+              <div
+                key={r.id}
+                onClick={() => handleSelect(r)}
+                className="px-3 py-2 hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-xs transition-colors border-b border-slate-800 last:border-b-0"
+              >
+                <TypeIcon size={12} className="text-slate-500 shrink-0" />
+                <span className="font-semibold text-sky-400 font-mono">{r.id}</span>
+                <span className="text-slate-500 truncate ml-auto">{r.name}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
