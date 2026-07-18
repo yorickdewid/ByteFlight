@@ -37,6 +37,7 @@ ByteFlight uses custom React hooks for ALL state management - no Redux, Zustand,
 - `useFavorites` - Favorite locations. Persists to localStorage (`byteflight_favorites`).
 - `useClock` - UTC time display (1s interval).
 - `useAppInit` - App initialization, loads default demo route (EHRD).
+- `useAuth` - Session state via backend Google OAuth. Probes `GET /auth/me` on load; `signIn` redirects to `/auth/google`, `signOut` posts `/auth/logout`. All API fetches send `credentials: 'include'`.
 
 **Pattern**: Hooks return both state and handlers. Handlers are passed down as props to components. Import hooks via the barrel: `import { useFlightPlan, useNavLog } from '../hooks'`.
 
@@ -105,7 +106,7 @@ src/
 ├── app/                    # App.tsx orchestrator, main.tsx entry
 ├── components/
 │   ├── ui/                 # Primitives (button, input, altitude-input, data-tag, panel-box)
-│   └── layout/             # Header, modals barrel, settings-modal, change-password-modal
+│   └── layout/             # Header, modals barrel, settings-modal
 ├── features/
 │   ├── aircraft/           # AircraftManagerModal, WeightBalanceModal
 │   ├── flight-plan/        # FlightPlanSidebar, NavLogModal

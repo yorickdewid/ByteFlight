@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plane, Search, Loader2, Sliders, Key, LogOut, MapPin, RadioTower } from 'lucide-react';
-import { NavPoint } from '../../types';
+import { Plane, Search, Loader2, Sliders, LogIn, LogOut, MapPin, RadioTower } from 'lucide-react';
+import { AuthUser, NavPoint } from '../../types';
 import { APP_VERSION } from '../../lib/config';
 
 function pointTypeIcon(type: string) {
@@ -9,15 +9,22 @@ function pointTypeIcon(type: string) {
   return MapPin;
 }
 
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?';
+}
+
 interface HeaderProps {
   searchQuery: string;
   searchResults: NavPoint[];
   isSearching: boolean;
   time: Date;
+  user: AuthUser | null;
+  isAuthLoading: boolean;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectPoint: (point: NavPoint) => void;
   onOpenSettings: () => void;
-  onOpenPasswordModal: () => void;
+  onSignIn: () => void;
   onOpenLogoutAlert: () => void;
 }
 
@@ -26,10 +33,12 @@ export default function Header({
   searchResults,
   isSearching,
   time,
+  user,
+  isAuthLoading,
   onSearchChange,
   onSelectPoint,
   onOpenSettings,
-  onOpenPasswordModal,
+  onSignIn,
   onOpenLogoutAlert,
 }: HeaderProps) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -90,49 +99,58 @@ export default function Header({
           {time.toISOString().substring(11, 19)}<span className="text-slate-500 text-xs ml-1.5">UTC</span>
         </span>
 
-        <div className="relative" ref={profileMenuRef}>
+        {!user && !isAuthLoading && (
           <button
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border transition-colors select-none
-                      ${isProfileMenuOpen
-                ? 'bg-sky-500 text-white border-sky-500'
-                : 'bg-sky-900/40 text-sky-400 border-sky-700/50 hover:bg-sky-500 hover:text-white'
-              }`}
+            onClick={onSignIn}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 border border-sky-500 rounded-full shadow-md shadow-sky-900/30 transition-colors"
           >
-            YW
+            <LogIn size={13} />
+            Sign in
           </button>
+        )}
 
-          {isProfileMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
-              <div className="px-4 py-3 border-b border-slate-800">
-                <p className="text-sm font-semibold text-slate-100">Yorick de Wid</p>
-                <p className="text-xs text-slate-500 truncate">pilot@byteflight.app</p>
+        {user && (
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border overflow-hidden transition-colors select-none
+                        ${isProfileMenuOpen
+                  ? 'bg-sky-500 text-white border-sky-500'
+                  : 'bg-sky-900/40 text-sky-400 border-sky-700/50 hover:bg-sky-500 hover:text-white'
+                }`}
+              title={user.name}
+            >
+              {user.avatarUrl
+                ? <img src={user.avatarUrl} alt={user.name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                : initials(user.name)}
+            </button>
+
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+                <div className="px-4 py-3 border-b border-slate-800">
+                  <p className="text-sm font-semibold text-slate-100 truncate">{user.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { onOpenSettings(); setIsProfileMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 flex items-center gap-3 transition-colors"
+                  >
+                    <Sliders size={15} className="text-slate-500" /> Preferences
+                  </button>
+                </div>
+                <div className="border-t border-slate-800 py-1">
+                  <button
+                    onClick={() => { onOpenLogoutAlert(); setIsProfileMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-800 flex items-center gap-3 transition-colors"
+                  >
+                    <LogOut size={15} /> Sign Out
+                  </button>
+                </div>
               </div>
-              <div className="py-1">
-                <button
-                  onClick={() => { onOpenSettings(); setIsProfileMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 flex items-center gap-3 transition-colors"
-                >
-                  <Sliders size={15} className="text-slate-500" /> Preferences
-                </button>
-                <button
-                  onClick={() => { onOpenPasswordModal(); setIsProfileMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 flex items-center gap-3 transition-colors"
-                >
-                  <Key size={15} className="text-slate-500" /> Change Password
-                </button>
-              </div>
-              <div className="border-t border-slate-800 py-1">
-                <button
-                  onClick={() => { onOpenLogoutAlert(); setIsProfileMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-800 flex items-center gap-3 transition-colors"
-                >
-                  <LogOut size={15} /> Sign Out
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

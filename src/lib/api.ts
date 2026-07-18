@@ -1,7 +1,10 @@
-import { AircraftProfile, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis, Waypoint } from '../types';
+import { AircraftProfile, AuthUser, FlightPlanRequest, MetarResponse, NavLog, NavPoint, Notam, RunwayWindAnalysis, Waypoint } from '../types';
 import { defaultAircraftProfiles } from './config';
 
 const API_BASE = 'https://api.byteflight.app';
+
+/** Where to send the browser to start the Google OAuth flow. */
+export const LOGIN_URL = `${API_BASE}/auth/google`;
 
 // Helper to add delay for better UX (prevents UI flashing)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -138,7 +141,9 @@ async function apiCall<T>(path: string): Promise<T> {
     throw new Error('Rate limited - too many requests');
   }
 
-  const response = await fetch(`${API_BASE}${path}`);
+  // Session cookie rides along on every call — per-user data (fleet, flights)
+  // works when signed in, public data works regardless
+  const response = await fetch(`${API_BASE}${path}`, { credentials: 'include' });
   if (!response.ok) {
     throw new Error(`API error ${response.status}: ${response.statusText}`);
   }
@@ -146,6 +151,27 @@ async function apiCall<T>(path: string): Promise<T> {
 }
 
 export const ApiService = {
+  // --- Auth ---
+  async getCurrentUser(): Promise<AuthUser | null> {
+    try {
+      const response = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+      if (!response.ok) return null;
+      const data = (await response.json()) as { authenticated: boolean; user?: AuthUser };
+      return data.authenticated && data.user ? data.user : null;
+    } catch (error) {
+      console.error('Auth probe failed:', error);
+      return null;
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  },
+
   // --- Aircraft Endpoints (connected to backend) ---
   async getAircraft(): Promise<AircraftProfile[]> {
     try {
@@ -202,6 +228,7 @@ export const ApiService = {
         // POST /aircraft
         const response = await fetch(`${API_BASE}/aircraft`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(backendAircraft),
         });
@@ -213,6 +240,7 @@ export const ApiService = {
         // PUT /aircraft/:registration
         const response = await fetch(`${API_BASE}/aircraft/${aircraft.id}`, {
           method: 'PUT',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(backendAircraft),
         });
@@ -244,6 +272,7 @@ export const ApiService = {
       // DELETE /aircraft/:registration
       const response = await fetch(`${API_BASE}/aircraft/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -361,6 +390,7 @@ export const ApiService = {
   async createFlightPlan(request: FlightPlanRequest): Promise<NavLog> {
     const response = await fetch(`${API_BASE}/flightplan`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });

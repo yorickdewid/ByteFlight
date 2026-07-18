@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { NavPoint } from '../types';
 
 import Header from '../components/layout/header';
-import { AircraftManagerModal, ChangePasswordModal, NavLogModal, SettingsModal, WeightBalanceModal } from '../components/layout/modals';
+import { AircraftManagerModal, NavLogModal, SettingsModal, WeightBalanceModal } from '../components/layout/modals';
 import { SystemAlert } from '../components/ui';
 import FlightPlanSidebar from '../features/flight-plan/components/FlightPlanSidebar';
 import MapView from '../features/map/components/MapView';
@@ -13,6 +13,7 @@ import IntelligencePanel from '../features/navigation/components/IntelligencePan
 import {
   useAircraft,
   useAppInit,
+  useAuth,
   useClock,
   useFavorites,
   useFlightPlan,
@@ -60,6 +61,7 @@ export default function App() {
 
   const { searchQuery, searchResults, isSearching, handleSearch, clearSearch } = useSearch();
 
+  const { user, isAuthLoading, signIn, signOut } = useAuth();
 
   const { favorites, toggleFavorite } = useFavorites();
 
@@ -74,7 +76,6 @@ export default function App() {
   const [isWbOpen, setIsWbOpen] = useState(false);
   const [isAircraftManagerOpen, setIsAircraftManagerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
 
   // --- Flight Planning (Backend) ---
@@ -97,9 +98,7 @@ export default function App() {
   };
 
   const handleSignOut = () => {
-    // In a real app, clear tokens, context, etc.
-    // For mock: just refresh or alert
-    window.location.reload();
+    void signOut();
   };
 
   if (isAppLoading) {
@@ -122,10 +121,12 @@ export default function App() {
         searchResults={searchResults}
         isSearching={isSearching}
         time={time}
+        user={user}
+        isAuthLoading={isAuthLoading}
         onSearchChange={handleSearch}
         onSelectPoint={handleSelectPoint}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenPasswordModal={() => setIsPasswordModalOpen(true)}
+        onSignIn={signIn}
         onOpenLogoutAlert={() => setIsLogoutAlertOpen(true)}
       />
 
@@ -183,11 +184,10 @@ export default function App() {
         confirmLabel="Sign Out"
       />
 
-      {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} navLog={navLog} isLoading={isNavLogLoading} error={navLogError} onClose={() => setIsNavLogOpen(false)} />}
+      {isNavLogOpen && <NavLogModal flightPlan={flightPlan} aircraft={flightPlan.aircraft} navLog={navLog} isLoading={isNavLogLoading} error={navLogError} pilotName={user?.name ?? null} onClose={() => setIsNavLogOpen(false)} />}
       {isWbOpen && <WeightBalanceModal aircraft={flightPlan.aircraft} payload={flightPlan.payload} onClose={() => setIsWbOpen(false)} onUpdatePayload={(pl) => setFlightPlan(p => ({ ...p, payload: pl }))} />}
       {isAircraftManagerOpen && <AircraftManagerModal isOpen={isAircraftManagerOpen} aircraftList={aircraftProfiles} onClose={() => setIsAircraftManagerOpen(false)} onSave={(ac, isNew) => { void handleSaveAircraft(ac, isNew); }} onDelete={(id) => { void handleDeleteAircraft(id); }} />}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} fuelPolicy={flightPlan.reserveType} onSetFuelPolicy={(type) => setFlightPlan(p => ({ ...p, reserveType: type }))} />}
-      {isPasswordModalOpen && <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />}
     </div>
   );
 }

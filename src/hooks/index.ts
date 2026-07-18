@@ -1,5 +1,6 @@
 export { useAircraft } from './useAircraft';
 export { useAppInit } from './useAppInit';
+export { useAuth } from './useAuth';
 export { useClock } from './useClock';
 export { useFavorites } from './useFavorites';
 export { useFlightPlan } from './useFlightPlan';

@@ -8,16 +8,18 @@ interface NavLogModalProps {
   navLog: NavLog | null;
   isLoading: boolean;
   error: string | null;
+  pilotName: string | null;
   onClose: () => void;
 }
 
-export const NavLogModal: React.FC<NavLogModalProps> = ({ 
-  flightPlan, 
-  aircraft, 
+export const NavLogModal: React.FC<NavLogModalProps> = ({
+  flightPlan,
+  aircraft,
   navLog,
   isLoading,
   error,
-  onClose 
+  pilotName,
+  onClose
 }) => {
   // Format duration (minutes) to HH:MM
   const formatDuration = (minutes: number) => {
@@ -58,7 +60,7 @@ export const NavLogModal: React.FC<NavLogModalProps> = ({
               <div className="flex justify-between mb-8 border-b border-slate-200 pb-6">
                 <div>
                   <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Flight Log</h1>
-                  <p className="text-xs text-slate-500 mt-1 font-semibold uppercase tracking-wider">PIC: DE WID, YORICK</p>
+                  {pilotName && <p className="text-xs text-slate-500 mt-1 font-semibold uppercase tracking-wider">PIC: {pilotName}</p>}
                 </div>
                 <div className="text-right">
                   <h2 className="text-xl font-bold text-slate-900 font-mono">{flightPlan.aircraftId}</h2>
