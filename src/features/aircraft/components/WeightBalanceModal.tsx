@@ -36,7 +36,7 @@ export const WeightBalanceModal: React.FC<WeightBalanceModalProps> = ({ aircraft
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 md:p-6 font-sans">
-      <div className="bg-slate-900 w-full max-w-3xl rounded-xl shadow-2xl border border-slate-700 flex flex-col text-slate-300">
+      <div className="bg-slate-900 w-full max-w-3xl rounded-xl shadow-2xl animate-slide-in border border-slate-700 flex flex-col text-slate-300">
         <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Scale size={16} className="text-slate-500" />

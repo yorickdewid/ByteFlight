@@ -136,7 +136,7 @@ export default function FlightPlanSidebar({
 
       {/* Saved Routes Panel */}
       {isRouteListOpen && (
-        <div className="absolute inset-0 z-30 bg-slate-900 flex flex-col">
+        <div className="absolute inset-0 z-30 bg-slate-900 flex flex-col animate-fade-in">
           <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between min-h-[48px]">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               Saved Routes <span className="text-slate-600 font-mono ml-1">{routes.length}</span>

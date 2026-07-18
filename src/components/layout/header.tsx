@@ -69,7 +69,7 @@ export default function Header({
             className="w-full bg-slate-800/50 border border-slate-700 rounded-full py-1.5 pl-9 pr-4 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 placeholder-slate-500 transition-all"
           />
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 w-full mt-1 bg-slate-900 border border-slate-700 shadow-2xl z-50 rounded-md overflow-hidden">
+            <div className="absolute top-full left-0 w-full mt-1 bg-slate-900 border border-slate-700 shadow-2xl z-50 rounded-xl overflow-hidden animate-fade-in">
               {searchResults.map(a => {
                 const TypeIcon = pointTypeIcon(a.type);
                 return (
@@ -103,7 +103,7 @@ export default function Header({
           </button>
 
           {isProfileMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
               <div className="px-4 py-3 border-b border-slate-800">
                 <p className="text-sm font-semibold text-slate-100">Yorick de Wid</p>
                 <p className="text-xs text-slate-500 truncate">pilot@byteflight.app</p>

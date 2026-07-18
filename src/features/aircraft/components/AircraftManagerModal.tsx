@@ -65,7 +65,7 @@ export const AircraftManagerModal: React.FC<AircraftManagerModalProps> = ({ isOp
         confirmLabel={alert.action ? 'Delete' : 'OK'}
       />
 
-      <div className="bg-slate-900 w-full max-w-2xl h-[650px] rounded-xl shadow-2xl border border-slate-700 flex flex-col text-slate-300 relative overflow-hidden">
+      <div className="bg-slate-900 w-full max-w-2xl h-[650px] rounded-xl shadow-2xl animate-slide-in border border-slate-700 flex flex-col text-slate-300 relative overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center shrink-0">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Plane size={16} className="text-slate-500" />

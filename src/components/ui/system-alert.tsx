@@ -24,7 +24,7 @@ export const SystemAlert: React.FC<SystemAlertProps> = ({ isOpen, type = 'info',
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-[100] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-700 shadow-2xl rounded-md">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-700 shadow-2xl rounded-xl animate-slide-in">
         <div className="flex items-start gap-3 p-5">
           {React.createElement(styles.icon, { size: 20, className: `${styles.color} mt-0.5 shrink-0` })}
           <div className="flex-1">

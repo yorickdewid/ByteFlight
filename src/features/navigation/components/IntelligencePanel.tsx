@@ -1,7 +1,7 @@
-import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle, Eye, Thermometer, Gauge } from 'lucide-react';
+import { MapPin, PlusCircle, Star, Radio, Wind, Cloud, AlertTriangle, Eye, Thermometer, Gauge, Info } from 'lucide-react';
 import { MetarResponse, NavPoint, Notam } from '../../../types';
 import { ActiveRunway } from '../../map/components/ActiveRunway';
-import { DataTag } from '../../../components/ui';
+import { DataTag, PanelBox } from '../../../components/ui';
 
 interface IntelligencePanelProps {
   selectedPoint: NavPoint | null;
@@ -15,20 +15,14 @@ interface IntelligencePanelProps {
 }
 
 const CATEGORY_STYLES: Record<string, string> = {
-  VFR: 'bg-emerald-950 text-emerald-400 border-emerald-900',
-  MVFR: 'bg-blue-950 text-blue-400 border-blue-900',
-  IFR: 'bg-yellow-950 text-yellow-400 border-yellow-900',
-  LIFR: 'bg-purple-950 text-purple-400 border-purple-900',
+  VFR: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  MVFR: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  IFR: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+  LIFR: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
 };
 
-function SectionLabel({ icon: Icon, children }: { icon?: React.ElementType; children: React.ReactNode }) {
-  return (
-    <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-      {Icon && <Icon size={13} className="text-sky-500" />}
-      {children}
-    </div>
-  );
-}
+// Section styling matches the left sidebar's PanelBox stack
+const SECTION_CLASS = 'flex-shrink-0 border-x-0 border-t-0 rounded-none bg-transparent';
 
 export default function IntelligencePanel({
   selectedPoint,
@@ -55,29 +49,32 @@ export default function IntelligencePanel({
 
   return (
     <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col z-20">
-      <div className="px-4 pt-4 border-b border-slate-800 shrink-0">
-        <div className="flex justify-between items-start">
-          <h1 className="text-2xl font-bold text-white tracking-tight font-mono">{selectedPoint.id}</h1>
-          <div className="flex gap-1">
+      {/* Point header — compact bar, same rhythm as the left sidebar */}
+      <div className="px-4 pt-3 border-b border-slate-800 shrink-0">
+        <div className="flex justify-between items-center">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <h1 className="text-xl font-bold text-white tracking-tight font-mono">{selectedPoint.id}</h1>
+            <p className="text-xs text-slate-400 truncate">{selectedPoint.name}</p>
+          </div>
+          <div className="flex gap-1 flex-shrink-0">
             <button
               onClick={() => onAddWaypoint(selectedPoint)}
               className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-sky-400 transition-colors"
               title="Add to route"
             >
-              <PlusCircle size={16} />
+              <PlusCircle size={15} />
             </button>
             <button
               onClick={() => onToggleFavorite(selectedPoint.id)}
               className="p-1.5 rounded-md hover:bg-slate-800 transition-colors"
               title="Favorite"
             >
-              <Star size={16} className={favorites.includes(selectedPoint.id) ? "fill-amber-400 text-amber-400" : "text-slate-400 hover:text-amber-400"} />
+              <Star size={15} className={favorites.includes(selectedPoint.id) ? "fill-amber-400 text-amber-400" : "text-slate-400 hover:text-amber-400"} />
             </button>
           </div>
         </div>
-        <p className="text-sm text-slate-400 truncate mt-0.5">{selectedPoint.name}</p>
 
-        <div className="flex gap-1 mt-3 -mb-px">
+        <div className="flex gap-1 mt-2 -mb-px">
           {(['INFO', 'WX', 'NOTAM'] as const).map(tab => (
             <button
               key={tab}
@@ -93,25 +90,25 @@ export default function IntelligencePanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto custom-scrollbar animate-fade-in" key={sidebarTab}>
         {sidebarTab === 'INFO' && (
           <>
-            <div className="grid grid-cols-3 gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-              <DataTag label="Type" value={selectedPoint.type} />
-              <DataTag label="Elevation" value={selectedPoint.elevation ? `${selectedPoint.elevation} ft` : 'N/A'} />
-              <DataTag label="Freq" value={selectedPoint.frequencies?.[0]?.frequency || '—'} />
-            </div>
+            <PanelBox title="Aerodrome" icon={Info} className={SECTION_CLASS}>
+              <div className="grid grid-cols-3 gap-3">
+                <DataTag label="Type" value={selectedPoint.type} />
+                <DataTag label="Elevation" value={selectedPoint.elevation ? `${selectedPoint.elevation} ft` : 'N/A'} />
+                <DataTag label="Freq" value={selectedPoint.frequencies?.[0]?.frequency || '—'} />
+              </div>
+            </PanelBox>
 
             {selectedPoint.type === 'AIRPORT' && (
-              <div className="space-y-2">
-                <SectionLabel icon={Wind}>Active Runway</SectionLabel>
+              <PanelBox title="Active Runway" icon={Wind} className={SECTION_CLASS}>
                 <ActiveRunway airport={selectedPoint} metar={selectedPointMetar} />
-              </div>
+              </PanelBox>
             )}
 
             {selectedPoint.frequencies && selectedPoint.frequencies.length > 0 && (
-              <div className="space-y-2">
-                <SectionLabel icon={Radio}>Communications</SectionLabel>
+              <PanelBox title="Communications" icon={Radio} className={SECTION_CLASS}>
                 <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
                   {selectedPoint.frequencies.map((f, i) => (
                     <div key={i} className="flex justify-between items-center px-3 py-2 text-sm">
@@ -120,7 +117,7 @@ export default function IntelligencePanel({
                     </div>
                   ))}
                 </div>
-              </div>
+              </PanelBox>
             )}
 
             {selectedPoint.type !== 'AIRPORT' && !selectedPoint.frequencies && (
@@ -136,22 +133,22 @@ export default function IntelligencePanel({
           <>
             {selectedPointMetar ? (
               <>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <SectionLabel icon={Cloud}>METAR</SectionLabel>
-                    {selectedPointMetar.metar.flightCategory && (
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${CATEGORY_STYLES[selectedPointMetar.metar.flightCategory] || 'bg-slate-800 text-slate-400 border-slate-700'}`}>
-                        {selectedPointMetar.metar.flightCategory}
-                      </span>
-                    )}
-                  </div>
+                <PanelBox
+                  title="METAR"
+                  icon={Cloud}
+                  className={SECTION_CLASS}
+                  headerActions={selectedPointMetar.metar.flightCategory && (
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${CATEGORY_STYLES[selectedPointMetar.metar.flightCategory] || 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                      {selectedPointMetar.metar.flightCategory}
+                    </span>
+                  )}
+                >
                   <div className="p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all">
                     {selectedPointMetar.metar.raw}
                   </div>
-                </div>
+                </PanelBox>
 
-                <div className="space-y-2">
-                  <SectionLabel>Decoded</SectionLabel>
+                <PanelBox title="Decoded" className={SECTION_CLASS}>
                   <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50 text-sm">
                     <div className="flex justify-between px-3 py-2">
                       <span className="text-slate-400 flex items-center gap-2"><Wind size={13} className="text-sky-500/70" />Wind</span>
@@ -185,15 +182,14 @@ export default function IntelligencePanel({
                       <span className="text-slate-200 font-mono">Q{selectedPointMetar.metar.qnh}</span>
                     </div>
                   </div>
-                </div>
+                </PanelBox>
 
                 {selectedPointMetar.tafRaw && (
-                  <div className="space-y-2">
-                    <SectionLabel icon={Wind}>TAF</SectionLabel>
+                  <PanelBox title="TAF" icon={Wind} className={SECTION_CLASS}>
                     <div className="p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl text-xs font-mono text-slate-300 leading-relaxed break-all">
                       {selectedPointMetar.tafRaw}
                     </div>
-                  </div>
+                  </PanelBox>
                 )}
               </>
             ) : (
@@ -210,17 +206,19 @@ export default function IntelligencePanel({
           <>
             {selectedPoint.type === 'AIRPORT' ? (
               selectedPointNotams.length > 0 ? (
-                <div className="space-y-2">
-                  {selectedPointNotams.map(notam => (
-                    <div key={notam.id} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 space-y-1.5">
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">NOTAM</span>
-                        <span className="text-[10px] text-slate-500 font-mono">{notam.id}</span>
+                <PanelBox title="Active NOTAMs" icon={AlertTriangle} className={SECTION_CLASS}>
+                  <div className="space-y-2">
+                    {selectedPointNotams.map(notam => (
+                      <div key={notam.id} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 space-y-1.5">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">NOTAM</span>
+                          <span className="text-[10px] text-slate-500 font-mono">{notam.id}</span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-mono">{notam.text}</p>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed font-mono">{notam.text}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </PanelBox>
               ) : (
                 <div className="text-center py-10 text-slate-600">
                   <AlertTriangle size={24} className="mx-auto mb-2 text-slate-700" />

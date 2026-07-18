@@ -28,7 +28,7 @@ export const NavLogModal: React.FC<NavLogModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 md:p-8 font-sans">
-      <div className="bg-white w-full max-w-5xl h-full max-h-[85vh] rounded-md flex flex-col shadow-2xl overflow-hidden text-slate-900 border border-slate-200">
+      <div className="bg-white w-full max-w-5xl h-full max-h-[85vh] rounded-xl flex flex-col shadow-2xl overflow-hidden animate-slide-in text-slate-900 border border-slate-200">
         <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-white">
           <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
             <Layers size={16} className="text-slate-400" />

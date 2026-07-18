@@ -21,7 +21,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 w-full max-w-md rounded-xl shadow-2xl border border-slate-700 flex flex-col text-slate-300">
+      <div className="bg-slate-900 w-full max-w-md rounded-xl shadow-2xl animate-slide-in border border-slate-700 flex flex-col text-slate-300">
         <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Lock size={15} className="text-slate-500" /> Change Password

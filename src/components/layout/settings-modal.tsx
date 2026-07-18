@@ -21,7 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, f
 
   return (
     <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 font-sans">
-      <div className="bg-slate-900 w-full max-w-2xl h-[500px] rounded-xl shadow-2xl border border-slate-700 flex text-slate-300 overflow-hidden">
+      <div className="bg-slate-900 w-full max-w-2xl h-[500px] rounded-xl shadow-2xl animate-slide-in border border-slate-700 flex text-slate-300 overflow-hidden">
         {/* Sidebar */}
         <div className="w-48 border-r border-slate-800 p-3 flex flex-col gap-0.5">
           <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-1">Settings</div>
