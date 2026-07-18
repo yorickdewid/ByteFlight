@@ -29,6 +29,7 @@ interface FlightPlanSidebarProps {
   activeRouteId: string;
   onUpdateFlightPlan: (updater: (prev: FlightPlan) => FlightPlan) => void;
   onPointChange: (type: 'departure' | 'arrival' | 'alternate', val: string) => void;
+  onFocusPoint: (lat: number, lon: number) => void;
   onOpenNavLog: () => void;
   onOpenAircraftManager: () => void;
   onCreateRoute: () => void;
@@ -45,6 +46,7 @@ export default function FlightPlanSidebar({
   activeRouteId,
   onUpdateFlightPlan,
   onPointChange,
+  onFocusPoint,
   onOpenNavLog,
   onOpenAircraftManager,
   onCreateRoute,
@@ -260,10 +262,13 @@ export default function FlightPlanSidebar({
                 <WaypointInput
                   value={wp.id?.startsWith('wp-') ? (wp.name || '') : wp.id}
                   onChange={text => onUpdateFlightPlan(p => ({ ...p, waypoints: p.waypoints.map((w, j) => j === i ? { ...w, name: text, id: text } : w) }))}
-                  onResolve={(point: NavPoint) => onUpdateFlightPlan(p => ({
-                    ...p,
-                    waypoints: p.waypoints.map((w, j) => j === i ? { ...point, alt: w.alt, type: point.type || 'WAYPOINT' } : w),
-                  }))}
+                  onResolve={(point: NavPoint) => {
+                    onUpdateFlightPlan(p => ({
+                      ...p,
+                      waypoints: p.waypoints.map((w, j) => j === i ? { ...point, alt: w.alt, type: point.type || 'WAYPOINT' } : w),
+                    }));
+                    onFocusPoint(point.lat, point.lon);
+                  }}
                 />
 
                 <div className="w-px bg-slate-800"></div>

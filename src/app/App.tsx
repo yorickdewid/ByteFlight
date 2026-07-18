@@ -100,13 +100,17 @@ export default function App() {
     })();
   };
 
+  const panMapTo = (lat: number, lon: number) => {
+    if (lat || lon) {
+      setMapFocus(prev => ({ lat, lon, token: (prev?.token ?? 0) + 1 }));
+    }
+  };
+
   // Search picks also fly the map to the airport; METAR-dot clicks (already
   // on screen) go through handleSelectPoint directly and leave the camera alone
   const handleSearchSelect = (point: NavPoint) => {
     handleSelectPoint(point);
-    if (point.lat || point.lon) {
-      setMapFocus(prev => ({ lat: point.lat, lon: point.lon, token: (prev?.token ?? 0) + 1 }));
-    }
+    panMapTo(point.lat, point.lon);
   };
 
   const handleSignOut = () => {
@@ -150,6 +154,7 @@ export default function App() {
           activeRouteId={activeRouteId}
           onUpdateFlightPlan={setFlightPlan}
           onPointChange={(type, val) => { void handlePointChange(type, val); }}
+          onFocusPoint={panMapTo}
           onOpenNavLog={() => setIsNavLogOpen(true)}
           onOpenAircraftManager={() => setIsAircraftManagerOpen(true)}
           onCreateRoute={createRoute}
