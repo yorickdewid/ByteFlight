@@ -33,7 +33,6 @@ ByteFlight uses custom React hooks for ALL state management - no Redux, Zustand,
 - `useNavLog` - Backend flight calculations. Debounced (500ms), auto-refreshes every 5 minutes.
 - `useAircraft` - Fleet management. Loads from backend with localStorage fallback (`byteflight_fleet`).
 - `useSearch` - Airport/waypoint search. Debounced (300ms).
-- `useWeather` - Weather overlay state. Auto-refresh (30s). Currently uses mock data.
 - `useMetarStations` - METAR stations with LRU accumulator (cap: 1000). Merges new stations on map pan, auto-refreshes every 5 minutes.
 - `useFavorites` - Favorite locations. Persists to localStorage (`byteflight_favorites`).
 - `useClock` - UTC time display (1s interval).
@@ -54,6 +53,7 @@ ByteFlight uses custom React hooks for ALL state management - no Redux, Zustand,
 - `GET /aircraft` - Fleet management (maps backend `registration` ↔ frontend `id`)
 - `GET /aerodrome/:icao` - Aerodrome details (transforms backend `[lon, lat]` → `{lat, lon}`)
 - `GET /aerodrome/:icao/wind` - Runway wind analysis (favored runway calculation)
+- `GET /aerodrome/search` - Aerodrome search by ICAO, IATA, or place name (geocoded, closest first)
 - `GET /metar/:icao` - METAR data with decoded fields, flight category, TAF
 - `GET /metar/nearby` - METAR stations within radius of coordinates
 - `GET /notam/:icao` - NOTAMs for aerodrome

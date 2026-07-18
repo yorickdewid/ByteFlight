@@ -259,30 +259,13 @@ export const ApiService = {
 
   // --- Real API Endpoints ---
   async lookupNavPoint(query: string): Promise<NavPoint[]> {
-    await delay(200);
-    const q = query.toUpperCase().trim();
+    const q = query.trim();
     if (q.length < 2) return [];
 
     try {
-      // Try exact ICAO lookup first
-      if (q.length === 4) {
-        try {
-          const aerodrome = await apiCall<BackendAerodrome>(`/aerodrome/${q}`);
-          return [transformAerodromeToNavPoint(aerodrome)];
-        } catch {
-          // If not found, continue with nearby search
-        }
-      }
-
-      // For now, fallback to mock data for partial matches
-      // TODO: Implement search endpoint in API
-      const mockResults = await import('./mock-data').then(m =>
-        Object.values(m.mockNavData).filter(a =>
-          a.id.includes(q) || a.name.toUpperCase().includes(q)
-        )
-      );
-
-      return mockResults.slice(0, 10); // Limit results
+      // Backend resolves exact ICAO, IATA, or geocoded place names (closest first)
+      const results = await apiCall<BackendAerodrome[]>(`/aerodrome/search?q=${encodeURIComponent(q)}&limit=10`);
+      return results.map(transformAerodromeToNavPoint);
     } catch (error) {
       console.error('Search error:', error);
       return [];

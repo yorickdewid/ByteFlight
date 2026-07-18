@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(python3 -m json.tool:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm why:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(xargs:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(pnpm up:*)"
+    ]
+  }
+}

@@ -8,4 +8,3 @@ export { useNavigation } from './useNavigation';
 export { useNavLog } from './useNavLog';
 export { useRoutes } from './useRoutes';
 export { useSearch } from './useSearch';
-export { useWeather } from './useWeather';

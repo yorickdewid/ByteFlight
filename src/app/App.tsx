@@ -21,7 +21,6 @@ import {
   useNavLog,
   useRoutes,
   useSearch,
-  useWeather,
 } from '../hooks';
 
 export default function App() {
@@ -61,7 +60,6 @@ export default function App() {
 
   const { searchQuery, searchResults, isSearching, handleSearch, clearSearch } = useSearch();
 
-  const { showRadar, showTurb, toggleRadar, toggleTurb } = useWeather();
 
   const { favorites, toggleFavorite } = useFavorites();
 
@@ -161,10 +159,6 @@ export default function App() {
           onAddWaypoint={handleMapAddWaypoint}
           onSelectMetarStation={handleSelectPoint}
           onUpdateMetarStations={updateStations}
-          onToggleRadar={toggleRadar}
-          onToggleTurb={toggleTurb}
-          showRadar={showRadar}
-          showTurb={showTurb}
         />
 
         <IntelligencePanel
