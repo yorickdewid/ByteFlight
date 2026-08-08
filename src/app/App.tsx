@@ -53,6 +53,7 @@ export default function App() {
     setSelectedPoint,
     selectedPointMetar,
     selectedPointNotams,
+    notamError,
     sidebarTab,
     setSidebarTab,
     refreshPointData,
@@ -184,6 +185,7 @@ export default function App() {
           selectedPoint={selectedPoint}
           selectedPointMetar={selectedPointMetar}
           selectedPointNotams={selectedPointNotams}
+          notamError={notamError}
           sidebarTab={sidebarTab}
           setSidebarTab={setSidebarTab}
           favorites={favorites}

@@ -6,16 +6,25 @@ export function useNavigation() {
   const [selectedPoint, setSelectedPoint] = useState<NavPoint | null>(null);
   const [selectedPointMetar, setSelectedPointMetar] = useState<MetarResponse | null>(null);
   const [selectedPointNotams, setSelectedPointNotams] = useState<Notam[]>([]);
+  const [notamError, setNotamError] = useState<boolean>(false);
   const [sidebarTab, setSidebarTab] = useState<'INFO' | 'WX' | 'NOTAM'>('INFO');
 
   const refreshPointData = async (icao: string) => {
     // Parallel fetch for speed
+    setNotamError(false);
     const [metar, notams] = await Promise.all([
       ApiService.getMetar(icao),
       ApiService.getNotams(icao)
     ]);
+    // null means the fetch failed (unavailable) — not "no NOTAMs"
+    if (notams === null) {
+      setNotamError(true);
+      setSelectedPointNotams([]);
+    } else {
+      setNotamError(false);
+      setSelectedPointNotams(notams);
+    }
     setSelectedPointMetar(metar);
-    setSelectedPointNotams(notams);
   };
 
   const handleSelectPoint = async (point: NavPoint, tab?: 'INFO' | 'WX' | 'NOTAM') => {
@@ -33,6 +42,7 @@ export function useNavigation() {
     setSelectedPoint,
     selectedPointMetar,
     selectedPointNotams,
+    notamError,
     sidebarTab,
     setSidebarTab,
     refreshPointData,

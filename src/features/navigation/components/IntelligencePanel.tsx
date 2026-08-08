@@ -7,6 +7,7 @@ interface IntelligencePanelProps {
   selectedPoint: NavPoint | null;
   selectedPointMetar: MetarResponse | null;
   selectedPointNotams: Notam[];
+  notamError: boolean;
   sidebarTab: 'INFO' | 'WX' | 'NOTAM';
   setSidebarTab: (tab: 'INFO' | 'WX' | 'NOTAM') => void;
   favorites: string[];
@@ -28,6 +29,7 @@ export default function IntelligencePanel({
   selectedPoint,
   selectedPointMetar,
   selectedPointNotams,
+  notamError,
   sidebarTab,
   setSidebarTab,
   favorites,
@@ -205,7 +207,13 @@ export default function IntelligencePanel({
         {sidebarTab === 'NOTAM' && (
           <>
             {selectedPoint.type === 'AIRPORT' ? (
-              selectedPointNotams.length > 0 ? (
+              notamError ? (
+                <div className="text-center py-10 text-slate-600">
+                  <AlertTriangle size={24} className="mx-auto mb-2 text-amber-600/70" />
+                  <p className="text-sm font-medium text-amber-400/80">NOTAMs temporarily unavailable</p>
+                  <p className="text-xs mt-1">NOTAM data source is unreachable. Try again shortly.</p>
+                </div>
+              ) : selectedPointNotams.length > 0 ? (
                 <PanelBox title="Active NOTAMs" icon={AlertTriangle} className={SECTION_CLASS}>
                   <div className="space-y-2">
                     {selectedPointNotams.map(notam => (

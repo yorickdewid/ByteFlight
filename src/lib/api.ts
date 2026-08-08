@@ -347,7 +347,7 @@ export const ApiService = {
     }
   },
 
-  async getNotams(icao: string): Promise<Notam[]> {
+  async getNotams(icao: string): Promise<Notam[] | null> {
     try {
       await delay(100);
       const response = await apiCall<BackendNotam[] | { notams?: BackendNotam[] }>(`/notam/${icao.toUpperCase()}`);
@@ -360,8 +360,11 @@ export const ApiService = {
         text: n.text || n.message || n.raw || 'No details available',
       }));
     } catch (error) {
+      // A failed fetch means we cannot KNOW whether NOTAMs exist — that is
+      // "unavailable", not "none". Return null so the UI can say so honestly
+      // instead of pretending the aerodrome has no NOTAMs.
       console.error(`Failed to get NOTAMs for ${icao}:`, error);
-      return [];
+      return null;
     }
   },
 
