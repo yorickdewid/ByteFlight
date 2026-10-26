@@ -20,7 +20,7 @@ A feature-rich flight planning tool built with React, TypeScript, and Mapbox GL,
 - **Styling**: Tailwind CSS 3
 - **Maps**: Mapbox GL JS 3
 - **Icons**: Lucide React
-- **Package Manager**: pnpm
+- **Package Manager**: Bun
 - **Code Quality**: ESLint 9 + Prettier 3
 
 ## 📁 Project Structure
@@ -51,7 +51,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed architecture docum
 ### Prerequisites
 
 - Node.js 18+ (recommended: 20+)
-- pnpm 8+
+- Bun 1.4+
 
 ### Setup
 
@@ -63,7 +63,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed architecture docum
 
 2. **Install dependencies**
    ```bash
-   pnpm install
+   bun install
    ```
 
 3. **Configure environment**
@@ -74,7 +74,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed architecture docum
 
 4. **Start development server**
    ```bash
-   pnpm dev
+   bun run dev
    ```
 
    Open [http://localhost:3000](http://localhost:3000)
@@ -83,14 +83,14 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed architecture docum
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm preview` | Preview production build |
-| `pnpm lint` | Run ESLint |
-| `pnpm lint:fix` | Fix ESLint errors |
-| `pnpm format` | Format code with Prettier |
-| `pnpm format:check` | Check code formatting |
-| `pnpm type-check` | Run TypeScript type checking |
+| `bun run dev` | Start development server |
+| `bun run build` | Build for production |
+| `bun run preview` | Preview production build |
+| `bun run lint` | Run ESLint |
+| `bun run lint:fix` | Fix ESLint errors |
+| `bun run format` | Format code with Prettier |
+| `bun run format:check` | Check code formatting |
+| `bun run type-check` | Run TypeScript type checking |
 
 ## 🏗️ Building for Production
 
